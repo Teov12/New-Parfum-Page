@@ -50,9 +50,9 @@ const goToCartPage = () => {
       @click="cartStore.closeDrawer"
     ></div>
 
-    <!-- Drawer Panel -->
+    <!-- Drawer Panel (Rounded Left Corner) -->
     <aside 
-      class="fixed top-0 right-0 z-50 h-full w-full max-w-md bg-surface border-l border-primary shadow-2xl flex flex-col transition-transform duration-300 ease-in-out"
+      class="fixed top-0 right-0 z-50 h-full w-full max-w-md bg-surface border-l border-outline-variant shadow-2xl flex flex-col transition-transform duration-300 ease-in-out sm:rounded-l-3xl overflow-hidden"
       :class="cartStore.isDrawerOpen ? 'translate-x-0' : 'translate-x-full'"
     >
       <!-- Header -->
@@ -65,7 +65,7 @@ const goToCartPage = () => {
         </div>
         <button 
           @click="cartStore.closeDrawer"
-          class="p-2 hover:bg-surface-container text-primary transition-colors"
+          class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center text-primary transition-colors"
           aria-label="Cerrar bolsa"
         >
           <span class="material-symbols-outlined text-2xl">close</span>
@@ -84,16 +84,16 @@ const goToCartPage = () => {
           </span>
           <span class="font-semibold">{{ cartStore.freeShippingProgress }}%</span>
         </div>
-        <div class="w-full bg-secondary-container h-1.5 overflow-hidden">
+        <div class="w-full bg-secondary-container h-2 rounded-full overflow-hidden">
           <div 
-            class="bg-primary-container h-full transition-all duration-500"
+            class="bg-primary-container h-full rounded-full transition-all duration-500"
             :style="{ width: `${cartStore.freeShippingProgress}%` }"
           ></div>
         </div>
       </div>
 
       <!-- Items List -->
-      <div class="flex-grow overflow-y-auto p-6 space-y-6 divide-y divide-outline-variant">
+      <div class="flex-grow overflow-y-auto p-6 space-y-4">
         <div v-if="cartStore.items.length === 0" class="h-full flex flex-col items-center justify-center text-center py-16">
           <span class="material-symbols-outlined text-5xl text-outline mb-4">shopping_bag</span>
           <h3 class="font-serif text-xl text-primary mb-2">Tu bolsa está vacía</h3>
@@ -102,7 +102,7 @@ const goToCartPage = () => {
           </p>
           <button 
             @click="goToCartPage; cartStore.closeDrawer(); router.push('/catalogo')"
-            class="bg-primary-container text-on-primary font-label text-label-sm px-8 py-3.5 uppercase tracking-widest border border-primary-container hover:bg-surface hover:text-primary-container transition-all"
+            class="bg-primary-container text-on-primary font-label text-label-sm px-8 py-3.5 uppercase tracking-widest rounded-full hover:bg-surface hover:text-primary-container border border-primary-container transition-all shadow-xs"
           >
             Explorar Catálogo
           </button>
@@ -111,13 +111,13 @@ const goToCartPage = () => {
         <div 
           v-for="item in cartStore.items" 
           :key="`${item.id}-${item.size}`"
-          class="pt-5 first:pt-0 flex gap-4"
+          class="p-4 bg-surface-container-low rounded-2xl border border-outline-variant flex gap-4"
         >
           <!-- Thumbnail -->
           <img 
             :src="item.image" 
             :alt="item.name"
-            class="w-20 h-24 object-cover bg-surface-lowest border border-outline-variant flex-shrink-0"
+            class="w-20 h-24 object-cover bg-surface-lowest rounded-xl border border-outline-variant flex-shrink-0"
           />
 
           <!-- Details -->
@@ -140,7 +140,7 @@ const goToCartPage = () => {
               </div>
 
               <div class="flex items-center gap-2 mt-1">
-                <span class="font-label text-xs bg-surface-container px-2 py-0.5 border border-outline-variant text-primary">
+                <span class="font-label text-xs bg-surface px-2.5 py-0.5 rounded-full border border-outline-variant text-primary">
                   {{ item.size }}
                 </span>
                 <span class="text-xs text-secondary">{{ item.concentration }}</span>
@@ -149,10 +149,10 @@ const goToCartPage = () => {
 
             <!-- Price & Quantity Adjuster -->
             <div class="flex justify-between items-center mt-3 pt-2">
-              <div class="inline-flex items-center border border-primary bg-surface">
+              <div class="inline-flex items-center border border-outline-variant rounded-full bg-surface overflow-hidden shadow-2xs">
                 <button 
                   @click="cartStore.updateQuantity(item.id, item.size, item.quantity - 1)"
-                  class="px-2.5 py-1 text-primary hover:bg-surface-container transition-colors text-sm"
+                  class="px-3 py-1 text-primary hover:bg-surface-container transition-colors text-sm font-bold"
                   aria-label="Restar una unidad"
                 >
                   -
@@ -162,7 +162,7 @@ const goToCartPage = () => {
                 </span>
                 <button 
                   @click="cartStore.updateQuantity(item.id, item.size, item.quantity + 1)"
-                  class="px-2.5 py-1 text-primary hover:bg-surface-container transition-colors text-sm"
+                  class="px-3 py-1 text-primary hover:bg-surface-container transition-colors text-sm font-bold"
                   aria-label="Sumar una unidad"
                 >
                   +
@@ -179,8 +179,8 @@ const goToCartPage = () => {
         </div>
 
         <!-- Courtesy Sample Selection (Boutique Feature) -->
-        <div v-if="cartStore.items.length > 0" class="pt-6">
-          <div class="bg-surface-container-low border border-outline-variant p-3.5">
+        <div v-if="cartStore.items.length > 0" class="pt-2">
+          <div class="bg-surface-container-low border border-outline-variant rounded-2xl p-4">
             <p class="font-label text-xs text-primary uppercase tracking-widest font-semibold flex items-center gap-1.5 mb-2">
               <span class="material-symbols-outlined text-sm text-tertiary">card_giftcard</span>
               Muestra de Cortesía Gratis:
@@ -188,7 +188,7 @@ const goToCartPage = () => {
             <select 
               v-model="cartStore.selectedSample" 
               @change="cartStore.selectSample(cartStore.selectedSample)"
-              class="w-full bg-surface text-xs font-sans text-primary border border-outline-variant p-2 focus:ring-0 focus:border-primary"
+              class="w-full bg-surface text-xs font-sans text-primary border border-outline-variant rounded-xl p-2.5 focus:ring-0 focus:border-primary"
             >
               <option v-for="sample in sampleOptions" :key="sample" :value="sample">
                 {{ sample }}
@@ -199,24 +199,24 @@ const goToCartPage = () => {
       </div>
 
       <!-- Footer & Totals -->
-      <div v-if="cartStore.items.length > 0" class="p-6 bg-surface border-t border-primary space-y-4">
+      <div v-if="cartStore.items.length > 0" class="p-6 bg-surface border-t border-outline-variant space-y-4">
         <!-- Coupon Form -->
         <div v-if="!cartStore.coupon" class="flex gap-2">
           <input 
             v-model="couponInput"
             type="text" 
             placeholder="CUPÓN (ej. GICCA10)"
-            class="flex-grow bg-surface border border-outline-variant px-3 py-2 text-xs font-label uppercase tracking-widest text-primary focus:border-primary focus:outline-none"
+            class="flex-grow bg-surface border border-outline-variant rounded-full px-4 py-2 text-xs font-label uppercase tracking-widest text-primary focus:border-primary focus:outline-none"
             @keyup.enter="handleApplyCoupon"
           />
           <button 
             @click="handleApplyCoupon"
-            class="bg-surface-container text-primary font-label text-xs px-4 py-2 uppercase tracking-widest border border-outline hover:bg-secondary-container transition-colors"
+            class="bg-surface-container text-primary font-label text-xs px-5 py-2 uppercase tracking-widest rounded-full border border-outline hover:bg-secondary-container transition-colors shadow-2xs"
           >
             Aplicar
           </button>
         </div>
-        <div v-else class="flex justify-between items-center bg-surface-container px-3 py-2 text-xs border border-outline-variant">
+        <div v-else class="flex justify-between items-center bg-surface-container rounded-xl px-3.5 py-2 text-xs border border-outline-variant">
           <span class="text-tertiary font-semibold flex items-center gap-1">
             <span class="material-symbols-outlined text-sm">check_circle</span>
             {{ cartStore.coupon.label }} ({{ cartStore.coupon.code }})
@@ -257,13 +257,13 @@ const goToCartPage = () => {
         <div class="grid grid-cols-2 gap-3 pt-2">
           <button 
             @click="goToCartPage"
-            class="w-full bg-transparent text-primary font-label text-label-sm py-3.5 uppercase tracking-widest border border-primary hover:bg-surface-container transition-all text-center"
+            class="w-full bg-transparent text-primary font-label text-label-sm py-3.5 uppercase tracking-widest rounded-full border border-primary hover:bg-surface-container transition-all text-center shadow-2xs"
           >
             Ver Carrito
           </button>
           <button 
             @click="goToCheckout"
-            class="w-full bg-primary-container text-on-primary font-label text-label-sm py-3.5 uppercase tracking-widest border border-primary-container hover:bg-inverse-surface transition-all text-center flex items-center justify-center gap-2"
+            class="w-full bg-primary-container text-on-primary font-label text-label-sm py-3.5 uppercase tracking-widest rounded-full border border-primary-container hover:bg-inverse-surface transition-all text-center flex items-center justify-center gap-2 shadow-md"
           >
             <span>Checkout</span>
             <span class="material-symbols-outlined text-sm">arrow_forward</span>

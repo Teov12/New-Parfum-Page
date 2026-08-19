@@ -19,7 +19,7 @@ const handleSubscribe = () => {
 </script>
 
 <template>
-  <footer class="bg-surface-container border-t border-primary text-on-surface">
+  <footer class="bg-surface-container border-t border-outline-variant text-on-surface">
     <!-- Main Footer Content -->
     <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 md:py-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12">
       
@@ -39,14 +39,14 @@ const handleSubscribe = () => {
           </div>
         </div>
 
-        <div class="flex gap-4 mt-8">
-          <a href="#" class="w-10 h-10 border border-outline flex items-center justify-center text-primary hover:bg-primary hover:text-surface transition-colors" aria-label="Instagram">
+        <div class="flex gap-3 mt-8">
+          <a href="#" class="w-10 h-10 rounded-full border border-outline flex items-center justify-center text-primary hover:bg-primary hover:text-surface transition-colors shadow-2xs" aria-label="Instagram">
             <span class="font-label text-xs font-bold">IG</span>
           </a>
-          <a href="#" class="w-10 h-10 border border-outline flex items-center justify-center text-primary hover:bg-primary hover:text-surface transition-colors" aria-label="TikTok">
+          <a href="#" class="w-10 h-10 rounded-full border border-outline flex items-center justify-center text-primary hover:bg-primary hover:text-surface transition-colors shadow-2xs" aria-label="TikTok">
             <span class="font-label text-xs font-bold">TT</span>
           </a>
-          <a href="#" class="w-10 h-10 border border-outline flex items-center justify-center text-primary hover:bg-primary hover:text-surface transition-colors" aria-label="WhatsApp">
+          <a href="#" class="w-10 h-10 rounded-full border border-outline flex items-center justify-center text-primary hover:bg-primary hover:text-surface transition-colors shadow-2xs" aria-label="WhatsApp">
             <span class="font-label text-xs font-bold">WA</span>
           </a>
         </div>
@@ -141,17 +141,17 @@ const handleSubscribe = () => {
         </p>
 
         <form @submit.prevent="handleSubscribe" class="space-y-3">
-          <div class="flex flex-col sm:flex-row gap-2">
+          <div class="flex flex-col sm:flex-row gap-2 bg-surface p-1.5 rounded-full border border-outline-variant focus-within:border-primary shadow-xs">
             <input 
               v-model="emailInput"
               type="email" 
               placeholder="Tu correo electrónico..."
               required
-              class="w-full bg-surface border border-outline px-4 py-3 text-sm font-sans text-primary placeholder:text-secondary focus:border-primary focus:outline-none"
+              class="w-full bg-transparent px-4 py-2.5 text-sm font-sans text-primary placeholder:text-secondary focus:outline-none"
             />
             <button 
               type="submit"
-              class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-6 py-3 border border-primary-container hover:bg-surface hover:text-primary-container transition-all flex-shrink-0"
+              class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-6 py-2.5 rounded-full hover:bg-inverse-surface transition-all flex-shrink-0 shadow-xs"
             >
               Unirme
             </button>
@@ -162,15 +162,15 @@ const handleSubscribe = () => {
         </form>
 
         <div class="mt-6 pt-6 border-t border-outline-variant grid grid-cols-3 gap-3 text-center">
-          <div class="p-2 bg-surface border border-outline-variant">
+          <div class="p-3 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
             <span class="material-symbols-outlined text-lg text-primary mb-1">verified_user</span>
             <p class="font-label text-[10px] uppercase text-secondary">100% Original</p>
           </div>
-          <div class="p-2 bg-surface border border-outline-variant">
+          <div class="p-3 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
             <span class="material-symbols-outlined text-lg text-primary mb-1">local_shipping</span>
             <p class="font-label text-[10px] uppercase text-secondary">Envíos País</p>
           </div>
-          <div class="p-2 bg-surface border border-outline-variant">
+          <div class="p-3 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
             <span class="material-symbols-outlined text-lg text-primary mb-1">credit_card</span>
             <p class="font-label text-[10px] uppercase text-secondary">Cuotas Sin Interés</p>
           </div>

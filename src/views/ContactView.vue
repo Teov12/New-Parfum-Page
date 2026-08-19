@@ -81,13 +81,13 @@ const handleSubmitContact = () => {
       <!-- Main Layout: Contact Info & Form -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-24">
         
-        <!-- Contact Channels (5 cols) -->
+        <!-- Contact Channels (5 cols - Rounded 3xl) -->
         <div class="lg:col-span-5 space-y-6">
-          <div class="bg-surface-container border border-outline-variant p-8 space-y-6">
+          <div class="bg-surface-container border border-outline-variant rounded-3xl p-8 space-y-6 shadow-xs">
             <h3 class="font-serif text-2xl text-primary font-normal">Canales de Atención VIP</h3>
 
             <div class="space-y-4 font-sans text-sm text-secondary">
-              <div class="flex items-start gap-3">
+              <div class="flex items-start gap-3 p-3 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
                 <span class="material-symbols-outlined text-primary text-xl mt-0.5">chat</span>
                 <div>
                   <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold">WhatsApp Concierge</h4>
@@ -96,7 +96,7 @@ const handleSubmitContact = () => {
                 </div>
               </div>
 
-              <div class="flex items-start gap-3">
+              <div class="flex items-start gap-3 p-3 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
                 <span class="material-symbols-outlined text-primary text-xl mt-0.5">mail</span>
                 <div>
                   <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold">Correo Electrónico</h4>
@@ -105,7 +105,7 @@ const handleSubmitContact = () => {
                 </div>
               </div>
 
-              <div class="flex items-start gap-3">
+              <div class="flex items-start gap-3 p-3 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
                 <span class="material-symbols-outlined text-primary text-xl mt-0.5">location_on</span>
                 <div>
                   <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold">Atelier Privado</h4>
@@ -115,11 +115,11 @@ const handleSubmitContact = () => {
               </div>
             </div>
 
-            <!-- WhatsApp Direct Action Button -->
+            <!-- WhatsApp Direct Action Button (Pill) -->
             <a 
               href="https://wa.me/5491158249910?text=Hola%20Gicca%20Perfumes!%20Me%20gustar%C3%ADa%20recibir%20asesoramiento%20sobre%20sus%20fragancias."
               target="_blank"
-              class="w-full bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-3.5 px-6 border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-2 text-center block"
+              class="w-full bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-3.5 px-6 rounded-full border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-2 text-center block shadow-xs"
             >
               <span>Abrir WhatsApp con Asesor</span>
               <span class="material-symbols-outlined text-sm">open_in_new</span>
@@ -127,8 +127,8 @@ const handleSubmitContact = () => {
           </div>
         </div>
 
-        <!-- Form (7 cols) -->
-        <div class="lg:col-span-7 bg-surface-container border border-outline-variant p-8 md:p-10">
+        <!-- Form (7 cols - Rounded 3xl) -->
+        <div class="lg:col-span-7 bg-surface-container border border-outline-variant rounded-3xl p-8 md:p-10 shadow-xs">
           <h3 class="font-serif text-2xl text-primary font-normal mb-1">Envíanos un Mensaje</h3>
           <p class="font-sans text-xs text-secondary mb-6">Completá tus datos y te responderemos a la brevedad.</p>
 
@@ -143,7 +143,7 @@ const handleSubmitContact = () => {
                   type="text" 
                   required
                   placeholder="Tu nombre"
-                  class="w-full bg-surface border border-outline-variant p-3 text-sm font-sans text-primary focus:border-primary focus:outline-none"
+                  class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm font-sans text-primary focus:border-primary focus:outline-none"
                 />
               </div>
 
@@ -156,7 +156,7 @@ const handleSubmitContact = () => {
                   type="email" 
                   required
                   placeholder="tu@email.com"
-                  class="w-full bg-surface border border-outline-variant p-3 text-sm font-sans text-primary focus:border-primary focus:outline-none"
+                  class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm font-sans text-primary focus:border-primary focus:outline-none"
                 />
               </div>
             </div>
@@ -170,7 +170,7 @@ const handleSubmitContact = () => {
                   v-model="contactForm.phone"
                   type="tel" 
                   placeholder="+54 9 11 ..."
-                  class="w-full bg-surface border border-outline-variant p-3 text-sm font-sans text-primary focus:border-primary focus:outline-none"
+                  class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm font-sans text-primary focus:border-primary focus:outline-none"
                 />
               </div>
 
@@ -180,7 +180,7 @@ const handleSubmitContact = () => {
                 </label>
                 <select 
                   v-model="contactForm.subject"
-                  class="w-full bg-surface border border-outline-variant p-3 text-sm font-sans text-primary focus:border-primary focus:outline-none"
+                  class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm font-sans text-primary focus:border-primary focus:outline-none"
                 >
                   <option>Asesoramiento Personalizado</option>
                   <option>Consulta sobre mi Pedido / Envío</option>
@@ -200,14 +200,14 @@ const handleSubmitContact = () => {
                 rows="5" 
                 required
                 placeholder="Escribí aquí tus dudas, preferencias de aromas o detalles de tu pedido..."
-                class="w-full bg-surface border border-outline-variant p-3 text-sm font-sans text-primary focus:border-primary focus:outline-none"
+                class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm font-sans text-primary focus:border-primary focus:outline-none"
               ></textarea>
             </div>
 
             <button 
               type="submit"
               :disabled="isSending"
-              class="w-full bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-4 border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-2 font-bold shadow-sm disabled:opacity-50"
+              class="w-full bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-4 rounded-full border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-2 font-bold shadow-md disabled:opacity-50"
             >
               <span v-if="isSending">Enviando mensaje...</span>
               <span v-else>Enviar Consulta</span>
@@ -218,8 +218,8 @@ const handleSubmitContact = () => {
 
       </div>
 
-      <!-- FAQ ACCORDION SECTION -->
-      <div id="faq" class="max-w-3xl mx-auto border-t border-primary pt-16">
+      <!-- FAQ ACCORDION SECTION (Rounded 2xl items) -->
+      <div id="faq" class="max-w-3xl mx-auto border-t border-outline-variant pt-16">
         <div class="text-center mb-12">
           <span class="font-label text-xs uppercase tracking-widest text-secondary mb-2 block">Dudas Comunes</span>
           <h2 class="font-serif text-3xl sm:text-4xl text-primary font-normal">Preguntas Frecuentes</h2>
@@ -229,7 +229,7 @@ const handleSubmitContact = () => {
           <div 
             v-for="faq in faqs" 
             :key="faq.id"
-            class="bg-surface-container border border-outline-variant transition-colors"
+            class="bg-surface-container border border-outline-variant rounded-2xl overflow-hidden transition-colors shadow-2xs"
           >
             <button 
               @click="toggleFaq(faq.id)"
@@ -243,7 +243,7 @@ const handleSubmitContact = () => {
             
             <div 
               v-if="openFaq === faq.id"
-              class="px-5 sm:px-6 pb-6 font-sans text-sm text-secondary leading-relaxed border-t border-outline-variant pt-4"
+              class="px-5 sm:px-6 pb-6 font-sans text-sm text-secondary leading-relaxed border-t border-outline-variant pt-4 bg-surface/50"
             >
               {{ faq.a }}
             </div>

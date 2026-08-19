@@ -6,7 +6,7 @@ import { RouterLink } from 'vue-router'
   <div class="bg-surface">
     
     <!-- Hero Banner -->
-    <section class="relative bg-surface-container py-20 lg:py-28 border-b border-primary">
+    <section class="relative bg-surface-container py-20 lg:py-28 border-b border-outline-variant">
       <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop text-center max-w-3xl">
         <span class="font-label text-xs uppercase tracking-[0.25em] text-secondary mb-3 block">El Atelier de Autor</span>
         <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl text-primary font-normal leading-tight mb-6">
@@ -40,7 +40,7 @@ import { RouterLink } from 'vue-router'
         </div>
 
         <div class="lg:col-span-6">
-          <div class="aspect-[4/5] bg-surface-container border border-outline-variant overflow-hidden">
+          <div class="aspect-[4/5] bg-surface-container border border-outline-variant rounded-3xl overflow-hidden shadow-md">
             <img 
               src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85" 
               alt="Frascos de autor en Gicca Atelier"
@@ -51,25 +51,25 @@ import { RouterLink } from 'vue-router'
       </div>
 
       <!-- Pillars Section -->
-      <div class="border-t border-b border-primary py-16">
+      <div class="border-t border-b border-outline-variant py-16">
         <div class="text-center max-w-xl mx-auto mb-14">
           <p class="font-label text-xs uppercase tracking-widest text-secondary mb-2">Los Tres Pilares</p>
           <h3 class="font-serif text-3xl text-primary font-normal">Nuestros Compromisos Sagrados</h3>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div class="bg-surface-container p-8 border border-outline-variant space-y-4">
-            <div class="w-12 h-12 bg-surface flex items-center justify-center border border-primary text-primary font-serif text-xl font-bold">
+          <div class="bg-surface-container p-8 border border-outline-variant rounded-3xl space-y-4 shadow-xs">
+            <div class="w-12 h-12 bg-surface rounded-2xl flex items-center justify-center border border-outline-variant text-primary font-serif text-xl font-bold shadow-2xs">
               I
             </div>
             <h4 class="font-serif text-2xl text-primary font-normal">Autenticidad Absoluta</h4>
             <p class="font-sans text-sm text-secondary leading-relaxed">
-              Trabajamos únicamente con importaciones oficiales y sellos holográficos de garantía. Cero réplicas o tester fraccionados.
+              Trabajamos únicamente con importaciones oficiales y sellos holográficos de garantía. Cero réplicas o testers fraccionados.
             </p>
           </div>
 
-          <div class="bg-surface-container p-8 border border-outline-variant space-y-4">
-            <div class="w-12 h-12 bg-surface flex items-center justify-center border border-primary text-primary font-serif text-xl font-bold">
+          <div class="bg-surface-container p-8 border border-outline-variant rounded-3xl space-y-4 shadow-xs">
+            <div class="w-12 h-12 bg-surface rounded-2xl flex items-center justify-center border border-outline-variant text-primary font-serif text-xl font-bold shadow-2xs">
               II
             </div>
             <h4 class="font-serif text-2xl text-primary font-normal">Curaduría Experta</h4>
@@ -78,8 +78,8 @@ import { RouterLink } from 'vue-router'
             </p>
           </div>
 
-          <div class="bg-surface-container p-8 border border-outline-variant space-y-4">
-            <div class="w-12 h-12 bg-surface flex items-center justify-center border border-primary text-primary font-serif text-xl font-bold">
+          <div class="bg-surface-container p-8 border border-outline-variant rounded-3xl space-y-4 shadow-xs">
+            <div class="w-12 h-12 bg-surface rounded-2xl flex items-center justify-center border border-outline-variant text-primary font-serif text-xl font-bold shadow-2xs">
               III
             </div>
             <h4 class="font-serif text-2xl text-primary font-normal">Experiencia Sensorial VIP</h4>
@@ -91,7 +91,7 @@ import { RouterLink } from 'vue-router'
       </div>
 
       <!-- CTA Box -->
-      <div class="mt-20 bg-surface-container-high border border-outline-variant p-10 md:p-16 text-center max-w-3xl mx-auto space-y-6">
+      <div class="mt-20 bg-surface-container-high border border-outline-variant rounded-3xl p-10 md:p-16 text-center max-w-3xl mx-auto space-y-6 shadow-md">
         <h3 class="font-serif text-3xl sm:text-4xl text-primary font-normal">
           ¿Listo para descubrir tu fragancia insignia?
         </h3>
@@ -101,13 +101,13 @@ import { RouterLink } from 'vue-router'
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
           <RouterLink 
             to="/catalogo"
-            class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 border border-primary-container hover:bg-surface hover:text-primary-container transition-all"
+            class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 rounded-full border border-primary-container hover:bg-inverse-surface transition-all shadow-xs"
           >
             Explorar Catálogo
           </RouterLink>
           <RouterLink 
             to="/quiz"
-            class="bg-surface text-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 border border-primary hover:bg-surface-container transition-all"
+            class="bg-surface text-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 rounded-full border border-outline hover:bg-surface-container transition-all shadow-2xs"
           >
             Hacer Test de Fragancia
           </RouterLink>

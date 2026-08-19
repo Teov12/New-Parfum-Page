@@ -3,34 +3,36 @@ import { ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useToastStore } from '@/stores/toast'
-import { products } from '@/data/products'
-import ProductCard from '@/components/product/ProductCard.vue'
 
 const cartStore = useCartStore()
 const toastStore = useToastStore()
 const router = useRouter()
 
-const couponCodeInput = ref('')
+const couponInput = ref('')
+const couponMessage = ref(null)
 
 const sampleOptions = [
-  { name: 'Libre YSL 2ml - Muestra de Cortesía', brand: 'Yves Saint Laurent', desc: 'Floral lavanda y flor de azahar' },
-  { name: 'Sauvage Parfum 2ml - Muestra de Cortesía', brand: 'Dior', desc: 'Amaderada mandarina y sándalo' },
-  { name: 'Baccarat Rouge 540 1.5ml - Muestra de Cortesía', brand: 'Maison Francis Kurkdjian', desc: 'Oriental azafrán y cedro' },
-  { name: 'Coco Mademoiselle 2ml - Muestra de Cortesía', brand: 'Chanel', desc: 'Chispeante naranja y pachulí' }
+  { id: 1, name: 'YSL Libre Eau de Parfum (2ml)', brand: 'Yves Saint Laurent', family: 'Floral Ámbar' },
+  { id: 2, name: 'Dior Sauvage Parfum (2ml)', brand: 'Dior', family: 'Amaderada Cítrica' },
+  { id: 3, name: 'Baccarat Rouge 540 Extrait (1.5ml)', brand: 'Maison Francis Kurkdjian', family: 'Oriental Floral' },
+  { id: 4, name: 'Coco Mademoiselle EDP (2ml)', brand: 'Chanel', family: 'Floral Chipre' }
 ]
 
 const handleApplyCoupon = () => {
-  if (!couponCodeInput.value.trim()) return
-  const res = cartStore.applyCoupon(couponCodeInput.value)
-  if (res.success) {
-    toastStore.show(res.message, 'success')
-    couponCodeInput.value = ''
+  if (!couponInput.value.trim()) return
+  const result = cartStore.applyCoupon(couponInput.value)
+  couponMessage.value = result
+  if (result.success) {
+    toastStore.show(result.message, 'success')
+    couponInput.value = ''
   } else {
-    toastStore.show(res.message, 'error')
+    toastStore.show(result.message, 'error')
   }
 }
 
-const suggestedProducts = products.filter(p => !cartStore.items.some(i => i.id === p.id)).slice(0, 4)
+const proceedToCheckout = () => {
+  router.push('/checkout')
+}
 </script>
 
 <template>
@@ -38,324 +40,286 @@ const suggestedProducts = products.filter(p => !cartStore.items.some(i => i.id =
     <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
       
       <!-- Breadcrumbs & Header -->
-      <div class="mb-10">
+      <div class="mb-8">
         <nav class="font-label text-xs uppercase tracking-widest text-secondary flex items-center gap-2 mb-4">
           <RouterLink to="/" class="hover:text-primary transition-colors">Inicio</RouterLink>
           <span>/</span>
-          <span class="text-primary font-bold">Tu Bolsa de Compras</span>
+          <span class="text-primary font-bold">Bolsa de Compras</span>
         </nav>
 
         <h1 class="font-serif text-4xl md:text-5xl text-primary font-normal tracking-tight">
           Bolsa de Compras
         </h1>
-        <p class="font-sans text-sm text-secondary mt-1">
-          {{ cartStore.totalItems }} {{ cartStore.totalItems === 1 ? 'fragancia seleccionada' : 'fragancias seleccionadas' }}
-        </p>
       </div>
 
-      <!-- Free Shipping Goal Banner -->
-      <div class="bg-surface border border-outline-variant p-6 mb-10">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary">local_shipping</span>
-            <span v-if="cartStore.amountForFreeShipping > 0" class="font-label text-xs uppercase tracking-wider text-primary">
-              Agregá <strong>${{ cartStore.amountForFreeShipping.toLocaleString('es-AR') }}</strong> más para obtener <strong>Envío Gratis a todo el país</strong>
-            </span>
-            <span v-else class="font-label text-xs uppercase tracking-wider text-tertiary font-bold flex items-center gap-1">
-              <span class="material-symbols-outlined text-sm">verified</span>
-              ¡Felicidades! Tenés Envío Gratis garantizado en esta orden
-            </span>
-          </div>
-          <span class="font-label text-xs text-primary font-bold">{{ cartStore.freeShippingProgress }}%</span>
-        </div>
-        
-        <div class="w-full bg-secondary-container h-2">
-          <div 
-            class="bg-primary-container h-full transition-all duration-500"
-            :style="{ width: `${cartStore.freeShippingProgress}%` }"
-          ></div>
-        </div>
-      </div>
-
-      <!-- Main Content Grid -->
-      <div v-if="cartStore.items.length > 0" class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-        
-        <!-- Cart Items Table & Samples (8 cols) -->
-        <div class="lg:col-span-8 space-y-8">
-          
-          <!-- Items List Container -->
-          <div class="bg-surface border border-outline-variant divide-y divide-outline-variant">
-            <!-- Table Header -->
-            <div class="hidden sm:grid grid-cols-12 gap-4 p-4 font-label text-xs uppercase tracking-widest text-secondary bg-surface-container-low">
-              <span class="col-span-6">Fragancia & Detalle</span>
-              <span class="col-span-2 text-center">Precio</span>
-              <span class="col-span-2 text-center">Cantidad</span>
-              <span class="col-span-2 text-right">Subtotal</span>
-            </div>
-
-            <!-- Item Rows -->
-            <div 
-              v-for="item in cartStore.items" 
-              :key="`${item.id}-${item.size}`"
-              class="p-5 sm:p-6 grid grid-cols-1 sm:grid-cols-12 gap-4 items-center"
-            >
-              <!-- Info & Image (6 cols) -->
-              <div class="sm:col-span-6 flex gap-4 items-center">
-                <RouterLink :to="`/producto/${item.slug}`" class="flex-shrink-0">
-                  <img 
-                    :src="item.image" 
-                    :alt="item.name"
-                    class="w-20 h-24 object-cover bg-surface-lowest border border-outline-variant"
-                  />
-                </RouterLink>
-
-                <div class="min-w-0">
-                  <span class="font-label text-[10px] text-secondary uppercase tracking-widest">{{ item.brand }}</span>
-                  <RouterLink :to="`/producto/${item.slug}`" class="block">
-                    <h3 class="font-serif text-lg text-primary font-medium hover:text-primary-container transition-colors truncate">
-                      {{ item.name }}
-                    </h3>
-                  </RouterLink>
-                  <p class="font-sans text-xs text-secondary mb-2">
-                    {{ item.concentration }} • {{ item.size }}
-                  </p>
-                  
-                  <button 
-                    @click="cartStore.removeItem(item.id, item.size)"
-                    class="text-xs font-label text-error hover:underline flex items-center gap-1"
-                  >
-                    <span class="material-symbols-outlined text-xs">delete</span>
-                    <span>Quitar</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Unit Price (2 cols) -->
-              <div class="sm:col-span-2 text-left sm:text-center text-sm font-sans text-secondary">
-                <span class="sm:hidden font-label text-xs text-secondary mr-2">Precio:</span>
-                ${{ item.price.toLocaleString('es-AR') }}
-              </div>
-
-              <!-- Quantity Controls (2 cols) -->
-              <div class="sm:col-span-2 flex sm:justify-center">
-                <div class="inline-flex items-center border border-primary bg-surface">
-                  <button 
-                    @click="cartStore.updateQuantity(item.id, item.size, item.quantity - 1)"
-                    class="px-2.5 py-1 text-primary hover:bg-surface-container transition-colors text-sm"
-                  >
-                    -
-                  </button>
-                  <span class="px-3 py-1 font-label text-xs font-bold text-primary min-w-[2rem] text-center">
-                    {{ item.quantity }}
-                  </span>
-                  <button 
-                    @click="cartStore.updateQuantity(item.id, item.size, item.quantity + 1)"
-                    class="px-2.5 py-1 text-primary hover:bg-surface-container transition-colors text-sm"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              <!-- Subtotal (2 cols) -->
-              <div class="sm:col-span-2 text-left sm:text-right font-sans font-bold text-base text-primary">
-                <span class="sm:hidden font-label text-xs text-secondary mr-2">Total:</span>
-                ${{ (item.price * item.quantity).toLocaleString('es-AR') }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Free Courtesy Sample Picker -->
-          <div class="bg-surface border border-outline-variant p-6 space-y-4">
-            <div class="flex items-center gap-2 border-b border-outline-variant pb-3">
-              <span class="material-symbols-outlined text-xl text-primary">card_giftcard</span>
-              <div>
-                <h3 class="font-serif text-lg text-primary font-medium">Elegí tu Muestra de Cortesía (Sin Cargo)</h3>
-                <p class="font-sans text-xs text-secondary">Cada orden de Gicca incluye 1 muestra de perfumería exclusiva de regalo.</p>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <label 
-                v-for="sample in sampleOptions" 
-                :key="sample.name"
-                class="flex items-start gap-3 p-3 border cursor-pointer transition-all"
-                :class="cartStore.selectedSample === sample.name 
-                  ? 'border-primary bg-surface-container-low ring-1 ring-primary' 
-                  : 'border-outline-variant bg-surface hover:border-primary'"
-              >
-                <input 
-                  type="radio" 
-                  name="courtesy_sample"
-                  :value="sample.name"
-                  v-model="cartStore.selectedSample"
-                  @change="cartStore.selectSample(sample.name)"
-                  class="mt-1 accent-primary"
-                />
-                <div>
-                  <p class="font-label text-xs uppercase tracking-wider text-primary font-bold">{{ sample.name }}</p>
-                  <p class="font-sans text-[11px] text-secondary">{{ sample.desc }}</p>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          <!-- Continue Shopping Link -->
-          <div>
-            <RouterLink 
-              to="/catalogo"
-              class="inline-flex items-center gap-2 font-label text-xs uppercase tracking-widest text-primary hover:text-primary-container underline"
-            >
-              <span class="material-symbols-outlined text-sm">arrow_back</span>
-              <span>Continuar Explorando Fragancias</span>
-            </RouterLink>
-          </div>
-
-        </div>
-
-        <!-- ORDER SUMMARY BOX (4 cols) -->
-        <aside class="lg:col-span-4 bg-surface border border-primary p-6 sm:p-8 space-y-6 shadow-sm sticky top-24">
-          <h2 class="font-serif text-2xl text-primary font-normal border-b border-outline-variant pb-4">
-            Resumen de la Orden
-          </h2>
-
-          <!-- Coupon Module -->
-          <div class="space-y-2">
-            <label class="font-label text-xs uppercase tracking-widest text-primary font-bold block">
-              ¿Tenés un Cupón de Descuento?
-            </label>
-            
-            <div v-if="!cartStore.coupon" class="flex gap-2">
-              <input 
-                v-model="couponCodeInput"
-                type="text" 
-                placeholder="EJ. GICCA10"
-                class="w-full bg-surface-container border border-outline-variant px-3 py-2 text-xs font-label uppercase tracking-widest text-primary focus:border-primary focus:outline-none"
-                @keyup.enter="handleApplyCoupon"
-              />
-              <button 
-                @click="handleApplyCoupon"
-                class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-4 py-2 hover:bg-inverse-surface transition-colors"
-              >
-                Aplicar
-              </button>
-            </div>
-
-            <div v-else class="flex justify-between items-center bg-surface-container px-3 py-2 text-xs border border-outline-variant">
-              <span class="text-tertiary font-bold flex items-center gap-1">
-                <span class="material-symbols-outlined text-sm">check_circle</span>
-                {{ cartStore.coupon.label }}
-              </span>
-              <button @click="cartStore.removeCoupon" class="text-xs text-error underline">
-                Eliminar
-              </button>
-            </div>
-
-            <div class="flex gap-2 text-[10px] text-secondary font-label uppercase tracking-wider">
-              <span>Prueba: <button @click="couponCodeInput = 'GICCA10'; handleApplyCoupon()" class="underline font-bold text-primary">GICCA10</button></span>
-              <span>•</span>
-              <span><button @click="couponCodeInput = 'BIENVENIDO'; handleApplyCoupon()" class="underline font-bold text-primary">BIENVENIDO</button></span>
-            </div>
-          </div>
-
-          <!-- Price Breakdown -->
-          <div class="space-y-3 font-sans text-sm border-t border-b border-outline-variant py-4">
-            <div class="flex justify-between text-secondary">
-              <span>Subtotal de productos:</span>
-              <span class="font-medium text-primary">${{ cartStore.subtotal.toLocaleString('es-AR') }}</span>
-            </div>
-
-            <div v-if="cartStore.discountAmount > 0" class="flex justify-between text-tertiary font-medium">
-              <span>Descuento aplicado:</span>
-              <span>-${{ cartStore.discountAmount.toLocaleString('es-AR') }}</span>
-            </div>
-
-            <div class="flex justify-between text-secondary">
-              <span>Envío nacional:</span>
-              <span class="font-medium text-primary">
-                {{ cartStore.shippingCost === 0 ? '¡GRATIS!' : `$${cartStore.shippingCost.toLocaleString('es-AR')}` }}
-              </span>
-            </div>
-
-            <div class="flex justify-between text-secondary">
-              <span>Muestra de cortesía:</span>
-              <span class="text-tertiary font-medium">GRATIS</span>
-            </div>
-          </div>
-
-          <!-- Total Amount -->
-          <div>
-            <div class="flex justify-between items-baseline mb-1">
-              <span class="font-serif text-xl text-primary font-medium">Total Final</span>
-              <span class="font-sans font-bold text-3xl text-primary">
-                ${{ cartStore.total.toLocaleString('es-AR') }}
-              </span>
-            </div>
-            <p class="font-label text-xs text-secondary uppercase tracking-wider text-right">
-              Hasta 3 cuotas fijas de ${{ Math.round(cartStore.total / 3).toLocaleString('es-AR') }}
-            </p>
-          </div>
-
-          <!-- Checkout CTA Button -->
-          <button 
-            @click="router.push('/checkout')"
-            class="w-full bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-4 border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-2 font-bold shadow-md"
-          >
-            <span>Proceder al Checkout Seguro</span>
-            <span class="material-symbols-outlined text-sm">lock</span>
-          </button>
-
-          <!-- WhatsApp Direct Order Option -->
-          <a 
-            :href="`https://wa.me/5491158249910?text=${encodeURIComponent(`Hola Gicca Perfumes! Quiero coordinar la compra de mi carrito por un total de $${cartStore.total.toLocaleString('es-AR')}`)}`"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="w-full bg-surface text-primary font-label text-xs uppercase tracking-widest py-3 border border-outline hover:bg-surface-container transition-all flex items-center justify-center gap-2 block text-center"
-          >
-            <span>💬 Finalizar por WhatsApp con Asesor</span>
-          </a>
-
-          <!-- Payment Security Icons -->
-          <div class="pt-2 text-center text-xs text-secondary space-y-2">
-            <p class="font-label text-[10px] uppercase tracking-widest text-secondary flex items-center justify-center gap-1">
-              <span class="material-symbols-outlined text-sm text-tertiary">shield</span>
-              Pagos 100% Encriptados con SSL de 256 bits
-            </p>
-          </div>
-
-        </aside>
-
-      </div>
-
-      <!-- EMPTY STATE -->
-      <div v-else class="bg-surface border border-outline-variant p-16 text-center max-w-xl mx-auto">
+      <!-- If Cart is Empty -->
+      <div v-if="cartStore.items.length === 0" class="bg-surface border border-outline-variant rounded-3xl p-16 text-center shadow-xs">
         <span class="material-symbols-outlined text-6xl text-outline mb-4">shopping_bag</span>
-        <h2 class="font-serif text-3xl text-primary font-normal mb-3">Tu bolsa de compras está vacía</h2>
-        <p class="font-sans text-sm text-secondary mb-8 leading-relaxed">
-          Nuestras fragancias de autor y colecciones de alta perfumería te están esperando. Descubrí notas que despiertan emociones.
+        <h2 class="font-serif text-3xl text-primary font-normal mb-2">Tu bolsa está actualmente vacía</h2>
+        <p class="font-sans text-secondary max-w-md mx-auto mb-8 leading-relaxed">
+          Explorá nuestras colecciones de fragancias de autor, clásicos del lujo y descubrí tu próxima firma olfativa.
         </p>
         <RouterLink 
           to="/catalogo"
-          class="inline-block bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-9 py-4 border border-primary-container hover:bg-surface hover:text-primary-container transition-all"
+          class="inline-flex items-center gap-2 bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-9 py-4 rounded-full hover:bg-surface hover:text-primary-container border border-primary-container transition-all shadow-xs"
         >
-          Explorar Catálogo de Fragancias
+          <span>Explorar Colección de Perfumes</span>
+          <span class="material-symbols-outlined text-sm">arrow_forward</span>
         </RouterLink>
       </div>
 
-      <!-- SUGGESTED PRODUCTS CAROUSEL -->
-      <div v-if="suggestedProducts.length > 0" class="mt-20 border-t border-primary pt-16">
-        <div class="text-center max-w-xl mx-auto mb-12">
-          <p class="font-label text-label-sm text-secondary uppercase tracking-widest mb-2">Recomendaciones del Atelier</p>
-          <h2 class="font-serif text-3xl text-primary font-normal">Quizás También Te Interese</h2>
+      <!-- If Cart has Items -->
+      <div v-else class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Cart Items List (8 cols) -->
+        <div class="lg:col-span-8 space-y-6">
+          
+          <!-- Free Shipping Progress Box (Rounded 3xl) -->
+          <div class="bg-surface border border-outline-variant rounded-3xl p-6 shadow-xs">
+            <div class="flex justify-between items-center text-xs font-label uppercase tracking-wider mb-2 text-primary">
+              <span v-if="cartStore.amountForFreeShipping > 0">
+                Faltan <strong>${{ cartStore.amountForFreeShipping.toLocaleString('es-AR') }}</strong> para disfrutar de <strong>Envío Gratis</strong> en todo el país.
+              </span>
+              <span v-else class="text-tertiary font-bold flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base">verified</span>
+                ¡Tu orden califica para Envío Express Gratuito a Domicilio!
+              </span>
+              <span class="font-semibold">{{ cartStore.freeShippingProgress }}%</span>
+            </div>
+            <div class="w-full bg-secondary-container h-2.5 rounded-full overflow-hidden">
+              <div 
+                class="bg-primary-container h-full rounded-full transition-all duration-500"
+                :style="{ width: `${cartStore.freeShippingProgress}%` }"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Items Table / Cards (Rounded 3xl) -->
+          <div class="bg-surface border border-outline-variant rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs">
+            <div class="border-b border-outline-variant pb-4 flex justify-between items-center">
+              <h2 class="font-serif text-xl text-primary font-medium">
+                Artículos en tu pedido ({{ cartStore.totalItems }})
+              </h2>
+              <button 
+                @click="cartStore.clearCart"
+                class="font-label text-xs uppercase tracking-wider text-error hover:underline"
+              >
+                Vaciar bolsa
+              </button>
+            </div>
+
+            <div class="divide-y divide-outline-variant">
+              <div 
+                v-for="item in cartStore.items" 
+                :key="`${item.id}-${item.size}`"
+                class="py-6 first:pt-0 last:pb-0 flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between"
+              >
+                <!-- Image & Info -->
+                <div class="flex gap-4 items-center">
+                  <img 
+                    :src="item.image" 
+                    :alt="item.name"
+                    class="w-20 h-24 object-cover bg-surface-container rounded-2xl border border-outline-variant flex-shrink-0"
+                  />
+                  <div>
+                    <span class="font-label text-xs uppercase tracking-widest text-secondary">{{ item.brand }}</span>
+                    <RouterLink :to="`/producto/${item.slug}`" class="block font-serif text-lg text-primary font-medium hover:text-primary-container">
+                      {{ item.name }}
+                    </RouterLink>
+                    <div class="flex items-center gap-2 mt-1">
+                      <span class="font-label text-xs bg-surface-container px-3 py-0.5 rounded-full border border-outline-variant">
+                        {{ item.size }}
+                      </span>
+                      <span class="text-xs text-secondary">{{ item.concentration }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Quantity & Price -->
+                <div class="flex items-center justify-between w-full sm:w-auto sm:gap-8">
+                  <!-- Counter -->
+                  <div class="inline-flex items-center border border-outline-variant rounded-full bg-surface shadow-2xs overflow-hidden">
+                    <button 
+                      @click="cartStore.updateQuantity(item.id, item.size, item.quantity - 1)"
+                      class="px-3 py-1 text-primary hover:bg-surface-container transition-colors text-sm font-bold"
+                    >
+                      -
+                    </button>
+                    <span class="px-3 py-1 font-label text-xs font-bold text-primary min-w-[2rem] text-center">
+                      {{ item.quantity }}
+                    </span>
+                    <button 
+                      @click="cartStore.updateQuantity(item.id, item.size, item.quantity + 1)"
+                      class="px-3 py-1 text-primary hover:bg-surface-container transition-colors text-sm font-bold"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <!-- Price -->
+                  <div class="text-right">
+                    <p class="font-sans font-bold text-lg text-primary">
+                      ${{ (item.price * item.quantity).toLocaleString('es-AR') }}
+                    </p>
+                    <p v-if="item.quantity > 1" class="text-[11px] text-secondary">
+                      ${{ item.price.toLocaleString('es-AR') }} c/u
+                    </p>
+                  </div>
+
+                  <!-- Remove Button -->
+                  <button 
+                    @click="cartStore.removeItem(item.id, item.size)"
+                    class="text-secondary hover:text-error transition-colors p-1"
+                    title="Eliminar producto"
+                  >
+                    <span class="material-symbols-outlined text-xl">delete</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Courtesy Sample Selection Card (Rounded 3xl) -->
+          <div class="bg-surface border border-outline-variant rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-2xl text-tertiary">card_giftcard</span>
+              <div>
+                <h3 class="font-serif text-lg text-primary font-medium">Muestra de Cortesía Sin Cargo</h3>
+                <p class="font-sans text-xs text-secondary">Cada pedido incluye una muestra de perfumería exclusiva de regalo.</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <div 
+                v-for="sample in sampleOptions" 
+                :key="sample.id"
+                @click="cartStore.selectSample(sample.name)"
+                class="p-4 rounded-2xl border cursor-pointer transition-all flex justify-between items-center shadow-2xs"
+                :class="cartStore.selectedSample === sample.name 
+                  ? 'bg-surface-container border-primary ring-1 ring-primary' 
+                  : 'bg-surface border-outline-variant hover:border-outline'"
+              >
+                <div>
+                  <span class="font-label text-[10px] uppercase tracking-widest text-secondary block">{{ sample.brand }}</span>
+                  <p class="font-serif text-sm text-primary font-medium">{{ sample.name }}</p>
+                  <p class="text-xs text-secondary">{{ sample.family }}</p>
+                </div>
+                <span 
+                  class="material-symbols-outlined text-xl"
+                  :class="cartStore.selectedSample === sample.name ? 'text-primary' : 'text-outline'"
+                >
+                  {{ cartStore.selectedSample === sample.name ? 'radio_button_checked' : 'radio_button_unchecked' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <ProductCard 
-            v-for="prod in suggestedProducts" 
-            :key="prod.id" 
-            :product="prod" 
-          />
+        <!-- Sticky Order Summary Sidebar (4 cols - Rounded 3xl) -->
+        <div class="lg:col-span-4 sticky top-28 space-y-6">
+          
+          <div class="bg-surface border border-outline-variant rounded-3xl p-6 sm:p-8 space-y-6 shadow-md">
+            <h2 class="font-serif text-2xl text-primary font-normal border-b border-outline-variant pb-4">
+              Resumen de Compra
+            </h2>
+
+            <!-- Coupon Input (Pill) -->
+            <div class="space-y-2">
+              <label class="font-label text-xs uppercase tracking-widest text-primary font-bold">
+                Cupón de Descuento
+              </label>
+              <div class="flex gap-2">
+                <input 
+                  v-model="couponInput"
+                  type="text" 
+                  placeholder="GICCA10 / LUJO15"
+                  class="flex-grow bg-surface-container border border-outline-variant rounded-full px-4 py-2.5 text-xs font-label uppercase tracking-widest text-primary focus:border-primary focus:outline-none"
+                  @keyup.enter="handleApplyCoupon"
+                />
+                <button 
+                  @click="handleApplyCoupon"
+                  class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-5 py-2.5 rounded-full hover:bg-inverse-surface transition-colors shadow-2xs"
+                >
+                  Aplicar
+                </button>
+              </div>
+
+              <!-- Active coupon badge -->
+              <div v-if="cartStore.coupon" class="bg-surface-container p-3 rounded-2xl border border-outline-variant flex justify-between items-center text-xs">
+                <span class="text-tertiary font-semibold flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm">check_circle</span>
+                  {{ cartStore.coupon.label }} ({{ cartStore.coupon.code }})
+                </span>
+                <button @click="cartStore.removeCoupon" class="text-xs text-secondary hover:text-error underline">
+                  Quitar
+                </button>
+              </div>
+            </div>
+
+            <!-- Price Breakdown -->
+            <div class="space-y-3 font-sans text-sm border-t border-b border-outline-variant py-4">
+              <div class="flex justify-between text-secondary">
+                <span>Subtotal</span>
+                <span class="text-primary font-medium">${{ cartStore.subtotal.toLocaleString('es-AR') }}</span>
+              </div>
+              <div v-if="cartStore.discountAmount > 0" class="flex justify-between text-tertiary font-medium">
+                <span>Descuento</span>
+                <span>-${{ cartStore.discountAmount.toLocaleString('es-AR') }}</span>
+              </div>
+              <div class="flex justify-between text-secondary">
+                <span>Envío estimado</span>
+                <span class="font-medium text-primary">
+                  {{ cartStore.shippingCost === 0 ? '¡GRATIS!' : `$${cartStore.shippingCost.toLocaleString('es-AR')}` }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Total -->
+            <div class="flex justify-between items-baseline">
+              <div>
+                <span class="font-serif text-xl text-primary font-normal">Total a Pagar</span>
+                <p class="text-xs font-sans text-secondary">IVA incluido</p>
+              </div>
+              <div class="text-right">
+                <span class="font-sans text-3xl font-bold text-primary">
+                  ${{ cartStore.total.toLocaleString('es-AR') }}
+                </span>
+                <p class="font-label text-[11px] text-secondary uppercase tracking-wider">
+                  Hasta 3 cuotas sin interés
+                </p>
+              </div>
+            </div>
+
+            <!-- Primary Action Buttons (Pill Buttons) -->
+            <div class="space-y-3 pt-2">
+              <button 
+                @click="proceedToCheckout"
+                class="w-full bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-4 rounded-full border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-2 shadow-md"
+              >
+                <span>Iniciar Compra Segura</span>
+                <span class="material-symbols-outlined text-sm">lock</span>
+              </button>
+
+              <a 
+                :href="`https://wa.me/5491158249910?text=${encodeURIComponent('Hola Gicca Perfumes, quiero consultar sobre mi pedido de: ' + cartStore.items.map(i => `${i.quantity}x ${i.name} (${i.size})`).join(', '))}`"
+                target="_blank"
+                class="w-full bg-surface text-primary font-label text-xs uppercase tracking-widest py-3.5 rounded-full border border-outline hover:bg-surface-container transition-all flex items-center justify-center gap-2 text-center shadow-2xs"
+              >
+                <span>Finalizar por WhatsApp con Sommelier</span>
+              </a>
+            </div>
+
+          </div>
+
+          <!-- Trust card -->
+          <div class="p-4 bg-surface rounded-2xl border border-outline-variant flex items-center gap-3 text-xs font-sans text-secondary shadow-2xs">
+            <span class="material-symbols-outlined text-xl text-primary">security</span>
+            <span>Tus datos de pago están encriptados y procesados de manera segura.</span>
+          </div>
+
         </div>
+
       </div>
 
     </div>

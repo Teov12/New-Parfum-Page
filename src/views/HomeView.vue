@@ -45,7 +45,7 @@ const testimonials = [
 <template>
   <div>
     <!-- HERO SECTION (Editorial Atmosphere) -->
-    <header class="relative w-full min-h-[85vh] flex items-center bg-surface-container-low border-b border-primary overflow-hidden">
+    <header class="relative w-full min-h-[85vh] flex items-center bg-surface-container-low border-b border-outline-variant overflow-hidden">
       <!-- Background Luxury Photography with Overlay -->
       <div class="absolute inset-0 z-0">
         <img 
@@ -76,18 +76,18 @@ const testimonials = [
             Una curaduría exclusiva de elixires, esencias de autor y clásicos atemporales seleccionados para acompañar tus momentos más memorables.
           </p>
 
-          <!-- CTAs -->
+          <!-- CTAs (Rounded-full Pill Buttons) -->
           <div class="flex flex-col sm:flex-row gap-4">
             <RouterLink 
               to="/catalogo"
-              class="inline-flex items-center justify-center bg-primary-container text-on-primary font-label text-label-sm py-4 px-9 border border-primary-container hover:bg-surface hover:text-primary-container transition-all duration-300 uppercase tracking-widest text-center"
+              class="inline-flex items-center justify-center bg-primary-container text-on-primary font-label text-label-sm py-4 px-9 rounded-full border border-primary-container hover:bg-surface hover:text-primary-container transition-all duration-300 uppercase tracking-widest text-center shadow-sm"
             >
               Explorar Catálogo
             </RouterLink>
 
             <RouterLink 
               to="/quiz"
-              class="inline-flex items-center justify-center bg-transparent text-primary font-label text-label-sm py-4 px-9 border border-primary hover:bg-surface-container transition-all duration-300 uppercase tracking-widest text-center gap-2"
+              class="inline-flex items-center justify-center bg-surface/80 backdrop-blur-xs text-primary font-label text-label-sm py-4 px-9 rounded-full border border-outline hover:bg-surface-container transition-all duration-300 uppercase tracking-widest text-center gap-2 shadow-2xs"
             >
               <span class="material-symbols-outlined text-sm">auto_awesome</span>
               <span>Test de Fragancia</span>
@@ -95,7 +95,7 @@ const testimonials = [
           </div>
 
           <!-- Quick Stats -->
-          <div class="grid grid-cols-3 gap-6 pt-12 mt-12 border-t border-outline-variant max-w-md">
+          <div class="grid grid-cols-3 gap-6 pt-10 mt-10 border-t border-outline-variant max-w-md">
             <div>
               <p class="font-serif text-2xl text-primary font-normal">100%</p>
               <p class="font-label text-[11px] text-secondary uppercase tracking-wider">Originales Certificados</p>
@@ -120,9 +120,9 @@ const testimonials = [
         <div 
           v-for="badge in trustBadges" 
           :key="badge.title"
-          class="flex items-start gap-4 p-3 hover:bg-surface-container transition-colors"
+          class="flex items-start gap-4 p-4 rounded-2xl bg-surface-container-low/50 hover:bg-surface-container border border-outline-variant/60 hover:border-outline-variant transition-all shadow-2xs"
         >
-          <div class="w-10 h-10 bg-surface-container border border-outline-variant flex items-center justify-center flex-shrink-0 text-primary">
+          <div class="w-12 h-12 bg-surface rounded-2xl border border-outline-variant flex items-center justify-center flex-shrink-0 text-primary shadow-2xs">
             <span class="material-symbols-outlined text-xl">{{ badge.icon }}</span>
           </div>
           <div>
@@ -133,7 +133,7 @@ const testimonials = [
       </div>
     </section>
 
-    <!-- BENTO GRID CATEGORIES -->
+    <!-- BENTO GRID CATEGORIES (Rounded-3xl Cards) -->
     <section class="py-16 md:py-24 max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
       <div class="text-center max-w-xl mx-auto mb-14">
         <p class="font-label text-label-sm text-secondary uppercase tracking-widest mb-2">Explorá por Universo</p>
@@ -146,7 +146,7 @@ const testimonials = [
         <!-- Category 1: Mujer (Span 6 cols) -->
         <RouterLink 
           to="/catalogo?gender=woman"
-          class="group relative md:col-span-6 aspect-[4/3] md:aspect-[16/11] overflow-hidden bg-surface-container border border-outline-variant hover:border-primary transition-all duration-300 flex flex-col justify-end p-8"
+          class="group relative md:col-span-6 aspect-[4/3] md:aspect-[16/11] overflow-hidden bg-surface-container border border-outline-variant hover:border-primary rounded-3xl transition-all duration-300 flex flex-col justify-end p-8 shadow-xs hover:shadow-md"
         >
           <img 
             src="https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1200&q=85" 
@@ -171,7 +171,7 @@ const testimonials = [
         <!-- Category 2: Hombre (Span 6 cols) -->
         <RouterLink 
           to="/catalogo?gender=man"
-          class="group relative md:col-span-6 aspect-[4/3] md:aspect-[16/11] overflow-hidden bg-surface-container border border-outline-variant hover:border-primary transition-all duration-300 flex flex-col justify-end p-8"
+          class="group relative md:col-span-6 aspect-[4/3] md:aspect-[16/11] overflow-hidden bg-surface-container border border-outline-variant hover:border-primary rounded-3xl transition-all duration-300 flex flex-col justify-end p-8 shadow-xs hover:shadow-md"
         >
           <img 
             src="https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85" 
@@ -196,7 +196,7 @@ const testimonials = [
         <!-- Category 3: Unisex & Nicho (Span 6 cols) -->
         <RouterLink 
           to="/catalogo?gender=unisex"
-          class="group relative md:col-span-6 bg-surface-container-high border border-outline-variant p-8 md:p-10 flex flex-col justify-between hover:border-primary transition-all duration-300"
+          class="group relative md:col-span-6 bg-surface-container-high border border-outline-variant rounded-3xl p-8 md:p-10 flex flex-col justify-between hover:border-primary transition-all duration-300 shadow-xs hover:shadow-md"
         >
           <div class="flex justify-between items-start">
             <div>
@@ -204,7 +204,7 @@ const testimonials = [
               <span class="font-label text-xs uppercase tracking-widest text-secondary block">Sin Género • Pura Expresión</span>
               <h3 class="font-serif text-2xl md:text-3xl text-primary font-normal mb-2">Fragancias Unisex & Nicho</h3>
             </div>
-            <span class="font-label text-xs bg-surface px-3 py-1 border border-outline-variant text-primary uppercase">
+            <span class="font-label text-xs bg-surface px-3.5 py-1.5 rounded-full border border-outline-variant text-primary uppercase shadow-2xs">
               18 Variedades
             </span>
           </div>
@@ -220,7 +220,7 @@ const testimonials = [
         <!-- Category 4: Ofertas & Exclusivos (Span 6 cols) -->
         <RouterLink 
           to="/catalogo?offers=true"
-          class="group relative md:col-span-6 bg-secondary-container border border-outline-variant p-8 md:p-10 flex flex-col justify-between hover:border-primary transition-all duration-300"
+          class="group relative md:col-span-6 bg-secondary-container border border-outline-variant rounded-3xl p-8 md:p-10 flex flex-col justify-between hover:border-primary transition-all duration-300 shadow-xs hover:shadow-md"
         >
           <div class="flex justify-between items-start">
             <div>
@@ -228,7 +228,7 @@ const testimonials = [
               <span class="font-label text-xs uppercase tracking-widest text-secondary block">Oportunidades de Lujo</span>
               <h3 class="font-serif text-2xl md:text-3xl text-primary font-normal mb-2">Ofertas de Temporada</h3>
             </div>
-            <span class="font-label text-xs bg-primary-container text-on-primary px-3 py-1 uppercase tracking-widest font-bold">
+            <span class="font-label text-xs bg-primary-container text-on-primary px-3.5 py-1.5 rounded-full uppercase tracking-widest font-bold shadow-xs">
               Hasta 20% OFF
             </span>
           </div>
@@ -254,41 +254,41 @@ const testimonials = [
             <h2 class="font-serif text-3xl md:text-headline-lg text-primary font-normal">Fragancias Icónicas</h2>
           </div>
 
-          <!-- Category Filter Tabs -->
-          <div class="flex flex-wrap gap-2 border-b border-outline-variant pb-2">
+          <!-- Category Filter Tabs (Rounded-full Pills) -->
+          <div class="flex flex-wrap gap-2 bg-surface p-1.5 rounded-full border border-outline-variant shadow-2xs">
             <button
               @click="selectedCategoryTab = 'all'"
-              class="font-label text-xs uppercase tracking-wider px-4 py-2 border transition-all"
+              class="font-label text-xs uppercase tracking-wider px-4 py-2 rounded-full transition-all"
               :class="selectedCategoryTab === 'all' 
-                ? 'bg-primary-container text-on-primary border-primary-container' 
-                : 'bg-surface text-secondary border-outline-variant hover:border-primary'"
+                ? 'bg-primary-container text-on-primary shadow-xs' 
+                : 'text-secondary hover:text-primary'"
             >
               Todos los Íconos
             </button>
             <button
               @click="selectedCategoryTab = 'woman'"
-              class="font-label text-xs uppercase tracking-wider px-4 py-2 border transition-all"
+              class="font-label text-xs uppercase tracking-wider px-4 py-2 rounded-full transition-all"
               :class="selectedCategoryTab === 'woman' 
-                ? 'bg-primary-container text-on-primary border-primary-container' 
-                : 'bg-surface text-secondary border-outline-variant hover:border-primary'"
+                ? 'bg-primary-container text-on-primary shadow-xs' 
+                : 'text-secondary hover:text-primary'"
             >
               Mujer
             </button>
             <button
               @click="selectedCategoryTab = 'man'"
-              class="font-label text-xs uppercase tracking-wider px-4 py-2 border transition-all"
+              class="font-label text-xs uppercase tracking-wider px-4 py-2 rounded-full transition-all"
               :class="selectedCategoryTab === 'man' 
-                ? 'bg-primary-container text-on-primary border-primary-container' 
-                : 'bg-surface text-secondary border-outline-variant hover:border-primary'"
+                ? 'bg-primary-container text-on-primary shadow-xs' 
+                : 'text-secondary hover:text-primary'"
             >
               Hombre
             </button>
             <button
               @click="selectedCategoryTab = 'unisex'"
-              class="font-label text-xs uppercase tracking-wider px-4 py-2 border transition-all"
+              class="font-label text-xs uppercase tracking-wider px-4 py-2 rounded-full transition-all"
               :class="selectedCategoryTab === 'unisex' 
-                ? 'bg-primary-container text-on-primary border-primary-container' 
-                : 'bg-surface text-secondary border-outline-variant hover:border-primary'"
+                ? 'bg-primary-container text-on-primary shadow-xs' 
+                : 'text-secondary hover:text-primary'"
             >
               Unisex
             </button>
@@ -308,7 +308,7 @@ const testimonials = [
         <div class="text-center mt-12">
           <RouterLink 
             to="/catalogo"
-            class="inline-flex items-center gap-2 bg-transparent text-primary font-label text-label-sm py-3.5 px-8 border border-primary hover:bg-surface transition-all uppercase tracking-widest"
+            class="inline-flex items-center gap-2 bg-surface text-primary font-label text-label-sm py-3.5 px-9 rounded-full border border-outline hover:border-primary hover:bg-surface-container transition-all uppercase tracking-widest shadow-2xs"
           >
             <span>Ver Todos los 124 Perfumes</span>
             <span class="material-symbols-outlined text-sm">arrow_forward</span>
@@ -324,14 +324,14 @@ const testimonials = [
         
         <!-- Image Container (5 cols) -->
         <div class="lg:col-span-5 relative">
-          <div class="aspect-[4/5] bg-surface-container border border-outline-variant overflow-hidden">
+          <div class="aspect-[4/5] bg-surface-container rounded-3xl border border-outline-variant overflow-hidden shadow-md">
             <img 
               src="https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=1000&q=85" 
               alt="Atelier de Perfumes Gicca"
               class="w-full h-full object-cover"
             />
           </div>
-          <div class="absolute -bottom-6 -right-6 bg-surface-container-high border border-primary p-6 hidden sm:block max-w-xs">
+          <div class="absolute -bottom-6 -right-6 bg-surface-container-high border border-outline-variant rounded-2xl p-6 hidden sm:block max-w-xs shadow-lg">
             <p class="font-serif text-lg text-primary italic mb-1">"El perfume es la forma más intensa del recuerdo."</p>
             <p class="font-label text-[10px] text-secondary uppercase tracking-widest">— Jean-Paul Guerlain</p>
           </div>
@@ -356,13 +356,13 @@ const testimonials = [
           <div class="flex flex-wrap gap-4">
             <RouterLink 
               to="/nosotros"
-              class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 border border-primary-container hover:bg-surface hover:text-primary-container transition-all"
+              class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 rounded-full border border-primary-container hover:bg-surface hover:text-primary-container transition-all shadow-xs"
             >
               Conocé Nuestro Atelier
             </RouterLink>
             <RouterLink 
               to="/contacto"
-              class="bg-transparent text-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 border border-primary hover:bg-surface-container transition-all"
+              class="bg-surface text-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 rounded-full border border-outline hover:border-primary hover:bg-surface-container transition-all shadow-2xs"
             >
               Hablar con un Asesor VIP
             </RouterLink>
@@ -372,7 +372,7 @@ const testimonials = [
       </div>
     </section>
 
-    <!-- OLFACTIVE FAMILIES EXPLORER -->
+    <!-- OLFACTIVE FAMILIES EXPLORER (Rounded Cards) -->
     <section class="py-16 md:py-24 bg-surface-container-low border-t border-outline-variant">
       <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
         <div class="text-center max-w-xl mx-auto mb-14">
@@ -388,10 +388,10 @@ const testimonials = [
             v-for="family in olfactiveFamilies" 
             :key="family.name"
             :to="`/catalogo?family=${family.name}`"
-            class="group bg-surface border border-outline-variant hover:border-primary p-6 transition-all duration-300 flex flex-col justify-between"
+            class="group bg-surface border border-outline-variant hover:border-primary rounded-3xl p-6 transition-all duration-300 flex flex-col justify-between shadow-xs hover:shadow-md"
           >
             <div>
-              <div class="aspect-square bg-surface-container mb-4 overflow-hidden border border-outline-variant">
+              <div class="aspect-square bg-surface-container rounded-2xl mb-4 overflow-hidden border border-outline-variant">
                 <img 
                   :src="family.image" 
                   :alt="family.name"
@@ -402,7 +402,7 @@ const testimonials = [
                 <h3 class="font-serif text-2xl text-primary font-normal group-hover:text-primary-container transition-colors">
                   {{ family.name }}
                 </h3>
-                <span class="font-label text-xs text-secondary uppercase">{{ family.count }} aromas</span>
+                <span class="font-label text-xs text-secondary uppercase bg-surface-container px-2.5 py-0.5 rounded-full">{{ family.count }} aromas</span>
               </div>
               <p class="font-sans text-xs text-secondary leading-relaxed mb-4">
                 {{ family.description }}
@@ -418,9 +418,9 @@ const testimonials = [
       </div>
     </section>
 
-    <!-- FRAGRANCE FINDER QUIZ BANNER -->
-    <section class="py-16 md:py-20 bg-primary-container text-on-primary border-y border-primary">
-      <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop text-center">
+    <!-- FRAGRANCE FINDER QUIZ BANNER (Rounded Container) -->
+    <section class="py-16 md:py-20 max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+      <div class="bg-primary-container text-on-primary rounded-3xl p-10 md:p-16 text-center shadow-lg border border-primary">
         <span class="material-symbols-outlined text-4xl text-on-primary-container mb-3">auto_awesome</span>
         <p class="font-label text-xs uppercase tracking-[0.25em] text-on-primary-container mb-2">¿Indeciso sobre qué fragancia elegir?</p>
         <h2 class="font-serif text-3xl sm:text-4xl md:text-5xl font-normal max-w-2xl mx-auto mb-6 leading-tight">
@@ -431,7 +431,7 @@ const testimonials = [
         </p>
         <RouterLink 
           to="/quiz"
-          class="inline-flex items-center gap-2 bg-surface text-primary font-label text-xs uppercase tracking-widest px-9 py-4 border border-surface hover:bg-transparent hover:text-surface transition-all"
+          class="inline-flex items-center gap-2 bg-surface text-primary font-label text-xs uppercase tracking-widest px-9 py-4 rounded-full hover:bg-surface-container transition-all shadow-md"
         >
           <span>Comenzar el Test Ahora</span>
           <span class="material-symbols-outlined text-sm">arrow_forward</span>
@@ -450,7 +450,7 @@ const testimonials = [
         <div 
           v-for="(item, index) in testimonials" 
           :key="index"
-          class="bg-surface-container border border-outline-variant p-8 flex flex-col justify-between relative"
+          class="bg-surface-container rounded-3xl border border-outline-variant p-8 flex flex-col justify-between relative shadow-xs hover:shadow-md transition-shadow"
         >
           <span class="font-serif text-5xl text-outline-variant absolute top-4 right-6 pointer-events-none">“</span>
           <div>

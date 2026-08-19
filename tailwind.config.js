@@ -100,11 +100,15 @@ export default {
         'gutter': '24px',
       },
       borderRadius: {
-        DEFAULT: '0px',
-        'sm': '2px',
-        'md': '4px',
-        'lg': '6px',
-        'none': '0px'
+        'none': '0px',
+        'sm': '4px',
+        DEFAULT: '8px',
+        'md': '10px',
+        'lg': '14px',
+        'xl': '18px',
+        '2xl': '24px',
+        '3xl': '32px',
+        'full': '9999px'
       }
     },
   },

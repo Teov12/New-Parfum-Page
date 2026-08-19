@@ -170,7 +170,7 @@ const activeFiltersCount = computed(() => {
           <span v-if="onlyWishlist" class="text-primary font-bold">/ Favoritos</span>
         </nav>
 
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-primary pb-6 gap-4">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-outline-variant pb-6 gap-4">
           <div>
             <h1 class="font-serif text-4xl md:text-5xl text-primary font-normal tracking-tight">
               {{ onlyWishlist ? 'Tus Fragancias Favoritas' : 'Colección de Perfumes' }}
@@ -185,7 +185,7 @@ const activeFiltersCount = computed(() => {
             <!-- Mobile Filter Button -->
             <button 
               @click="isMobileFiltersOpen = true"
-              class="md:hidden flex items-center gap-2 font-label text-xs uppercase tracking-widest bg-surface border border-primary px-4 py-2.5 text-primary"
+              class="md:hidden flex items-center gap-2 font-label text-xs uppercase tracking-widest bg-surface border border-outline px-4 py-2.5 rounded-full text-primary shadow-2xs"
             >
               <span class="material-symbols-outlined text-base">tune</span>
               <span>Filtros ({{ activeFiltersCount }})</span>
@@ -200,7 +200,7 @@ const activeFiltersCount = computed(() => {
                 <select 
                   id="sort"
                   v-model="sortBy"
-                  class="appearance-none bg-surface font-label text-xs uppercase tracking-wider text-primary border border-outline px-4 py-2.5 pr-8 focus:outline-none focus:border-primary cursor-pointer"
+                  class="appearance-none bg-surface font-label text-xs uppercase tracking-wider text-primary border border-outline px-4 py-2.5 pr-8 rounded-full focus:outline-none focus:border-primary cursor-pointer shadow-2xs"
                 >
                   <option value="popularity">Más Populares</option>
                   <option value="rating">Mejor Valorados</option>
@@ -208,7 +208,7 @@ const activeFiltersCount = computed(() => {
                   <option value="price-desc">Precio: Mayor a Menor</option>
                   <option value="discount">Mayor Descuento</option>
                 </select>
-                <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-base text-primary">
+                <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-base text-primary">
                   expand_more
                 </span>
               </div>
@@ -220,8 +220,8 @@ const activeFiltersCount = computed(() => {
       <!-- Main Layout: Sidebar Filters + Products Grid -->
       <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         
-        <!-- SIDEBAR FILTERS (Desktop) -->
-        <aside class="hidden md:block md:col-span-3 bg-surface border border-outline-variant p-6 space-y-6">
+        <!-- SIDEBAR FILTERS (Desktop - Rounded 3xl) -->
+        <aside class="hidden md:block md:col-span-3 bg-surface border border-outline-variant rounded-3xl p-6 space-y-6 shadow-xs">
           
           <!-- Clear Filters Button -->
           <div class="flex justify-between items-center border-b border-outline-variant pb-4">
@@ -235,16 +235,16 @@ const activeFiltersCount = computed(() => {
             </button>
           </div>
 
-          <!-- Quick Search -->
+          <!-- Quick Search in Pill -->
           <div>
             <div class="relative">
               <input 
                 v-model="searchQuery"
                 type="text" 
                 placeholder="Buscar perfume o marca..."
-                class="w-full bg-surface-container border border-outline-variant text-xs font-sans p-2.5 pr-8 focus:border-primary focus:outline-none"
+                class="w-full bg-surface-container border border-outline-variant rounded-full text-xs font-sans px-4 py-2.5 pr-8 focus:border-primary focus:outline-none"
               />
-              <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-sm text-secondary">
+              <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-sm text-secondary">
                 search
               </span>
             </div>
@@ -255,15 +255,15 @@ const activeFiltersCount = computed(() => {
             <h3 class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-3">Género</h3>
             <div class="space-y-2 font-sans text-sm text-secondary">
               <label class="flex items-center gap-2.5 cursor-pointer hover:text-primary">
-                <input type="checkbox" value="woman" v-model="selectedGenders" class="accent-primary w-4 h-4 rounded-none cursor-pointer" />
+                <input type="checkbox" value="woman" v-model="selectedGenders" class="accent-primary w-4 h-4 rounded-md cursor-pointer" />
                 <span>Mujer</span>
               </label>
               <label class="flex items-center gap-2.5 cursor-pointer hover:text-primary">
-                <input type="checkbox" value="man" v-model="selectedGenders" class="accent-primary w-4 h-4 rounded-none cursor-pointer" />
+                <input type="checkbox" value="man" v-model="selectedGenders" class="accent-primary w-4 h-4 rounded-md cursor-pointer" />
                 <span>Hombre</span>
               </label>
               <label class="flex items-center gap-2.5 cursor-pointer hover:text-primary">
-                <input type="checkbox" value="unisex" v-model="selectedGenders" class="accent-primary w-4 h-4 rounded-none cursor-pointer" />
+                <input type="checkbox" value="unisex" v-model="selectedGenders" class="accent-primary w-4 h-4 rounded-md cursor-pointer" />
                 <span>Unisex & Nicho</span>
               </label>
             </div>
@@ -282,7 +282,7 @@ const activeFiltersCount = computed(() => {
                   type="checkbox" 
                   :value="family.name" 
                   v-model="selectedFamilies" 
-                  class="accent-primary w-4 h-4 rounded-none cursor-pointer" 
+                  class="accent-primary w-4 h-4 rounded-md cursor-pointer" 
                 />
                 <span>{{ family.name }}</span>
               </label>
@@ -302,7 +302,7 @@ const activeFiltersCount = computed(() => {
                   type="checkbox" 
                   :value="brand" 
                   v-model="selectedBrands" 
-                  class="accent-primary w-4 h-4 rounded-none cursor-pointer" 
+                  class="accent-primary w-4 h-4 rounded-md cursor-pointer" 
                 />
                 <span class="truncate">{{ brand }}</span>
               </label>
@@ -322,7 +322,7 @@ const activeFiltersCount = computed(() => {
                   type="checkbox" 
                   :value="conc" 
                   v-model="selectedConcentrations" 
-                  class="accent-primary w-4 h-4 rounded-none cursor-pointer" 
+                  class="accent-primary w-4 h-4 rounded-md cursor-pointer" 
                 />
                 <span>{{ conc }}</span>
               </label>
@@ -348,11 +348,11 @@ const activeFiltersCount = computed(() => {
           <!-- Special Toggles -->
           <div class="space-y-3 pt-1">
             <label class="flex items-center gap-2.5 cursor-pointer font-label text-xs uppercase tracking-wider text-primary">
-              <input type="checkbox" v-model="onlyOffers" class="accent-primary w-4 h-4 rounded-none cursor-pointer" />
+              <input type="checkbox" v-model="onlyOffers" class="accent-primary w-4 h-4 rounded-md cursor-pointer" />
               <span>Solo Ofertas Especiales</span>
             </label>
             <label class="flex items-center gap-2.5 cursor-pointer font-label text-xs uppercase tracking-wider text-primary">
-              <input type="checkbox" v-model="onlyWishlist" class="accent-primary w-4 h-4 rounded-none cursor-pointer" />
+              <input type="checkbox" v-model="onlyWishlist" class="accent-primary w-4 h-4 rounded-md cursor-pointer" />
               <span>Solo Mis Favoritos ({{ wishlistStore.totalItems }})</span>
             </label>
           </div>
@@ -362,13 +362,13 @@ const activeFiltersCount = computed(() => {
         <!-- PRODUCTS GRID (Desktop 9 cols) -->
         <main class="md:col-span-9">
           
-          <!-- Active Tags Bar -->
-          <div v-if="activeFiltersCount > 0" class="flex flex-wrap items-center gap-2 mb-6 bg-surface p-3 border border-outline-variant">
+          <!-- Active Tags Bar (Rounded Pills) -->
+          <div v-if="activeFiltersCount > 0" class="flex flex-wrap items-center gap-2 mb-6 bg-surface p-3.5 rounded-2xl border border-outline-variant shadow-2xs">
             <span class="font-label text-[11px] uppercase tracking-widest text-secondary">Filtros Activos:</span>
             
             <span 
               v-if="searchQuery" 
-              class="inline-flex items-center gap-1 bg-surface-container text-xs font-sans px-2.5 py-1 border border-outline-variant"
+              class="inline-flex items-center gap-1 bg-surface-container text-xs font-sans px-3 py-1 rounded-full border border-outline-variant"
             >
               "{{ searchQuery }}"
               <button @click="searchQuery = ''" class="hover:text-error text-xs">✕</button>
@@ -377,7 +377,7 @@ const activeFiltersCount = computed(() => {
             <span 
               v-for="g in selectedGenders" 
               :key="g" 
-              class="inline-flex items-center gap-1 bg-surface-container text-xs font-sans px-2.5 py-1 border border-outline-variant"
+              class="inline-flex items-center gap-1 bg-surface-container text-xs font-sans px-3 py-1 rounded-full border border-outline-variant"
             >
               {{ g === 'woman' ? 'Mujer' : g === 'man' ? 'Hombre' : 'Unisex' }}
               <button @click="selectedGenders = selectedGenders.filter(x => x !== g)" class="hover:text-error text-xs">✕</button>
@@ -386,7 +386,7 @@ const activeFiltersCount = computed(() => {
             <span 
               v-for="f in selectedFamilies" 
               :key="f" 
-              class="inline-flex items-center gap-1 bg-surface-container text-xs font-sans px-2.5 py-1 border border-outline-variant"
+              class="inline-flex items-center gap-1 bg-surface-container text-xs font-sans px-3 py-1 rounded-full border border-outline-variant"
             >
               {{ f }}
               <button @click="selectedFamilies = selectedFamilies.filter(x => x !== f)" class="hover:text-error text-xs">✕</button>
@@ -395,7 +395,7 @@ const activeFiltersCount = computed(() => {
             <span 
               v-for="b in selectedBrands" 
               :key="b" 
-              class="inline-flex items-center gap-1 bg-surface-container text-xs font-sans px-2.5 py-1 border border-outline-variant"
+              class="inline-flex items-center gap-1 bg-surface-container text-xs font-sans px-3 py-1 rounded-full border border-outline-variant"
             >
               {{ b }}
               <button @click="selectedBrands = selectedBrands.filter(x => x !== b)" class="hover:text-error text-xs">✕</button>
@@ -419,7 +419,7 @@ const activeFiltersCount = computed(() => {
           </div>
 
           <!-- Empty State -->
-          <div v-else class="bg-surface border border-outline-variant p-16 text-center">
+          <div v-else class="bg-surface border border-outline-variant rounded-3xl p-16 text-center shadow-xs">
             <span class="material-symbols-outlined text-6xl text-outline mb-4">search_off</span>
             <h3 class="font-serif text-2xl text-primary mb-2 font-normal">No encontramos fragancias con esos filtros</h3>
             <p class="font-sans text-sm text-secondary max-w-md mx-auto mb-8 leading-relaxed">
@@ -427,7 +427,7 @@ const activeFiltersCount = computed(() => {
             </p>
             <button 
               @click="clearAllFilters"
-              class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 border border-primary-container hover:bg-surface hover:text-primary-container transition-all"
+              class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 rounded-full hover:bg-surface hover:text-primary-container border border-primary-container transition-all shadow-xs"
             >
               Restablecer Filtros
             </button>
@@ -444,11 +444,11 @@ const activeFiltersCount = computed(() => {
       v-if="isMobileFiltersOpen"
       class="fixed inset-0 z-50 bg-primary/60 backdrop-blur-xs flex justify-end"
     >
-      <div class="w-full max-w-xs bg-surface h-full p-6 overflow-y-auto flex flex-col justify-between border-l border-primary shadow-2xl">
+      <div class="w-full max-w-xs bg-surface h-full p-6 overflow-y-auto flex flex-col justify-between border-l border-outline-variant shadow-2xl rounded-l-3xl">
         <div>
-          <div class="flex justify-between items-center border-b border-primary pb-4 mb-6">
+          <div class="flex justify-between items-center border-b border-outline-variant pb-4 mb-6">
             <h3 class="font-serif text-xl text-primary font-medium">Filtrar Colección</h3>
-            <button @click="isMobileFiltersOpen = false" class="p-1 text-primary">
+            <button @click="isMobileFiltersOpen = false" class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-primary">
               <span class="material-symbols-outlined text-2xl">close</span>
             </button>
           </div>
@@ -458,9 +458,9 @@ const activeFiltersCount = computed(() => {
             <div>
               <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-3">Género</h4>
               <div class="space-y-2 font-sans text-sm text-secondary">
-                <label class="flex items-center gap-2"><input type="checkbox" value="woman" v-model="selectedGenders" class="accent-primary" /> Mujer</label>
-                <label class="flex items-center gap-2"><input type="checkbox" value="man" v-model="selectedGenders" class="accent-primary" /> Hombre</label>
-                <label class="flex items-center gap-2"><input type="checkbox" value="unisex" v-model="selectedGenders" class="accent-primary" /> Unisex</label>
+                <label class="flex items-center gap-2"><input type="checkbox" value="woman" v-model="selectedGenders" class="accent-primary rounded-md" /> Mujer</label>
+                <label class="flex items-center gap-2"><input type="checkbox" value="man" v-model="selectedGenders" class="accent-primary rounded-md" /> Hombre</label>
+                <label class="flex items-center gap-2"><input type="checkbox" value="unisex" v-model="selectedGenders" class="accent-primary rounded-md" /> Unisex</label>
               </div>
             </div>
 
@@ -468,7 +468,7 @@ const activeFiltersCount = computed(() => {
               <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-3">Familia Olfativa</h4>
               <div class="space-y-2 font-sans text-sm text-secondary">
                 <label v-for="f in olfactiveFamilies" :key="f.name" class="flex items-center gap-2">
-                  <input type="checkbox" :value="f.name" v-model="selectedFamilies" class="accent-primary" /> {{ f.name }}
+                  <input type="checkbox" :value="f.name" v-model="selectedFamilies" class="accent-primary rounded-md" /> {{ f.name }}
                 </label>
               </div>
             </div>
@@ -478,7 +478,7 @@ const activeFiltersCount = computed(() => {
         <div class="pt-6 border-t border-outline-variant space-y-3">
           <button 
             @click="isMobileFiltersOpen = false"
-            class="w-full bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-3.5 text-center"
+            class="w-full bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-3.5 rounded-full text-center shadow-xs"
           >
             Aplicar Filtros ({{ filteredProducts.length }})
           </button>

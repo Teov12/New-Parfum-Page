@@ -76,16 +76,16 @@ onUnmounted(() => {
       class="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-primary/60 backdrop-blur-sm transition-opacity"
       @click.self="close"
     >
-      <div class="bg-surface w-full max-w-2xl border border-outline shadow-2xl p-6 md:p-8 animate-in fade-in zoom-in-95 duration-200">
+      <div class="bg-surface w-full max-w-2xl border border-outline rounded-3xl shadow-2xl p-6 md:p-8 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
         <!-- Search Input Header -->
-        <div class="relative flex items-center border-b border-primary pb-4 mb-6">
+        <div class="relative flex items-center bg-surface-container rounded-full px-4 py-3 border border-outline-variant focus-within:border-primary mb-6 transition-colors">
           <span class="material-symbols-outlined text-2xl text-primary mr-3">search</span>
           <input
             ref="inputRef"
             v-model="searchQuery"
             type="text"
-            placeholder="Buscar por fragancia, marca, familia o notas (ej: Lavanda, Vainilla)..."
-            class="w-full bg-transparent font-sans text-lg text-primary placeholder:text-secondary focus:outline-none"
+            placeholder="Buscar por fragancia, marca o notas (ej. Vainilla, Lavanda)..."
+            class="w-full bg-transparent font-sans text-base text-primary placeholder:text-secondary focus:outline-none"
           />
           <button 
             v-if="searchQuery" 
@@ -96,7 +96,7 @@ onUnmounted(() => {
           </button>
           <button 
             @click="close"
-            class="text-xs font-label uppercase tracking-widest text-secondary hover:text-primary transition-colors border border-outline-variant px-3 py-1.5"
+            class="text-xs font-label uppercase tracking-widest text-secondary hover:text-primary transition-colors bg-surface border border-outline-variant px-3 py-1 rounded-full"
           >
             ESC
           </button>
@@ -110,7 +110,7 @@ onUnmounted(() => {
               v-for="tag in popularSearches"
               :key="tag"
               @click="applySearch(tag)"
-              class="text-xs font-label px-3 py-1 bg-surface-container hover:bg-secondary-container text-primary transition-colors border border-outline-variant"
+              class="text-xs font-label px-3.5 py-1 bg-surface-container hover:bg-secondary-container text-primary transition-colors border border-outline-variant rounded-full"
             >
               {{ tag }}
             </button>
@@ -138,12 +138,12 @@ onUnmounted(() => {
               v-for="product in filteredProducts"
               :key="product.id"
               @click="selectProduct(product.slug)"
-              class="flex items-center gap-4 py-3 hover:bg-surface-container px-2 cursor-pointer transition-colors group"
+              class="flex items-center gap-4 py-3 hover:bg-surface-container px-3 rounded-2xl cursor-pointer transition-colors group"
             >
               <img 
                 :src="product.images[0]" 
                 :alt="product.name"
-                class="w-12 h-16 object-cover bg-surface-lowest border border-outline-variant flex-shrink-0"
+                class="w-12 h-16 object-cover bg-surface-lowest rounded-xl border border-outline-variant flex-shrink-0"
               />
               <div class="flex-grow min-w-0">
                 <div class="flex items-center gap-2">

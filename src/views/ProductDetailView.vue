@@ -131,20 +131,20 @@ const handleAddReview = () => {
       <!-- Main Product View: Gallery (Left) + Details & Purchase (Right) -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-20">
         
-        <!-- IMAGE GALLERY (7 cols) -->
+        <!-- IMAGE GALLERY (7 cols - Rounded 3xl) -->
         <div class="lg:col-span-7 space-y-4">
           <!-- Main Selected Image (High-Res Container) -->
-          <div class="relative aspect-[4/5] bg-surface-container overflow-hidden border border-outline-variant group">
+          <div class="relative aspect-[4/5] bg-surface-container overflow-hidden rounded-3xl border border-outline-variant shadow-sm group">
             <img 
               :src="product.images[selectedImageIndex] || product.images[0]" 
               :alt="product.name"
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
             <div class="absolute top-4 left-4 z-10 flex gap-2">
-              <span v-if="product.badge" class="bg-primary-container text-on-primary font-label text-[10px] px-3 py-1 uppercase tracking-widest">
+              <span v-if="product.badge" class="bg-primary-container text-on-primary font-label text-[10px] px-3.5 py-1 uppercase tracking-widest rounded-full shadow-xs">
                 {{ product.badge }}
               </span>
-              <span class="bg-surface/90 backdrop-blur-xs text-primary font-label text-[10px] px-3 py-1 uppercase tracking-widest border border-outline-variant">
+              <span class="bg-surface/90 backdrop-blur-xs text-primary font-label text-[10px] px-3.5 py-1 uppercase tracking-widest rounded-full border border-outline-variant shadow-xs">
                 100% Original
               </span>
             </div>
@@ -152,7 +152,7 @@ const handleAddReview = () => {
             <!-- Wishlist Floating Button -->
             <button 
               @click="handleToggleWishlist"
-              class="absolute top-4 right-4 z-10 w-10 h-10 bg-surface/90 backdrop-blur-xs border border-outline-variant hover:border-primary flex items-center justify-center text-primary transition-colors"
+              class="absolute top-4 right-4 z-10 w-11 h-11 bg-surface/90 backdrop-blur-xs border border-outline-variant hover:border-primary rounded-full flex items-center justify-center text-primary shadow-xs transition-colors"
               :aria-label="wishlistStore.isInWishlist(product.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'"
             >
               <span 
@@ -170,8 +170,8 @@ const handleAddReview = () => {
               v-for="(img, idx) in product.images"
               :key="idx"
               @click="selectedImageIndex = idx"
-              class="w-20 h-24 flex-shrink-0 bg-surface-container border overflow-hidden transition-all"
-              :class="selectedImageIndex === idx ? 'border-primary ring-1 ring-primary' : 'border-outline-variant opacity-70 hover:opacity-100'"
+              class="w-20 h-24 flex-shrink-0 bg-surface-container rounded-2xl border overflow-hidden transition-all shadow-2xs"
+              :class="selectedImageIndex === idx ? 'border-primary ring-2 ring-primary' : 'border-outline-variant opacity-70 hover:opacity-100'"
             >
               <img :src="img" :alt="`${product.name} vista ${idx + 1}`" class="w-full h-full object-cover" />
             </button>
@@ -212,7 +212,7 @@ const handleAddReview = () => {
           </div>
 
           <!-- Price & Installments -->
-          <div class="bg-surface-container-low border border-outline-variant p-4 space-y-2">
+          <div class="bg-surface-container-low border border-outline-variant rounded-2xl p-5 space-y-2 shadow-2xs">
             <div class="flex items-baseline gap-3">
               <span class="font-sans font-bold text-3xl text-primary">
                 ${{ currentPrice.toLocaleString('es-AR') }}
@@ -220,7 +220,7 @@ const handleAddReview = () => {
               <span v-if="product.discountPercentage > 0" class="text-sm font-sans text-secondary line-through">
                 ${{ product.originalPrice.toLocaleString('es-AR') }}
               </span>
-              <span v-if="product.discountPercentage > 0" class="bg-secondary-container text-primary font-label text-[10px] px-2 py-0.5 uppercase tracking-wider font-bold">
+              <span v-if="product.discountPercentage > 0" class="bg-secondary-container text-primary font-label text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider font-bold">
                 {{ product.discountPercentage }}% OFF
               </span>
             </div>
@@ -256,9 +256,9 @@ const handleAddReview = () => {
                 v-for="s in product.sizes"
                 :key="s.size"
                 @click="selectedSize = s"
-                class="font-label text-xs uppercase tracking-wider py-3 px-2 border text-center transition-all flex flex-col items-center justify-center gap-1"
+                class="font-label text-xs uppercase tracking-wider py-3 px-2 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 shadow-2xs"
                 :class="selectedSize?.size === s.size 
-                  ? 'bg-primary-container text-on-primary border-primary-container ring-1 ring-primary-container' 
+                  ? 'bg-primary-container text-on-primary border-primary-container shadow-xs' 
                   : 'bg-surface text-primary border-outline-variant hover:border-primary'"
               >
                 <span class="font-bold">{{ s.size }}</span>
@@ -271,19 +271,19 @@ const handleAddReview = () => {
           <div class="space-y-3 pt-2">
             <div class="flex gap-3">
               <!-- Quantity Counter -->
-              <div class="inline-flex items-center border border-primary bg-surface flex-shrink-0">
+              <div class="inline-flex items-center border border-outline-variant rounded-full bg-surface flex-shrink-0 overflow-hidden shadow-2xs">
                 <button 
                   @click="quantity = Math.max(1, quantity - 1)"
-                  class="px-3.5 py-3 text-primary hover:bg-surface-container transition-colors text-base"
+                  class="px-4 py-3 text-primary hover:bg-surface-container transition-colors text-base font-bold"
                 >
                   -
                 </button>
-                <span class="px-4 py-3 font-label text-xs font-bold text-primary min-w-[2.5rem] text-center">
+                <span class="px-3 py-3 font-label text-xs font-bold text-primary min-w-[2.5rem] text-center">
                   {{ quantity }}
                 </span>
                 <button 
                   @click="quantity++"
-                  class="px-3.5 py-3 text-primary hover:bg-surface-container transition-colors text-base"
+                  class="px-4 py-3 text-primary hover:bg-surface-container transition-colors text-base font-bold"
                 >
                   +
                 </button>
@@ -292,7 +292,7 @@ const handleAddReview = () => {
               <!-- Add to Cart CTA -->
               <button 
                 @click="handleAddToCart"
-                class="flex-grow bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-3.5 px-6 border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-2"
+                class="flex-grow bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-3.5 px-6 rounded-full border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-2 shadow-sm"
               >
                 <span class="material-symbols-outlined text-base">shopping_bag</span>
                 <span>Agregar a la Bolsa</span>
@@ -302,7 +302,7 @@ const handleAddReview = () => {
             <!-- Direct Buy Now CTA -->
             <button 
               @click="handleBuyNow"
-              class="w-full bg-transparent text-primary font-label text-xs uppercase tracking-widest py-3.5 border border-primary hover:bg-surface-container transition-all flex items-center justify-center gap-2"
+              class="w-full bg-transparent text-primary font-label text-xs uppercase tracking-widest py-3.5 rounded-full border border-primary hover:bg-surface-container transition-all flex items-center justify-center gap-2 shadow-2xs"
             >
               <span>Comprar Ahora con 1 Click</span>
               <span class="material-symbols-outlined text-sm">arrow_forward</span>
@@ -318,25 +318,25 @@ const handleAddReview = () => {
               </span>
             </div>
 
-            <div class="flex gap-2">
+            <div class="flex gap-2 bg-surface p-1 rounded-full border border-outline-variant focus-within:border-primary shadow-2xs">
               <input 
                 v-model="postalCode"
                 type="text" 
                 placeholder="Código Postal (ej. 1425)"
                 maxlength="5"
-                class="bg-surface border border-outline-variant text-xs font-sans px-3 py-2 text-primary w-full focus:border-primary focus:outline-none"
+                class="bg-transparent text-xs font-sans px-4 py-2 text-primary w-full focus:outline-none"
                 @keyup.enter="calculateShipping"
               />
               <button 
                 @click="calculateShipping"
-                class="bg-surface-container text-primary font-label text-xs uppercase tracking-widest px-4 py-2 border border-outline hover:bg-secondary-container transition-colors flex-shrink-0"
+                class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-5 py-2 rounded-full hover:bg-inverse-surface transition-colors flex-shrink-0 shadow-2xs"
               >
                 Calcular
               </button>
             </div>
 
             <!-- Shipping Results -->
-            <div v-if="shippingEstimate" class="bg-surface-container p-3 space-y-2 text-xs font-sans text-secondary border border-outline-variant animate-in fade-in">
+            <div v-if="shippingEstimate" class="bg-surface-container rounded-2xl p-4 space-y-2 text-xs font-sans text-secondary border border-outline-variant animate-in fade-in shadow-2xs">
               <div class="flex justify-between items-center text-primary font-medium">
                 <span>📦 Envío Estándar a Domicilio:</span>
                 <span class="font-bold text-tertiary">{{ shippingEstimate.standardCost }} ({{ shippingEstimate.standardDays }})</span>
@@ -350,11 +350,11 @@ const handleAddReview = () => {
 
           <!-- Trust Badges Mini Grid -->
           <div class="grid grid-cols-2 gap-3 pt-2">
-            <div class="flex items-center gap-2 p-2.5 bg-surface-container border border-outline-variant">
+            <div class="flex items-center gap-2 p-3 bg-surface-container rounded-2xl border border-outline-variant shadow-2xs">
               <span class="material-symbols-outlined text-base text-primary">verified</span>
               <span class="font-label text-[10px] uppercase text-primary">Batch Code Verificable</span>
             </div>
-            <div class="flex items-center gap-2 p-2.5 bg-surface-container border border-outline-variant">
+            <div class="flex items-center gap-2 p-3 bg-surface-container rounded-2xl border border-outline-variant shadow-2xs">
               <span class="material-symbols-outlined text-base text-primary">redeem</span>
               <span class="font-label text-[10px] uppercase text-primary">+1 Muestra de Regalo</span>
             </div>
@@ -365,34 +365,34 @@ const handleAddReview = () => {
       </div>
 
       <!-- DETAILED TABS SECTION: PYRAMID, DESCRIPTION, LONGEVITY, REVIEWS -->
-      <div class="mb-20 border-t border-primary pt-12">
-        <!-- Tabs Header -->
-        <div class="flex flex-wrap gap-4 sm:gap-8 border-b border-outline-variant mb-8">
+      <div class="mb-20 border-t border-outline-variant pt-12">
+        <!-- Tabs Header (Pills) -->
+        <div class="flex flex-wrap gap-2 bg-surface-container p-1.5 rounded-full border border-outline-variant mb-8 max-w-2xl mx-auto justify-center shadow-2xs">
           <button
             @click="activeTab = 'pyramid'"
-            class="font-label text-xs sm:text-sm uppercase tracking-widest pb-3 transition-colors relative"
-            :class="activeTab === 'pyramid' ? 'text-primary font-bold border-b-2 border-primary' : 'text-secondary hover:text-primary'"
+            class="font-label text-xs sm:text-sm uppercase tracking-wider py-2 px-5 rounded-full transition-all"
+            :class="activeTab === 'pyramid' ? 'bg-primary-container text-on-primary shadow-xs' : 'text-secondary hover:text-primary'"
           >
             Pirámide Olfativa
           </button>
           <button
             @click="activeTab = 'description'"
-            class="font-label text-xs sm:text-sm uppercase tracking-widest pb-3 transition-colors relative"
-            :class="activeTab === 'description' ? 'text-primary font-bold border-b-2 border-primary' : 'text-secondary hover:text-primary'"
+            class="font-label text-xs sm:text-sm uppercase tracking-wider py-2 px-5 rounded-full transition-all"
+            :class="activeTab === 'description' ? 'bg-primary-container text-on-primary shadow-xs' : 'text-secondary hover:text-primary'"
           >
             Descripción & Ritual
           </button>
           <button
             @click="activeTab = 'characteristics'"
-            class="font-label text-xs sm:text-sm uppercase tracking-widest pb-3 transition-colors relative"
-            :class="activeTab === 'characteristics' ? 'text-primary font-bold border-b-2 border-primary' : 'text-secondary hover:text-primary'"
+            class="font-label text-xs sm:text-sm uppercase tracking-wider py-2 px-5 rounded-full transition-all"
+            :class="activeTab === 'characteristics' ? 'bg-primary-container text-on-primary shadow-xs' : 'text-secondary hover:text-primary'"
           >
-            Ficha Técnica & Longevidad
+            Ficha Técnica
           </button>
           <button
             @click="activeTab = 'reviews'"
-            class="font-label text-xs sm:text-sm uppercase tracking-widest pb-3 transition-colors relative"
-            :class="activeTab === 'reviews' ? 'text-primary font-bold border-b-2 border-primary' : 'text-secondary hover:text-primary'"
+            class="font-label text-xs sm:text-sm uppercase tracking-wider py-2 px-5 rounded-full transition-all"
+            :class="activeTab === 'reviews' ? 'bg-primary-container text-on-primary shadow-xs' : 'text-secondary hover:text-primary'"
           >
             Reseñas ({{ product.reviews.length }})
           </button>
@@ -404,7 +404,7 @@ const handleAddReview = () => {
         </div>
 
         <!-- Tab 2: Storytelling & Usage Ritual -->
-        <div v-if="activeTab === 'description'" class="bg-surface-container border border-outline-variant p-8 space-y-6 animate-in fade-in duration-300">
+        <div v-if="activeTab === 'description'" class="bg-surface-container border border-outline-variant rounded-3xl p-8 space-y-6 animate-in fade-in duration-300 shadow-xs">
           <div>
             <h3 class="font-serif text-2xl text-primary font-normal mb-3">La Historia Olfativa</h3>
             <p class="font-sans text-secondary text-base leading-relaxed">
@@ -418,13 +418,13 @@ const handleAddReview = () => {
               {{ product.usageTips }}
             </p>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 font-label text-xs uppercase tracking-wider text-secondary">
-              <div class="p-3 bg-surface border border-outline-variant">
+              <div class="p-4 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
                 <strong>1. Puntos de Pulso:</strong> Muñecas, clavículas y cuello.
               </div>
-              <div class="p-3 bg-surface border border-outline-variant">
+              <div class="p-4 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
                 <strong>2. No Frotar:</strong> Deja secar al aire para no romper las notas.
               </div>
-              <div class="p-3 bg-surface border border-outline-variant">
+              <div class="p-4 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
                 <strong>3. Hidratación:</strong> Aplica sobre piel hidratada para mayor fijación.
               </div>
             </div>
@@ -432,21 +432,21 @@ const handleAddReview = () => {
         </div>
 
         <!-- Tab 3: Technical Specifications -->
-        <div v-if="activeTab === 'characteristics'" class="bg-surface-container border border-outline-variant p-8 animate-in fade-in duration-300">
+        <div v-if="activeTab === 'characteristics'" class="bg-surface-container border border-outline-variant rounded-3xl p-8 animate-in fade-in duration-300 shadow-xs">
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="p-4 bg-surface border border-outline-variant">
+            <div class="p-5 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
               <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Duración en Piel</span>
               <p class="font-serif text-lg text-primary font-medium">{{ product.characteristics.longevity }}</p>
             </div>
-            <div class="p-4 bg-surface border border-outline-variant">
+            <div class="p-5 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
               <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Estela / Proyección</span>
               <p class="font-serif text-lg text-primary font-medium">{{ product.characteristics.sillage }}</p>
             </div>
-            <div class="p-4 bg-surface border border-outline-variant">
+            <div class="p-5 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
               <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Estación Ideal</span>
               <p class="font-serif text-lg text-primary font-medium">{{ product.characteristics.season }}</p>
             </div>
-            <div class="p-4 bg-surface border border-outline-variant">
+            <div class="p-5 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
               <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Ocasión Sugerida</span>
               <p class="font-serif text-lg text-primary font-medium">{{ product.characteristics.occasion }}</p>
             </div>
@@ -454,7 +454,7 @@ const handleAddReview = () => {
         </div>
 
         <!-- Tab 4: Reviews & Leave Review -->
-        <div v-if="activeTab === 'reviews'" class="bg-surface-container border border-outline-variant p-8 space-y-6 animate-in fade-in duration-300">
+        <div v-if="activeTab === 'reviews'" class="bg-surface-container border border-outline-variant rounded-3xl p-8 space-y-6 animate-in fade-in duration-300 shadow-xs">
           <div class="flex justify-between items-center border-b border-outline-variant pb-4">
             <div>
               <h3 class="font-serif text-2xl text-primary font-normal">Opiniones de Clientes Verificados</h3>
@@ -462,7 +462,7 @@ const handleAddReview = () => {
             </div>
             <button 
               @click="isReviewModalOpen = true"
-              class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-6 py-2.5 border border-primary-container hover:bg-surface hover:text-primary-container transition-all"
+              class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-6 py-2.5 rounded-full hover:bg-inverse-surface transition-all shadow-xs"
             >
               Escribir Reseña
             </button>
@@ -473,12 +473,12 @@ const handleAddReview = () => {
             <div 
               v-for="rev in product.reviews" 
               :key="rev.id"
-              class="bg-surface p-5 border border-outline-variant space-y-2"
+              class="bg-surface p-6 rounded-2xl border border-outline-variant space-y-2 shadow-2xs"
             >
               <div class="flex justify-between items-center">
                 <div class="flex items-center gap-2">
                   <span class="font-serif text-base text-primary font-medium">{{ rev.author }}</span>
-                  <span v-if="rev.verified" class="font-label text-[10px] uppercase text-tertiary bg-surface-container px-2 py-0.5 border border-outline-variant flex items-center gap-1">
+                  <span v-if="rev.verified" class="font-label text-[10px] uppercase text-tertiary bg-surface-container px-2.5 py-0.5 rounded-full border border-outline-variant flex items-center gap-1">
                     <span class="material-symbols-outlined text-xs">verified</span>
                     Comprador Verificado
                   </span>
@@ -509,7 +509,7 @@ const handleAddReview = () => {
       </div>
 
       <!-- RELATED FRAGRANCES SECTION -->
-      <div class="border-t border-primary pt-16">
+      <div class="border-t border-outline-variant pt-16">
         <div class="text-center max-w-xl mx-auto mb-12">
           <p class="font-label text-label-sm text-secondary uppercase tracking-widest mb-2">Completá tu Colección</p>
           <h2 class="font-serif text-3xl md:text-headline-lg text-primary font-normal">Fragancias Complementarias</h2>
@@ -526,18 +526,18 @@ const handleAddReview = () => {
 
     </div>
 
-    <!-- LEAVE REVIEW MODAL -->
+    <!-- LEAVE REVIEW MODAL (Rounded 3xl) -->
     <Teleport to="body">
       <div 
         v-if="isReviewModalOpen"
         class="fixed inset-0 z-50 bg-primary/60 backdrop-blur-xs flex items-center justify-center p-4"
         @click.self="isReviewModalOpen = false"
       >
-        <div class="bg-surface w-full max-w-lg border border-primary p-6 md:p-8 space-y-4 shadow-2xl">
+        <div class="bg-surface w-full max-w-lg border border-outline rounded-3xl p-6 md:p-8 space-y-4 shadow-2xl overflow-hidden">
           <div class="flex justify-between items-center border-b border-outline-variant pb-3">
             <h3 class="font-serif text-2xl text-primary font-normal">Dejar tu Reseña</h3>
-            <button @click="isReviewModalOpen = false" class="text-secondary hover:text-primary">
-              <span class="material-symbols-outlined">close</span>
+            <button @click="isReviewModalOpen = false" class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-secondary hover:text-primary">
+              <span class="material-symbols-outlined text-2xl">close</span>
             </button>
           </div>
 
@@ -573,7 +573,7 @@ const handleAddReview = () => {
                 type="text" 
                 placeholder="Ej. Martina S."
                 required
-                class="w-full bg-surface border border-outline-variant p-2.5 text-sm font-sans focus:border-primary focus:outline-none"
+                class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
               />
             </div>
 
@@ -586,7 +586,7 @@ const handleAddReview = () => {
                 rows="4" 
                 placeholder="¿Qué te pareció la duración, proyección y notas de esta fragancia?"
                 required
-                class="w-full bg-surface border border-outline-variant p-2.5 text-sm font-sans focus:border-primary focus:outline-none"
+                class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
               ></textarea>
             </div>
 
@@ -594,13 +594,13 @@ const handleAddReview = () => {
               <button 
                 type="button" 
                 @click="isReviewModalOpen = false"
-                class="font-label text-xs uppercase tracking-widest px-4 py-2.5 border border-outline text-secondary"
+                class="font-label text-xs uppercase tracking-widest px-5 py-2.5 rounded-full border border-outline text-secondary"
               >
                 Cancelar
               </button>
               <button 
                 type="submit"
-                class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-6 py-2.5 border border-primary-container hover:bg-inverse-surface transition-all"
+                class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-7 py-2.5 rounded-full hover:bg-inverse-surface transition-all shadow-xs"
               >
                 Publicar Reseña
               </button>

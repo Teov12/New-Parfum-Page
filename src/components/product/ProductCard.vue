@@ -36,10 +36,10 @@ const handleWishlist = () => {
 </script>
 
 <template>
-  <div class="group relative flex flex-col bg-surface border border-outline-variant hover:border-primary transition-all duration-300">
+  <div class="group relative flex flex-col bg-surface border border-outline-variant hover:border-primary rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
     
     <!-- Image & Badges Container (3:4 ratio) -->
-    <div class="relative aspect-[3/4] bg-surface-container overflow-hidden">
+    <div class="relative aspect-[3/4] bg-surface-container overflow-hidden rounded-t-2xl">
       <!-- Product Image with Zoom -->
       <RouterLink :to="`/producto/${product.slug}`" class="block w-full h-full">
         <img 
@@ -52,7 +52,7 @@ const handleWishlist = () => {
 
       <!-- Badge (Top Left) -->
       <div v-if="product.badge" class="absolute top-3 left-3 z-10">
-        <span class="bg-primary-container text-on-primary font-label text-[10px] px-2.5 py-1 uppercase tracking-widest border border-primary-container">
+        <span class="bg-primary-container text-on-primary font-label text-[10px] px-3 py-1 uppercase tracking-widest rounded-full shadow-xs">
           {{ product.badge }}
         </span>
       </div>
@@ -60,7 +60,7 @@ const handleWishlist = () => {
       <!-- Wishlist Heart Button (Top Right) -->
       <button 
         @click.stop="handleWishlist"
-        class="absolute top-3 right-3 z-10 w-9 h-9 bg-surface/90 backdrop-blur-xs border border-outline-variant hover:border-primary flex items-center justify-center text-primary transition-all"
+        class="absolute top-3 right-3 z-10 w-9 h-9 bg-surface/90 backdrop-blur-xs border border-outline-variant hover:border-primary rounded-full flex items-center justify-center text-primary shadow-xs transition-all"
         :aria-label="wishlistStore.isInWishlist(product.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'"
       >
         <span 
@@ -73,14 +73,14 @@ const handleWishlist = () => {
 
       <!-- Quick Add Overlay (Slide Up on Desktop Hover) -->
       <div class="absolute bottom-0 left-0 w-full translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-20 hidden md:block">
-        <div class="bg-surface/95 backdrop-blur-xs border-t border-primary p-3 space-y-2">
+        <div class="bg-surface/95 backdrop-blur-xs border-t border-outline-variant p-3.5 space-y-2.5 rounded-t-2xl shadow-lg">
           <!-- Size Selector Buttons -->
           <div class="flex justify-center gap-1.5">
             <button
               v-for="s in product.sizes"
               :key="s.size"
               @click.stop="selectedSize = s"
-              class="font-label text-[11px] px-2 py-1 uppercase tracking-wider border transition-colors"
+              class="font-label text-[11px] px-2.5 py-1 uppercase tracking-wider rounded-full border transition-colors"
               :class="selectedSize.size === s.size 
                 ? 'bg-primary-container text-on-primary border-primary-container' 
                 : 'bg-surface text-primary border-outline-variant hover:border-primary'"
@@ -92,7 +92,7 @@ const handleWishlist = () => {
           <!-- Add to Cart CTA -->
           <button 
             @click.stop="handleQuickAdd"
-            class="w-full bg-primary-container text-on-primary font-label text-xs py-2.5 uppercase tracking-widest hover:bg-inverse-surface transition-colors flex items-center justify-center gap-1.5"
+            class="w-full bg-primary-container text-on-primary font-label text-xs py-2.5 uppercase tracking-widest rounded-full hover:bg-inverse-surface transition-colors flex items-center justify-center gap-1.5 shadow-xs"
           >
             <span class="material-symbols-outlined text-sm">shopping_bag</span>
             <span>Añadir (${{ selectedSize.price.toLocaleString('es-AR') }})</span>
@@ -123,12 +123,12 @@ const handleWishlist = () => {
           {{ product.concentration }} • {{ selectedSize.size }}
         </p>
 
-        <!-- Top Olfactive Notes (Subtle Tags) -->
-        <div class="flex flex-wrap gap-1 mb-4">
+        <!-- Top Olfactive Notes (Subtle Rounded Tags) -->
+        <div class="flex flex-wrap gap-1.5 mb-4">
           <span 
             v-for="note in product.olfactoryPyramid.topNotes.slice(0, 2)" 
             :key="note"
-            class="font-label text-[10px] uppercase text-secondary bg-surface-container px-2 py-0.5 border border-outline-variant"
+            class="font-label text-[10px] uppercase text-secondary bg-surface-container px-2.5 py-0.5 rounded-full border border-outline-variant"
           >
             {{ note }}
           </span>
@@ -154,7 +154,7 @@ const handleWishlist = () => {
         <!-- Mobile Add Button -->
         <button 
           @click.stop="handleQuickAdd"
-          class="md:hidden p-2 bg-primary-container text-on-primary border border-primary-container hover:bg-surface hover:text-primary-container transition-colors"
+          class="md:hidden p-2.5 bg-primary-container text-on-primary rounded-full hover:bg-surface hover:text-primary-container transition-colors shadow-xs"
           aria-label="Agregar a la bolsa"
         >
           <span class="material-symbols-outlined text-lg">add_shopping_cart</span>

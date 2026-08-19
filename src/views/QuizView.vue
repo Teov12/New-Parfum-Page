@@ -8,150 +8,144 @@ import { useToastStore } from '@/stores/toast'
 const cartStore = useCartStore()
 const toastStore = useToastStore()
 
-const currentQuestion = ref(0)
-
+const currentStep = ref(0)
 const answers = ref({
-  gender: null,
-  vibe: null,
-  occasion: null,
-  intensity: null
+  gender: '',
+  intensity: '',
+  family: '',
+  occasion: ''
 })
-
-const isCompleted = ref(false)
 
 const questions = [
   {
-    title: '¿Para quién buscas la fragancia?',
-    subtitle: 'Elige el universo que mejor represente al destinatario.',
-    field: 'gender',
+    key: 'gender',
+    title: '¿Para quién estás buscando esta fragancia?',
+    subtitle: 'El punto de partida para una recomendación precisa.',
     options: [
-      { label: 'Para Mujer', value: 'woman', icon: 'favorite', desc: 'Aromas florales, avainillados y luminosos.' },
-      { label: 'Para Hombre', value: 'man', icon: 'military_tech', desc: 'Acordes amaderados, cítricos y aromáticos.' },
-      { label: 'Unisex / Sin Género', value: 'unisex', icon: 'all_inclusive', desc: 'Creaciones de autor, azafrán y maderas raras.' }
+      { label: 'Para Mujer', value: 'woman', icon: 'female' },
+      { label: 'Para Hombre', value: 'man', icon: 'male' },
+      { label: 'Unisex / Sin Género', value: 'unisex', icon: 'all_inclusive' },
+      { label: 'Para un Regalo Especial', value: 'unisex', icon: 'card_giftcard' }
     ]
   },
   {
-    title: '¿Qué acordes aromáticos te cautivan más?',
-    subtitle: 'Elige la familia sensorial que despierte tu curiosidad.',
-    field: 'vibe',
+    key: 'family',
+    title: '¿Qué familias de aromas te cautivan más?',
+    subtitle: 'Identificá las notas sensoriales que mejor te representan.',
     options: [
-      { label: 'Flores Blancas & Lavanda', value: 'Floral', icon: 'spa', desc: 'Jazmín, flor de azahar, rosa de Grasse y lavanda.' },
-      { label: 'Maderas Nobles & Cuero', value: 'Amaderada', icon: 'nature', desc: 'Sándalo, cedro, vetiver y humo dulce.' },
-      { label: 'Azafrán, Ámbar & Vainilla', value: 'Oriental', icon: 'hotel_class', desc: 'Resinas orientales, especias y dulzor gourmand.' },
-      { label: 'Cítricos Italianos & Acuáticos', value: 'Cítrica', icon: 'waves', desc: 'Mandarina verde, bergamota y brisa marina.' }
+      { label: 'Florales Luminosas (Jazmín, Azahar, Rosa)', value: 'Floral', icon: 'spa' },
+      { label: 'Maderas Nobles (Cedro, Sándalo, Vetiver)', value: 'Amaderada', icon: 'forest' },
+      { label: 'Orientales & Especiadas (Vainilla, Ámbar, Azafrán)', value: 'Oriental', icon: 'local_fire_department' },
+      { label: 'Cítricas Frescas (Bergamota, Mandarina)', value: 'Cítrica', icon: 'wb_sunny' }
     ]
   },
   {
-    title: '¿En qué ocasión imaginas llevar esta fragancia?',
-    subtitle: 'Cada escenario tiene una proyección olfativa ideal.',
-    field: 'occasion',
+    key: 'intensity',
+    title: '¿Qué nivel de presencia y proyección preferís?',
+    subtitle: 'La huella que querés dejar al entrar a un espacio.',
     options: [
-      { label: 'Uso Diario & Oficina', value: 'daily', icon: 'wb_sunny', desc: 'Elegancia sutil y limpia que acompaña todo el día.' },
-      { label: 'Citas & Momentos Íntimos', value: 'intimate', icon: 'nightlight', desc: 'Estela envolvente, sensual y memorable de cerca.' },
-      { label: 'Eventos Nocturnos & Gala', value: 'gala', icon: 'celebration', desc: 'Presencia magnética que deja una huella inconfundible.' }
+      { label: 'Sutil & Íntima (A ras de piel)', value: 'Discreta', icon: 'bubble_chart' },
+      { label: 'Moderada & Elegante (Perfecta para todo el día)', value: 'Moderada', icon: 'auto_awesome' },
+      { label: 'Intensa & Envolvente (Alta estela de autor)', value: 'Enorme', icon: 'offline_bolt' }
     ]
   },
   {
-    title: '¿Qué intensidad de proyección prefieres?',
-    subtitle: 'Determina la fuerza y longevidad en tu piel.',
-    field: 'intensity',
+    key: 'occasion',
+    title: '¿En qué momentos vas a vestir este aroma?',
+    subtitle: 'El escenario ideal de tu experiencia olfativa.',
     options: [
-      { label: 'Moderada y Sofisticada', value: 'moderate', icon: 'filter_vintage', desc: 'Aura distinguida que se percibe a distancia conversacional.' },
-      { label: 'Intensa & Monumental', value: 'intense', icon: 'bolt', desc: 'Máxima concentración (Parfum / Extrait) con estela expansiva.' }
+      { label: 'Uso Diario & Oficina', value: 'Diario', icon: 'work' },
+      { label: 'Citas & Veladas Nocturnas', value: 'Noche', icon: 'nightlife' },
+      { label: 'Gala & Eventos Especiales', value: 'Eventos', icon: 'diamond' },
+      { label: 'Aroma Firma Versátil', value: 'Versatil', icon: 'star' }
     ]
   }
 ]
 
-const selectOption = (field, value) => {
-  answers.value[field] = value
-  if (currentQuestion.value < questions.length - 1) {
-    currentQuestion.value++
+const selectOption = (key, val) => {
+  answers.value[key] = val
+  if (currentStep.value < questions.length - 1) {
+    currentStep.value++
   } else {
-    isCompleted.value = true
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Finish
+    currentStep.value = questions.length
   }
 }
 
-const recommendedProducts = computed(() => {
-  if (!isCompleted.value) return []
-
-  let matched = products.filter(p => {
-    if (answers.value.gender && answers.value.gender !== 'unisex' && p.gender !== answers.value.gender && p.gender !== 'unisex') {
-      return false
-    }
-    return true
-  })
-
-  if (answers.value.vibe) {
-    const familyMatched = matched.filter(p => p.fragranceFamily === answers.value.vibe)
-    if (familyMatched.length > 0) {
-      matched = familyMatched
-    }
+const matchResult = computed(() => {
+  // Return matching product
+  let matched = products.find(p => p.gender === answers.value.gender && p.fragranceFamily === answers.value.family)
+  if (!matched) {
+    matched = products.find(p => p.fragranceFamily === answers.value.family)
   }
-
-  return matched.slice(0, 3)
+  if (!matched) {
+    matched = products.find(p => p.gender === answers.value.gender)
+  }
+  return matched || products[0]
 })
 
-const restartQuiz = () => {
-  answers.value = { gender: null, vibe: null, occasion: null, intensity: null }
-  currentQuestion.value = 0
-  isCompleted.value = false
+const restart = () => {
+  currentStep.value = 0
+  answers.value = { gender: '', intensity: '', family: '', occasion: '' }
 }
 
-const addRecommendedToCart = (prod) => {
-  cartStore.addItem(prod)
-  toastStore.show(`¡${prod.name} añadido a tu bolsa!`, 'success')
+const handleAddRecommended = () => {
+  const defaultSize = matchResult.value.sizes.find(s => s.default) || matchResult.value.sizes[0]
+  cartStore.addItem(matchResult.value, defaultSize, 1)
+  toastStore.show(`¡${matchResult.value.name} agregado a tu bolsa!`, 'success')
 }
 </script>
 
 <template>
-  <div class="bg-surface-container py-16 min-h-screen flex flex-col justify-center">
-    <div class="max-w-2xl mx-auto px-margin-mobile md:px-margin-desktop w-full">
+  <div class="bg-surface-container py-16">
+    <div class="max-w-3xl mx-auto px-margin-mobile">
       
-      <!-- QUIZ ACTIVE QUESTIONS -->
-      <div v-if="!isCompleted" class="bg-surface border border-primary p-8 md:p-12 shadow-md animate-in fade-in">
-        <!-- Step Progress -->
-        <div class="flex justify-between items-center text-xs font-label uppercase tracking-widest text-secondary mb-8 border-b border-outline-variant pb-4">
-          <span>Fragrance Finder</span>
-          <span>Pregunta {{ currentQuestion + 1 }} de {{ questions.length }}</span>
+      <!-- Quiz Progress Bar -->
+      <div v-if="currentStep < questions.length" class="mb-10 text-center">
+        <span class="font-label text-xs uppercase tracking-[0.2em] text-secondary mb-2 block">
+          Paso {{ currentStep + 1 }} de {{ questions.length }} • Fragrance Finder
+        </span>
+        <div class="w-full bg-secondary-container h-2 rounded-full overflow-hidden max-w-md mx-auto">
+          <div 
+            class="bg-primary-container h-full rounded-full transition-all duration-300"
+            :style="{ width: `${((currentStep + 1) / questions.length) * 100}%` }"
+          ></div>
         </div>
+      </div>
 
-        <!-- Question Header -->
-        <div class="mb-8">
-          <h2 class="font-serif text-3xl sm:text-4xl text-primary font-normal leading-tight mb-2">
-            {{ questions[currentQuestion].title }}
-          </h2>
+      <!-- QUESTION STEP (Rounded 3xl) -->
+      <div 
+        v-if="currentStep < questions.length"
+        class="bg-surface border border-outline-variant rounded-3xl p-8 sm:p-12 shadow-md space-y-8 animate-in fade-in"
+      >
+        <div class="text-center">
+          <h1 class="font-serif text-3xl sm:text-4xl text-primary font-normal mb-2">
+            {{ questions[currentStep].title }}
+          </h1>
           <p class="font-sans text-sm text-secondary">
-            {{ questions[currentQuestion].subtitle }}
+            {{ questions[currentStep].subtitle }}
           </p>
         </div>
 
-        <!-- Options Grid -->
-        <div class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <button
-            v-for="opt in questions[currentQuestion].options"
-            :key="opt.value"
-            @click="selectOption(questions[currentQuestion].field, opt.value)"
-            class="w-full text-left p-5 border border-outline-variant hover:border-primary hover:bg-surface-container-low transition-all flex items-start gap-4 group"
+            v-for="opt in questions[currentStep].options"
+            :key="opt.label"
+            @click="selectOption(questions[currentStep].key, opt.value)"
+            class="p-6 bg-surface-container-low hover:bg-surface-container border border-outline-variant hover:border-primary rounded-2xl flex flex-col items-center text-center gap-3 transition-all duration-200 group shadow-2xs hover:shadow-xs"
           >
-            <div class="w-10 h-10 bg-surface-container flex items-center justify-center border border-outline-variant flex-shrink-0 group-hover:border-primary text-primary">
-              <span class="material-symbols-outlined text-xl">{{ opt.icon }}</span>
-            </div>
-            <div>
-              <h4 class="font-serif text-lg text-primary font-medium group-hover:text-primary-container transition-colors">
-                {{ opt.label }}
-              </h4>
-              <p class="font-sans text-xs text-secondary mt-0.5">
-                {{ opt.desc }}
-              </p>
-            </div>
+            <span class="material-symbols-outlined text-3xl text-primary group-hover:scale-110 transition-transform">
+              {{ opt.icon }}
+            </span>
+            <span class="font-serif text-base text-primary font-medium">
+              {{ opt.label }}
+            </span>
           </button>
         </div>
 
-        <!-- Back Button -->
-        <div v-if="currentQuestion > 0" class="mt-8 pt-4 border-t border-outline-variant flex justify-start">
+        <div v-if="currentStep > 0" class="text-center pt-2">
           <button 
-            @click="currentQuestion--"
+            @click="currentStep--"
             class="font-label text-xs uppercase tracking-widest text-secondary hover:text-primary underline"
           >
             ← Volver a la pregunta anterior
@@ -159,89 +153,79 @@ const addRecommendedToCart = (prod) => {
         </div>
       </div>
 
-      <!-- QUIZ RESULTS -->
-      <div v-else class="space-y-8 animate-in fade-in">
-        <div class="bg-surface border border-primary p-8 md:p-12 text-center">
-          <span class="material-symbols-outlined text-4xl text-primary mb-2">auto_awesome</span>
-          <span class="font-label text-xs uppercase tracking-[0.25em] text-secondary block mb-1">Resultados de tu Diagnóstico</span>
-          <h2 class="font-serif text-3xl sm:text-4xl text-primary font-normal mb-3">
-            Tus Fragancias con Mayor Afinidad
+      <!-- FINAL RESULT SCREEN (Rounded 3xl) -->
+      <div 
+        v-else 
+        class="bg-surface border border-outline-variant rounded-3xl p-8 sm:p-12 shadow-lg space-y-8 animate-in zoom-in-95 text-center"
+      >
+        <div class="inline-flex items-center gap-1.5 bg-surface-container px-4 py-1.5 rounded-full border border-outline-variant text-tertiary font-label text-xs uppercase tracking-widest font-bold">
+          <span class="material-symbols-outlined text-sm">auto_awesome</span>
+          <span>99% de Afinidad Olfativa</span>
+        </div>
+
+        <div>
+          <span class="font-label text-xs uppercase tracking-[0.25em] text-secondary block mb-1">Tu Fragancia Ideal es:</span>
+          <h2 class="font-serif text-4xl sm:text-5xl text-primary font-normal mb-2">
+            {{ matchResult.name }}
           </h2>
-          <p class="font-sans text-sm text-secondary max-w-md mx-auto leading-relaxed mb-8">
-            Basándonos en tus preferencias olfativas y ocasión de uso, estas creaciones encajan en un <strong>98%</strong> con tu identidad.
+          <p class="font-sans text-sm text-secondary">
+            Por {{ matchResult.brand }} • {{ matchResult.concentration }} • Familia {{ matchResult.fragranceFamily }}
           </p>
+        </div>
 
-          <!-- Recommended List -->
-          <div class="space-y-6 text-left">
-            <div 
-              v-for="(prod, index) in recommendedProducts" 
-              :key="prod.id"
-              class="bg-surface-container border border-outline-variant p-6 flex flex-col sm:flex-row gap-6 items-center"
-            >
-              <img 
-                :src="prod.images[0]" 
-                :alt="prod.name"
-                class="w-28 h-36 object-cover bg-surface border border-outline-variant flex-shrink-0"
-              />
-
-              <div class="flex-grow min-w-0 space-y-2">
-                <div class="flex justify-between items-start">
-                  <div>
-                    <span class="font-label text-[10px] uppercase tracking-widest text-secondary">{{ prod.brand }}</span>
-                    <h3 class="font-serif text-2xl text-primary font-normal">{{ prod.name }}</h3>
-                  </div>
-                  <span class="font-label text-xs bg-primary-container text-on-primary px-2.5 py-1 uppercase font-bold">
-                    {{ index === 0 ? '99% Match' : '95% Match' }}
-                  </span>
-                </div>
-
-                <p class="font-sans text-xs text-secondary leading-relaxed">
-                  {{ prod.shortDescription }}
-                </p>
-
-                <div class="flex flex-wrap gap-1 pt-1">
-                  <span 
-                    v-for="note in prod.olfactoryPyramid.topNotes.slice(0, 3)"
-                    :key="note"
-                    class="font-label text-[10px] uppercase bg-surface px-2 py-0.5 border border-outline-variant text-secondary"
-                  >
-                    {{ note }}
-                  </span>
-                </div>
-
-                <div class="pt-3 flex flex-wrap items-center justify-between gap-4 border-t border-outline-variant">
-                  <span class="font-sans font-bold text-lg text-primary">
-                    ${{ prod.price.toLocaleString('es-AR') }}
-                  </span>
-
-                  <div class="flex gap-2">
-                    <RouterLink 
-                      :to="`/producto/${prod.slug}`"
-                      class="bg-transparent text-primary font-label text-xs uppercase tracking-widest px-4 py-2 border border-primary hover:bg-surface transition-colors"
-                    >
-                      Ver Detalle
-                    </RouterLink>
-                    <button 
-                      @click="addRecommendedToCart(prod)"
-                      class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-4 py-2 border border-primary-container hover:bg-inverse-surface transition-colors"
-                    >
-                      Añadir a la Bolsa
-                    </button>
-                  </div>
-                </div>
-              </div>
+        <!-- Product Presentation Box -->
+        <div class="bg-surface-container-low rounded-3xl p-6 border border-outline-variant flex flex-col sm:flex-row items-center gap-6 text-left max-w-xl mx-auto shadow-2xs">
+          <img 
+            :src="matchResult.images[0]" 
+            :alt="matchResult.name"
+            class="w-32 h-40 object-cover bg-surface rounded-2xl border border-outline-variant flex-shrink-0"
+          />
+          <div class="space-y-2">
+            <p class="font-sans text-xs text-secondary leading-relaxed">
+              {{ matchResult.shortDescription }}
+            </p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <span 
+                v-for="note in matchResult.olfactoryPyramid.topNotes" 
+                :key="note"
+                class="font-label text-[10px] uppercase bg-surface px-2.5 py-0.5 rounded-full border border-outline-variant"
+              >
+                {{ note }}
+              </span>
+            </div>
+            <div class="pt-2">
+              <span class="font-sans font-bold text-xl text-primary">
+                ${{ matchResult.price.toLocaleString('es-AR') }}
+              </span>
             </div>
           </div>
+        </div>
 
-          <!-- Restart CTA -->
-          <div class="mt-10 pt-6 border-t border-outline-variant">
-            <button 
-              @click="restartQuiz"
-              class="font-label text-xs uppercase tracking-widest text-secondary hover:text-primary underline"
-            >
-              🔄 Volver a hacer el test
-            </button>
-          </div>
+        <!-- Action CTAs (Pills) -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+          <button 
+            @click="handleAddRecommended"
+            class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-8 py-4 rounded-full hover:bg-inverse-surface transition-all flex items-center justify-center gap-2 shadow-md"
+          >
+            <span class="material-symbols-outlined text-sm">shopping_bag</span>
+            <span>Añadir a mi Bolsa de Compras</span>
+          </button>
+
+          <RouterLink 
+            :to="`/producto/${matchResult.slug}`"
+            class="bg-surface text-primary font-label text-xs uppercase tracking-widest px-8 py-4 rounded-full border border-outline hover:bg-surface-container transition-all text-center shadow-2xs"
+          >
+            Ver Ficha Completa
+          </RouterLink>
+        </div>
+
+        <div class="pt-4 border-t border-outline-variant">
+          <button 
+            @click="restart"
+            class="font-label text-xs uppercase tracking-widest text-secondary hover:text-primary underline"
+          >
+            Reiniciar Quiz Olfativo
+          </button>
         </div>
       </div>
 

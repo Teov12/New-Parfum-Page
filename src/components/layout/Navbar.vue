@@ -31,7 +31,7 @@ const isActive = (path) => {
 </script>
 
 <template>
-  <nav class="bg-surface sticky top-0 z-40 border-b border-primary transition-all">
+  <nav class="bg-surface sticky top-0 z-40 border-b border-outline-variant shadow-xs transition-all">
     <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-4 flex justify-between items-center">
       
       <!-- Brand Logo -->
@@ -50,21 +50,21 @@ const isActive = (path) => {
           v-for="link in navLinks"
           :key="link.name"
           :to="link.path"
-          class="font-label text-label-sm uppercase tracking-wider transition-colors duration-200 relative py-1"
+          class="font-label text-label-sm uppercase tracking-wider transition-all duration-200 relative py-1 px-2.5 rounded-full"
           :class="isActive(link.path) 
-            ? 'text-primary font-bold border-b border-primary' 
-            : 'text-secondary hover:text-primary'"
+            ? 'text-primary font-bold bg-surface-container' 
+            : 'text-secondary hover:text-primary hover:bg-surface-container/50'"
         >
           {{ link.name }}
         </RouterLink>
       </div>
 
       <!-- Action Icons (Search, Wishlist, Cart, Mobile Menu) -->
-      <div class="flex items-center gap-3 sm:gap-4 text-primary">
+      <div class="flex items-center gap-2 sm:gap-3 text-primary">
         <!-- Search Trigger -->
         <button 
           @click="isSearchOpen = true"
-          class="p-2 hover:text-primary-container transition-colors duration-200"
+          class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center transition-colors duration-200"
           aria-label="Buscar fragancias"
           title="Buscar fragancias"
         >
@@ -74,14 +74,14 @@ const isActive = (path) => {
         <!-- Wishlist Link -->
         <RouterLink 
           to="/catalogo?wishlist=true" 
-          class="p-2 hover:text-primary-container transition-colors duration-200 relative hidden sm:block"
+          class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center transition-colors duration-200 relative hidden sm:flex"
           aria-label="Lista de Deseos"
           title="Favoritos"
         >
           <span class="material-symbols-outlined text-2xl">favorite</span>
           <span 
             v-if="wishlistStore.totalItems > 0"
-            class="absolute top-1 right-1 bg-secondary text-surface text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-label font-bold"
+            class="absolute top-1 right-1 bg-secondary text-surface text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-label font-bold shadow-xs"
           >
             {{ wishlistStore.totalItems }}
           </span>
@@ -90,14 +90,14 @@ const isActive = (path) => {
         <!-- Cart Trigger Drawer -->
         <button 
           @click="cartStore.openDrawer"
-          class="p-2 hover:text-primary-container transition-colors duration-200 relative"
+          class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center transition-colors duration-200 relative"
           aria-label="Bolsa de Compras"
           title="Tu Bolsa"
         >
           <span class="material-symbols-outlined text-2xl">shopping_cart</span>
           <span 
             v-if="cartStore.totalItems > 0"
-            class="absolute top-1 right-1 bg-primary-container text-on-primary text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-label font-bold animate-pulse"
+            class="absolute top-1 right-1 bg-primary-container text-on-primary text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-label font-bold animate-pulse shadow-xs"
           >
             {{ cartStore.totalItems }}
           </span>
@@ -106,7 +106,7 @@ const isActive = (path) => {
         <!-- Mobile Menu Toggle -->
         <button 
           @click="isMobileMenuOpen = !isMobileMenuOpen"
-          class="lg:hidden p-2 hover:text-primary-container transition-colors ml-1"
+          class="lg:hidden w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center transition-colors"
           aria-label="Menú de navegación"
         >
           <span class="material-symbols-outlined text-2xl">{{ isMobileMenuOpen ? 'close' : 'menu' }}</span>
@@ -117,25 +117,25 @@ const isActive = (path) => {
     <!-- Mobile Dropdown Menu -->
     <div 
       v-if="isMobileMenuOpen" 
-      class="lg:hidden bg-surface border-t border-outline-variant px-margin-mobile py-6 space-y-4 shadow-lg animate-in slide-in-from-top-2 duration-200"
+      class="lg:hidden bg-surface border-t border-outline-variant px-margin-mobile py-6 space-y-4 shadow-lg rounded-b-3xl animate-in slide-in-from-top-2 duration-200"
     >
-      <div class="flex flex-col space-y-3">
+      <div class="flex flex-col space-y-2">
         <RouterLink
           v-for="link in navLinks"
           :key="link.name"
           :to="link.path"
           @click="isMobileMenuOpen = false"
-          class="font-label text-sm uppercase tracking-widest py-2 border-b border-outline-variant flex justify-between items-center"
-          :class="isActive(link.path) ? 'text-primary font-bold' : 'text-secondary'"
+          class="font-label text-sm uppercase tracking-widest py-2.5 px-3 rounded-xl flex justify-between items-center transition-colors"
+          :class="isActive(link.path) ? 'text-primary font-bold bg-surface-container' : 'text-secondary hover:bg-surface-container-low'"
         >
           <span>{{ link.name }}</span>
           <span class="material-symbols-outlined text-sm">chevron_right</span>
         </RouterLink>
       </div>
 
-      <div class="pt-4 flex justify-between items-center text-xs font-label text-secondary uppercase tracking-widest">
+      <div class="pt-4 border-t border-outline-variant flex justify-between items-center text-xs font-label text-secondary uppercase tracking-widest">
         <span>Gicca Perfumes Boutique</span>
-        <RouterLink to="/quiz" @click="isMobileMenuOpen = false" class="text-primary underline">
+        <RouterLink to="/quiz" @click="isMobileMenuOpen = false" class="text-primary underline font-bold">
           Quiz Olfativo
         </RouterLink>
       </div>
