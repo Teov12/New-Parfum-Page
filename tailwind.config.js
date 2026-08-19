@@ -101,13 +101,14 @@ export default {
       },
       borderRadius: {
         'none': '0px',
+        'xs': '2px',
         'sm': '4px',
-        DEFAULT: '8px',
-        'md': '10px',
-        'lg': '14px',
-        'xl': '18px',
-        '2xl': '24px',
-        '3xl': '32px',
+        DEFAULT: '4px',
+        'md': '6px',
+        'lg': '8px',
+        'xl': '12px',
+        '2xl': '16px',
+        '3xl': '24px',
         'full': '9999px'
       }
     },

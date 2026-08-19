@@ -182,7 +182,7 @@ const activeFiltersCount = computed(() => {
 
           <!-- Sort Dropdown & Mobile Filter Toggle -->
           <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
-            <!-- Mobile Filter Button -->
+            <!-- Mobile Filter Button (Píldora) -->
             <button 
               @click="isMobileFiltersOpen = true"
               class="md:hidden flex items-center gap-2 font-label text-xs uppercase tracking-widest bg-surface border border-outline px-4 py-2.5 rounded-full text-primary shadow-2xs"
@@ -191,7 +191,7 @@ const activeFiltersCount = computed(() => {
               <span>Filtros ({{ activeFiltersCount }})</span>
             </button>
 
-            <!-- Sort By -->
+            <!-- Sort By (Píldora) -->
             <div class="flex items-center gap-2">
               <label for="sort" class="font-label text-xs uppercase tracking-widest text-secondary hidden sm:inline">
                 Ordenar por:
@@ -220,8 +220,8 @@ const activeFiltersCount = computed(() => {
       <!-- Main Layout: Sidebar Filters + Products Grid -->
       <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         
-        <!-- SIDEBAR FILTERS (Desktop - Rounded 3xl) -->
-        <aside class="hidden md:block md:col-span-3 bg-surface border border-outline-variant rounded-3xl p-6 space-y-6 shadow-xs">
+        <!-- SIDEBAR FILTERS (Estructura Limpia de 2px con Elementos Táctiles) -->
+        <aside class="hidden md:block md:col-span-3 bg-surface border border-outline-variant rounded-xs p-6 space-y-6 shadow-xs">
           
           <!-- Clear Filters Button -->
           <div class="flex justify-between items-center border-b border-outline-variant pb-4">
@@ -255,15 +255,15 @@ const activeFiltersCount = computed(() => {
             <h3 class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-3">Género</h3>
             <div class="space-y-2 font-sans text-sm text-secondary">
               <label class="flex items-center gap-2.5 cursor-pointer hover:text-primary">
-                <input type="checkbox" value="woman" v-model="selectedGenders" class="accent-primary w-4 h-4 rounded-md cursor-pointer" />
+                <input type="checkbox" value="woman" v-model="selectedGenders" class="accent-primary w-4 h-4 rounded-xs cursor-pointer" />
                 <span>Mujer</span>
               </label>
               <label class="flex items-center gap-2.5 cursor-pointer hover:text-primary">
-                <input type="checkbox" value="man" v-model="selectedGenders" class="accent-primary w-4 h-4 rounded-md cursor-pointer" />
+                <input type="checkbox" value="man" v-model="selectedGenders" class="accent-primary w-4 h-4 rounded-xs cursor-pointer" />
                 <span>Hombre</span>
               </label>
               <label class="flex items-center gap-2.5 cursor-pointer hover:text-primary">
-                <input type="checkbox" value="unisex" v-model="selectedGenders" class="accent-primary w-4 h-4 rounded-md cursor-pointer" />
+                <input type="checkbox" value="unisex" v-model="selectedGenders" class="accent-primary w-4 h-4 rounded-xs cursor-pointer" />
                 <span>Unisex & Nicho</span>
               </label>
             </div>
@@ -282,7 +282,7 @@ const activeFiltersCount = computed(() => {
                   type="checkbox" 
                   :value="family.name" 
                   v-model="selectedFamilies" 
-                  class="accent-primary w-4 h-4 rounded-md cursor-pointer" 
+                  class="accent-primary w-4 h-4 rounded-xs cursor-pointer" 
                 />
                 <span>{{ family.name }}</span>
               </label>
@@ -302,7 +302,7 @@ const activeFiltersCount = computed(() => {
                   type="checkbox" 
                   :value="brand" 
                   v-model="selectedBrands" 
-                  class="accent-primary w-4 h-4 rounded-md cursor-pointer" 
+                  class="accent-primary w-4 h-4 rounded-xs cursor-pointer" 
                 />
                 <span class="truncate">{{ brand }}</span>
               </label>
@@ -322,7 +322,7 @@ const activeFiltersCount = computed(() => {
                   type="checkbox" 
                   :value="conc" 
                   v-model="selectedConcentrations" 
-                  class="accent-primary w-4 h-4 rounded-md cursor-pointer" 
+                  class="accent-primary w-4 h-4 rounded-xs cursor-pointer" 
                 />
                 <span>{{ conc }}</span>
               </label>
@@ -348,11 +348,11 @@ const activeFiltersCount = computed(() => {
           <!-- Special Toggles -->
           <div class="space-y-3 pt-1">
             <label class="flex items-center gap-2.5 cursor-pointer font-label text-xs uppercase tracking-wider text-primary">
-              <input type="checkbox" v-model="onlyOffers" class="accent-primary w-4 h-4 rounded-md cursor-pointer" />
+              <input type="checkbox" v-model="onlyOffers" class="accent-primary w-4 h-4 rounded-xs cursor-pointer" />
               <span>Solo Ofertas Especiales</span>
             </label>
             <label class="flex items-center gap-2.5 cursor-pointer font-label text-xs uppercase tracking-wider text-primary">
-              <input type="checkbox" v-model="onlyWishlist" class="accent-primary w-4 h-4 rounded-md cursor-pointer" />
+              <input type="checkbox" v-model="onlyWishlist" class="accent-primary w-4 h-4 rounded-xs cursor-pointer" />
               <span>Solo Mis Favoritos ({{ wishlistStore.totalItems }})</span>
             </label>
           </div>
@@ -362,8 +362,8 @@ const activeFiltersCount = computed(() => {
         <!-- PRODUCTS GRID (Desktop 9 cols) -->
         <main class="md:col-span-9">
           
-          <!-- Active Tags Bar (Rounded Pills) -->
-          <div v-if="activeFiltersCount > 0" class="flex flex-wrap items-center gap-2 mb-6 bg-surface p-3.5 rounded-2xl border border-outline-variant shadow-2xs">
+          <!-- Active Tags Bar (Píldoras) -->
+          <div v-if="activeFiltersCount > 0" class="flex flex-wrap items-center gap-2 mb-6 bg-surface p-3.5 rounded-xs border border-outline-variant shadow-2xs">
             <span class="font-label text-[11px] uppercase tracking-widest text-secondary">Filtros Activos:</span>
             
             <span 
@@ -419,7 +419,7 @@ const activeFiltersCount = computed(() => {
           </div>
 
           <!-- Empty State -->
-          <div v-else class="bg-surface border border-outline-variant rounded-3xl p-16 text-center shadow-xs">
+          <div v-else class="bg-surface border border-outline-variant rounded-xs p-16 text-center shadow-xs">
             <span class="material-symbols-outlined text-6xl text-outline mb-4">search_off</span>
             <h3 class="font-serif text-2xl text-primary mb-2 font-normal">No encontramos fragancias con esos filtros</h3>
             <p class="font-sans text-sm text-secondary max-w-md mx-auto mb-8 leading-relaxed">
@@ -444,7 +444,7 @@ const activeFiltersCount = computed(() => {
       v-if="isMobileFiltersOpen"
       class="fixed inset-0 z-50 bg-primary/60 backdrop-blur-xs flex justify-end"
     >
-      <div class="w-full max-w-xs bg-surface h-full p-6 overflow-y-auto flex flex-col justify-between border-l border-outline-variant shadow-2xl rounded-l-3xl">
+      <div class="w-full max-w-xs bg-surface h-full p-6 overflow-y-auto flex flex-col justify-between border-l border-outline-variant shadow-2xl">
         <div>
           <div class="flex justify-between items-center border-b border-outline-variant pb-4 mb-6">
             <h3 class="font-serif text-xl text-primary font-medium">Filtrar Colección</h3>
@@ -458,9 +458,9 @@ const activeFiltersCount = computed(() => {
             <div>
               <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-3">Género</h4>
               <div class="space-y-2 font-sans text-sm text-secondary">
-                <label class="flex items-center gap-2"><input type="checkbox" value="woman" v-model="selectedGenders" class="accent-primary rounded-md" /> Mujer</label>
-                <label class="flex items-center gap-2"><input type="checkbox" value="man" v-model="selectedGenders" class="accent-primary rounded-md" /> Hombre</label>
-                <label class="flex items-center gap-2"><input type="checkbox" value="unisex" v-model="selectedGenders" class="accent-primary rounded-md" /> Unisex</label>
+                <label class="flex items-center gap-2"><input type="checkbox" value="woman" v-model="selectedGenders" class="accent-primary rounded-xs" /> Mujer</label>
+                <label class="flex items-center gap-2"><input type="checkbox" value="man" v-model="selectedGenders" class="accent-primary rounded-xs" /> Hombre</label>
+                <label class="flex items-center gap-2"><input type="checkbox" value="unisex" v-model="selectedGenders" class="accent-primary rounded-xs" /> Unisex</label>
               </div>
             </div>
 
@@ -468,7 +468,7 @@ const activeFiltersCount = computed(() => {
               <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-3">Familia Olfativa</h4>
               <div class="space-y-2 font-sans text-sm text-secondary">
                 <label v-for="f in olfactiveFamilies" :key="f.name" class="flex items-center gap-2">
-                  <input type="checkbox" :value="f.name" v-model="selectedFamilies" class="accent-primary rounded-md" /> {{ f.name }}
+                  <input type="checkbox" :value="f.name" v-model="selectedFamilies" class="accent-primary rounded-xs" /> {{ f.name }}
                 </label>
               </div>
             </div>

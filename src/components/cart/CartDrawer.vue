@@ -50,9 +50,9 @@ const goToCartPage = () => {
       @click="cartStore.closeDrawer"
     ></div>
 
-    <!-- Drawer Panel (Rounded Left Corner) -->
+    <!-- Drawer Panel: Estructura arquitectónica limpia con botones ergonómicos -->
     <aside 
-      class="fixed top-0 right-0 z-50 h-full w-full max-w-md bg-surface border-l border-outline-variant shadow-2xl flex flex-col transition-transform duration-300 ease-in-out sm:rounded-l-3xl overflow-hidden"
+      class="fixed top-0 right-0 z-50 h-full w-full max-w-md bg-surface border-l border-outline-variant shadow-2xl flex flex-col transition-transform duration-300 ease-in-out overflow-hidden"
       :class="cartStore.isDrawerOpen ? 'translate-x-0' : 'translate-x-full'"
     >
       <!-- Header -->
@@ -72,7 +72,7 @@ const goToCartPage = () => {
         </button>
       </div>
 
-      <!-- Free Shipping Goal Banner -->
+      <!-- Free Shipping Goal Banner (Barra Píldora) -->
       <div class="px-6 py-3.5 bg-surface-container border-b border-outline-variant">
         <div class="flex justify-between items-center text-xs font-label uppercase tracking-wider mb-2 text-primary">
           <span v-if="cartStore.amountForFreeShipping > 0">
@@ -111,13 +111,13 @@ const goToCartPage = () => {
         <div 
           v-for="item in cartStore.items" 
           :key="`${item.id}-${item.size}`"
-          class="p-4 bg-surface-container-low rounded-2xl border border-outline-variant flex gap-4"
+          class="p-4 bg-surface-container-low rounded-xs border border-outline-variant flex gap-4"
         >
-          <!-- Thumbnail -->
+          <!-- Thumbnail (Encuadre Recto) -->
           <img 
             :src="item.image" 
             :alt="item.name"
-            class="w-20 h-24 object-cover bg-surface-lowest rounded-xl border border-outline-variant flex-shrink-0"
+            class="w-20 h-24 object-cover bg-surface-lowest rounded-xs border border-outline-variant flex-shrink-0"
           />
 
           <!-- Details -->
@@ -147,7 +147,7 @@ const goToCartPage = () => {
               </div>
             </div>
 
-            <!-- Price & Quantity Adjuster -->
+            <!-- Price & Quantity Adjuster (Píldora) -->
             <div class="flex justify-between items-center mt-3 pt-2">
               <div class="inline-flex items-center border border-outline-variant rounded-full bg-surface overflow-hidden shadow-2xs">
                 <button 
@@ -180,7 +180,7 @@ const goToCartPage = () => {
 
         <!-- Courtesy Sample Selection (Boutique Feature) -->
         <div v-if="cartStore.items.length > 0" class="pt-2">
-          <div class="bg-surface-container-low border border-outline-variant rounded-2xl p-4">
+          <div class="bg-surface-container-low border border-outline-variant rounded-xs p-4">
             <p class="font-label text-xs text-primary uppercase tracking-widest font-semibold flex items-center gap-1.5 mb-2">
               <span class="material-symbols-outlined text-sm text-tertiary">card_giftcard</span>
               Muestra de Cortesía Gratis:
@@ -188,7 +188,7 @@ const goToCartPage = () => {
             <select 
               v-model="cartStore.selectedSample" 
               @change="cartStore.selectSample(cartStore.selectedSample)"
-              class="w-full bg-surface text-xs font-sans text-primary border border-outline-variant rounded-xl p-2.5 focus:ring-0 focus:border-primary"
+              class="w-full bg-surface text-xs font-sans text-primary border border-outline-variant rounded-xs p-2.5 focus:ring-0 focus:border-primary"
             >
               <option v-for="sample in sampleOptions" :key="sample" :value="sample">
                 {{ sample }}
@@ -200,7 +200,7 @@ const goToCartPage = () => {
 
       <!-- Footer & Totals -->
       <div v-if="cartStore.items.length > 0" class="p-6 bg-surface border-t border-outline-variant space-y-4">
-        <!-- Coupon Form -->
+        <!-- Coupon Form (Píldora) -->
         <div v-if="!cartStore.coupon" class="flex gap-2">
           <input 
             v-model="couponInput"
@@ -216,7 +216,7 @@ const goToCartPage = () => {
             Aplicar
           </button>
         </div>
-        <div v-else class="flex justify-between items-center bg-surface-container rounded-xl px-3.5 py-2 text-xs border border-outline-variant">
+        <div v-else class="flex justify-between items-center bg-surface-container rounded-full px-4 py-2 text-xs border border-outline-variant">
           <span class="text-tertiary font-semibold flex items-center gap-1">
             <span class="material-symbols-outlined text-sm">check_circle</span>
             {{ cartStore.coupon.label }} ({{ cartStore.coupon.code }})
@@ -253,7 +253,7 @@ const goToCartPage = () => {
           </div>
         </div>
 
-        <!-- Action CTAs -->
+        <!-- Action CTAs: Píldoras -->
         <div class="grid grid-cols-2 gap-3 pt-2">
           <button 
             @click="goToCartPage"

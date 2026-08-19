@@ -76,8 +76,8 @@ onUnmounted(() => {
       class="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-primary/60 backdrop-blur-sm transition-opacity"
       @click.self="close"
     >
-      <div class="bg-surface w-full max-w-2xl border border-outline rounded-3xl shadow-2xl p-6 md:p-8 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
-        <!-- Search Input Header -->
+      <div class="bg-surface w-full max-w-2xl border border-outline rounded-xs shadow-2xl p-6 md:p-8 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+        <!-- Search Input Header: Píldora -->
         <div class="relative flex items-center bg-surface-container rounded-full px-4 py-3 border border-outline-variant focus-within:border-primary mb-6 transition-colors">
           <span class="material-symbols-outlined text-2xl text-primary mr-3">search</span>
           <input
@@ -102,7 +102,7 @@ onUnmounted(() => {
           </button>
         </div>
 
-        <!-- Quick Tags -->
+        <!-- Quick Tags: Píldoras -->
         <div class="mb-6">
           <p class="font-label text-label-sm text-secondary uppercase tracking-widest mb-2.5">Búsquedas Frecuentes:</p>
           <div class="flex flex-wrap gap-2">
@@ -138,12 +138,12 @@ onUnmounted(() => {
               v-for="product in filteredProducts"
               :key="product.id"
               @click="selectProduct(product.slug)"
-              class="flex items-center gap-4 py-3 hover:bg-surface-container px-3 rounded-2xl cursor-pointer transition-colors group"
+              class="flex items-center gap-4 py-3 hover:bg-surface-container px-3 rounded-xs cursor-pointer transition-colors group"
             >
               <img 
                 :src="product.images[0]" 
                 :alt="product.name"
-                class="w-12 h-16 object-cover bg-surface-lowest rounded-xl border border-outline-variant flex-shrink-0"
+                class="w-12 h-16 object-cover bg-surface-lowest rounded-xs border border-outline-variant flex-shrink-0"
               />
               <div class="flex-grow min-w-0">
                 <div class="flex items-center gap-2">

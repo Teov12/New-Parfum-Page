@@ -53,7 +53,7 @@ const proceedToCheckout = () => {
       </div>
 
       <!-- If Cart is Empty -->
-      <div v-if="cartStore.items.length === 0" class="bg-surface border border-outline-variant rounded-3xl p-16 text-center shadow-xs">
+      <div v-if="cartStore.items.length === 0" class="bg-surface border border-outline-variant rounded-xs p-16 text-center shadow-xs">
         <span class="material-symbols-outlined text-6xl text-outline mb-4">shopping_bag</span>
         <h2 class="font-serif text-3xl text-primary font-normal mb-2">Tu bolsa está actualmente vacía</h2>
         <p class="font-sans text-secondary max-w-md mx-auto mb-8 leading-relaxed">
@@ -74,8 +74,8 @@ const proceedToCheckout = () => {
         <!-- Cart Items List (8 cols) -->
         <div class="lg:col-span-8 space-y-6">
           
-          <!-- Free Shipping Progress Box (Rounded 3xl) -->
-          <div class="bg-surface border border-outline-variant rounded-3xl p-6 shadow-xs">
+          <!-- Free Shipping Progress Box -->
+          <div class="bg-surface border border-outline-variant rounded-xs p-6 shadow-xs">
             <div class="flex justify-between items-center text-xs font-label uppercase tracking-wider mb-2 text-primary">
               <span v-if="cartStore.amountForFreeShipping > 0">
                 Faltan <strong>${{ cartStore.amountForFreeShipping.toLocaleString('es-AR') }}</strong> para disfrutar de <strong>Envío Gratis</strong> en todo el país.
@@ -94,8 +94,8 @@ const proceedToCheckout = () => {
             </div>
           </div>
 
-          <!-- Items Table / Cards (Rounded 3xl) -->
-          <div class="bg-surface border border-outline-variant rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs">
+          <!-- Items Table / Cards -->
+          <div class="bg-surface border border-outline-variant rounded-xs p-6 sm:p-8 space-y-6 shadow-xs">
             <div class="border-b border-outline-variant pb-4 flex justify-between items-center">
               <h2 class="font-serif text-xl text-primary font-medium">
                 Artículos en tu pedido ({{ cartStore.totalItems }})
@@ -119,7 +119,7 @@ const proceedToCheckout = () => {
                   <img 
                     :src="item.image" 
                     :alt="item.name"
-                    class="w-20 h-24 object-cover bg-surface-container rounded-2xl border border-outline-variant flex-shrink-0"
+                    class="w-20 h-24 object-cover bg-surface-container rounded-xs border border-outline-variant flex-shrink-0"
                   />
                   <div>
                     <span class="font-label text-xs uppercase tracking-widest text-secondary">{{ item.brand }}</span>
@@ -137,7 +137,7 @@ const proceedToCheckout = () => {
 
                 <!-- Quantity & Price -->
                 <div class="flex items-center justify-between w-full sm:w-auto sm:gap-8">
-                  <!-- Counter -->
+                  <!-- Counter (Píldora) -->
                   <div class="inline-flex items-center border border-outline-variant rounded-full bg-surface shadow-2xs overflow-hidden">
                     <button 
                       @click="cartStore.updateQuantity(item.id, item.size, item.quantity - 1)"
@@ -179,8 +179,8 @@ const proceedToCheckout = () => {
             </div>
           </div>
 
-          <!-- Courtesy Sample Selection Card (Rounded 3xl) -->
-          <div class="bg-surface border border-outline-variant rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs">
+          <!-- Courtesy Sample Selection Card -->
+          <div class="bg-surface border border-outline-variant rounded-xs p-6 sm:p-8 space-y-4 shadow-xs">
             <div class="flex items-center gap-2">
               <span class="material-symbols-outlined text-2xl text-tertiary">card_giftcard</span>
               <div>
@@ -194,7 +194,7 @@ const proceedToCheckout = () => {
                 v-for="sample in sampleOptions" 
                 :key="sample.id"
                 @click="cartStore.selectSample(sample.name)"
-                class="p-4 rounded-2xl border cursor-pointer transition-all flex justify-between items-center shadow-2xs"
+                class="p-4 rounded-xs border cursor-pointer transition-all flex justify-between items-center shadow-2xs"
                 :class="cartStore.selectedSample === sample.name 
                   ? 'bg-surface-container border-primary ring-1 ring-primary' 
                   : 'bg-surface border-outline-variant hover:border-outline'"
@@ -216,15 +216,15 @@ const proceedToCheckout = () => {
 
         </div>
 
-        <!-- Sticky Order Summary Sidebar (4 cols - Rounded 3xl) -->
+        <!-- Sticky Order Summary Sidebar (4 cols) -->
         <div class="lg:col-span-4 sticky top-28 space-y-6">
           
-          <div class="bg-surface border border-outline-variant rounded-3xl p-6 sm:p-8 space-y-6 shadow-md">
+          <div class="bg-surface border border-outline-variant rounded-xs p-6 sm:p-8 space-y-6 shadow-md">
             <h2 class="font-serif text-2xl text-primary font-normal border-b border-outline-variant pb-4">
               Resumen de Compra
             </h2>
 
-            <!-- Coupon Input (Pill) -->
+            <!-- Coupon Input (Píldora) -->
             <div class="space-y-2">
               <label class="font-label text-xs uppercase tracking-widest text-primary font-bold">
                 Cupón de Descuento
@@ -245,8 +245,8 @@ const proceedToCheckout = () => {
                 </button>
               </div>
 
-              <!-- Active coupon badge -->
-              <div v-if="cartStore.coupon" class="bg-surface-container p-3 rounded-2xl border border-outline-variant flex justify-between items-center text-xs">
+              <!-- Active coupon badge (Píldora) -->
+              <div v-if="cartStore.coupon" class="bg-surface-container p-3 rounded-full border border-outline-variant flex justify-between items-center text-xs px-4">
                 <span class="text-tertiary font-semibold flex items-center gap-1">
                   <span class="material-symbols-outlined text-sm">check_circle</span>
                   {{ cartStore.coupon.label }} ({{ cartStore.coupon.code }})
@@ -291,7 +291,7 @@ const proceedToCheckout = () => {
               </div>
             </div>
 
-            <!-- Primary Action Buttons (Pill Buttons) -->
+            <!-- Primary Action Buttons (Píldoras) -->
             <div class="space-y-3 pt-2">
               <button 
                 @click="proceedToCheckout"
@@ -313,7 +313,7 @@ const proceedToCheckout = () => {
           </div>
 
           <!-- Trust card -->
-          <div class="p-4 bg-surface rounded-2xl border border-outline-variant flex items-center gap-3 text-xs font-sans text-secondary shadow-2xs">
+          <div class="p-4 bg-surface rounded-xs border border-outline-variant flex items-center gap-3 text-xs font-sans text-secondary shadow-2xs">
             <span class="material-symbols-outlined text-xl text-primary">security</span>
             <span>Tus datos de pago están encriptados y procesados de manera segura.</span>
           </div>

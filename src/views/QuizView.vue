@@ -100,7 +100,7 @@ const handleAddRecommended = () => {
   <div class="bg-surface-container py-16">
     <div class="max-w-3xl mx-auto px-margin-mobile">
       
-      <!-- Quiz Progress Bar -->
+      <!-- Quiz Progress Bar (Píldora) -->
       <div v-if="currentStep < questions.length" class="mb-10 text-center">
         <span class="font-label text-xs uppercase tracking-[0.2em] text-secondary mb-2 block">
           Paso {{ currentStep + 1 }} de {{ questions.length }} • Fragrance Finder
@@ -113,10 +113,10 @@ const handleAddRecommended = () => {
         </div>
       </div>
 
-      <!-- QUESTION STEP (Rounded 3xl) -->
+      <!-- QUESTION STEP -->
       <div 
         v-if="currentStep < questions.length"
-        class="bg-surface border border-outline-variant rounded-3xl p-8 sm:p-12 shadow-md space-y-8 animate-in fade-in"
+        class="bg-surface border border-outline-variant rounded-xs p-8 sm:p-12 shadow-md space-y-8 animate-in fade-in"
       >
         <div class="text-center">
           <h1 class="font-serif text-3xl sm:text-4xl text-primary font-normal mb-2">
@@ -132,7 +132,7 @@ const handleAddRecommended = () => {
             v-for="opt in questions[currentStep].options"
             :key="opt.label"
             @click="selectOption(questions[currentStep].key, opt.value)"
-            class="p-6 bg-surface-container-low hover:bg-surface-container border border-outline-variant hover:border-primary rounded-2xl flex flex-col items-center text-center gap-3 transition-all duration-200 group shadow-2xs hover:shadow-xs"
+            class="p-6 bg-surface-container-low hover:bg-surface-container border border-outline-variant hover:border-primary rounded-xs flex flex-col items-center text-center gap-3 transition-all duration-200 group shadow-2xs hover:shadow-xs"
           >
             <span class="material-symbols-outlined text-3xl text-primary group-hover:scale-110 transition-transform">
               {{ opt.icon }}
@@ -153,10 +153,10 @@ const handleAddRecommended = () => {
         </div>
       </div>
 
-      <!-- FINAL RESULT SCREEN (Rounded 3xl) -->
+      <!-- FINAL RESULT SCREEN -->
       <div 
         v-else 
-        class="bg-surface border border-outline-variant rounded-3xl p-8 sm:p-12 shadow-lg space-y-8 animate-in zoom-in-95 text-center"
+        class="bg-surface border border-outline-variant rounded-xs p-8 sm:p-12 shadow-lg space-y-8 animate-in zoom-in-95 text-center"
       >
         <div class="inline-flex items-center gap-1.5 bg-surface-container px-4 py-1.5 rounded-full border border-outline-variant text-tertiary font-label text-xs uppercase tracking-widest font-bold">
           <span class="material-symbols-outlined text-sm">auto_awesome</span>
@@ -174,11 +174,11 @@ const handleAddRecommended = () => {
         </div>
 
         <!-- Product Presentation Box -->
-        <div class="bg-surface-container-low rounded-3xl p-6 border border-outline-variant flex flex-col sm:flex-row items-center gap-6 text-left max-w-xl mx-auto shadow-2xs">
+        <div class="bg-surface-container-low rounded-xs p-6 border border-outline-variant flex flex-col sm:flex-row items-center gap-6 text-left max-w-xl mx-auto shadow-2xs">
           <img 
             :src="matchResult.images[0]" 
             :alt="matchResult.name"
-            class="w-32 h-40 object-cover bg-surface rounded-2xl border border-outline-variant flex-shrink-0"
+            class="w-32 h-40 object-cover bg-surface rounded-xs border border-outline-variant flex-shrink-0"
           />
           <div class="space-y-2">
             <p class="font-sans text-xs text-secondary leading-relaxed">
@@ -201,7 +201,7 @@ const handleAddRecommended = () => {
           </div>
         </div>
 
-        <!-- Action CTAs (Pills) -->
+        <!-- Action CTAs: Píldoras -->
         <div class="flex flex-col sm:flex-row gap-4 justify-center pt-4">
           <button 
             @click="handleAddRecommended"

@@ -8,7 +8,7 @@ defineProps({
 </script>
 
 <template>
-  <div class="bg-surface-container border border-outline-variant rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs">
+  <div class="bg-surface-container border border-outline-variant rounded-xs p-6 sm:p-8 space-y-6 shadow-xs">
     <div class="border-b border-outline-variant pb-3 flex justify-between items-baseline">
       <h3 class="font-serif text-xl text-primary font-medium">Pirámide Olfativa</h3>
       <span class="font-label text-[11px] uppercase tracking-widest text-secondary">Evolución en Piel</span>
@@ -17,8 +17,8 @@ defineProps({
     <div class="space-y-4">
       
       <!-- Top Notes (Salida) -->
-      <div class="flex items-start gap-4 p-5 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
-        <div class="w-12 h-12 bg-surface-container rounded-2xl flex items-center justify-center flex-shrink-0 text-primary border border-outline-variant shadow-2xs">
+      <div class="flex items-start gap-4 p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs">
+        <div class="w-12 h-12 bg-surface-container rounded-full flex items-center justify-center flex-shrink-0 text-primary border border-outline-variant shadow-2xs">
           <span class="material-symbols-outlined text-xl">air</span>
         </div>
         <div>
@@ -40,8 +40,8 @@ defineProps({
       </div>
 
       <!-- Heart Notes (Corazón) -->
-      <div class="flex items-start gap-4 p-5 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
-        <div class="w-12 h-12 bg-surface-container rounded-2xl flex items-center justify-center flex-shrink-0 text-primary border border-outline-variant shadow-2xs">
+      <div class="flex items-start gap-4 p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs">
+        <div class="w-12 h-12 bg-surface-container rounded-full flex items-center justify-center flex-shrink-0 text-primary border border-outline-variant shadow-2xs">
           <span class="material-symbols-outlined text-xl">spa</span>
         </div>
         <div>
@@ -63,8 +63,8 @@ defineProps({
       </div>
 
       <!-- Base Notes (Fondo) -->
-      <div class="flex items-start gap-4 p-5 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
-        <div class="w-12 h-12 bg-primary-container text-on-primary rounded-2xl flex items-center justify-center flex-shrink-0 border border-primary-container shadow-2xs">
+      <div class="flex items-start gap-4 p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs">
+        <div class="w-12 h-12 bg-primary-container text-on-primary rounded-full flex items-center justify-center flex-shrink-0 border border-primary-container shadow-2xs">
           <span class="material-symbols-outlined text-xl">nature</span>
         </div>
         <div>

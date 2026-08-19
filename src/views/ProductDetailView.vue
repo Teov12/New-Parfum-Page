@@ -131,10 +131,10 @@ const handleAddReview = () => {
       <!-- Main Product View: Gallery (Left) + Details & Purchase (Right) -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-20">
         
-        <!-- IMAGE GALLERY (7 cols - Rounded 3xl) -->
+        <!-- IMAGE GALLERY (7 cols - Encuadre Editorial Recto) -->
         <div class="lg:col-span-7 space-y-4">
           <!-- Main Selected Image (High-Res Container) -->
-          <div class="relative aspect-[4/5] bg-surface-container overflow-hidden rounded-3xl border border-outline-variant shadow-sm group">
+          <div class="relative aspect-[4/5] bg-surface-container overflow-hidden rounded-xs border border-outline-variant shadow-sm group">
             <img 
               :src="product.images[selectedImageIndex] || product.images[0]" 
               :alt="product.name"
@@ -149,7 +149,7 @@ const handleAddReview = () => {
               </span>
             </div>
 
-            <!-- Wishlist Floating Button -->
+            <!-- Wishlist Floating Button (Círculo) -->
             <button 
               @click="handleToggleWishlist"
               class="absolute top-4 right-4 z-10 w-11 h-11 bg-surface/90 backdrop-blur-xs border border-outline-variant hover:border-primary rounded-full flex items-center justify-center text-primary shadow-xs transition-colors"
@@ -164,14 +164,14 @@ const handleAddReview = () => {
             </button>
           </div>
 
-          <!-- Thumbnails Row -->
+          <!-- Thumbnails Row (Encuadre Recto de 2px) -->
           <div class="flex gap-3 overflow-x-auto pb-2">
             <button
               v-for="(img, idx) in product.images"
               :key="idx"
               @click="selectedImageIndex = idx"
-              class="w-20 h-24 flex-shrink-0 bg-surface-container rounded-2xl border overflow-hidden transition-all shadow-2xs"
-              :class="selectedImageIndex === idx ? 'border-primary ring-2 ring-primary' : 'border-outline-variant opacity-70 hover:opacity-100'"
+              class="w-20 h-24 flex-shrink-0 bg-surface-container rounded-xs border overflow-hidden transition-all shadow-2xs"
+              :class="selectedImageIndex === idx ? 'border-primary ring-1 ring-primary' : 'border-outline-variant opacity-70 hover:opacity-100'"
             >
               <img :src="img" :alt="`${product.name} vista ${idx + 1}`" class="w-full h-full object-cover" />
             </button>
@@ -212,7 +212,7 @@ const handleAddReview = () => {
           </div>
 
           <!-- Price & Installments -->
-          <div class="bg-surface-container-low border border-outline-variant rounded-2xl p-5 space-y-2 shadow-2xs">
+          <div class="bg-surface-container-low border border-outline-variant rounded-xs p-5 space-y-2 shadow-2xs">
             <div class="flex items-baseline gap-3">
               <span class="font-sans font-bold text-3xl text-primary">
                 ${{ currentPrice.toLocaleString('es-AR') }}
@@ -242,7 +242,7 @@ const handleAddReview = () => {
             {{ product.shortDescription }}
           </p>
 
-          <!-- Size Selector -->
+          <!-- Size Selector (Píldoras) -->
           <div class="space-y-2.5">
             <div class="flex justify-between items-baseline">
               <label class="font-label text-xs uppercase tracking-widest text-primary font-bold">
@@ -256,7 +256,7 @@ const handleAddReview = () => {
                 v-for="s in product.sizes"
                 :key="s.size"
                 @click="selectedSize = s"
-                class="font-label text-xs uppercase tracking-wider py-3 px-2 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 shadow-2xs"
+                class="font-label text-xs uppercase tracking-wider py-3 px-2 rounded-full border text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-2xs"
                 :class="selectedSize?.size === s.size 
                   ? 'bg-primary-container text-on-primary border-primary-container shadow-xs' 
                   : 'bg-surface text-primary border-outline-variant hover:border-primary'"
@@ -267,7 +267,7 @@ const handleAddReview = () => {
             </div>
           </div>
 
-          <!-- Quantity & Action Buttons -->
+          <!-- Quantity & Action Buttons (Píldoras) -->
           <div class="space-y-3 pt-2">
             <div class="flex gap-3">
               <!-- Quantity Counter -->
@@ -289,7 +289,7 @@ const handleAddReview = () => {
                 </button>
               </div>
 
-              <!-- Add to Cart CTA -->
+              <!-- Add to Cart CTA (Píldora) -->
               <button 
                 @click="handleAddToCart"
                 class="flex-grow bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-3.5 px-6 rounded-full border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-2 shadow-sm"
@@ -299,7 +299,7 @@ const handleAddReview = () => {
               </button>
             </div>
 
-            <!-- Direct Buy Now CTA -->
+            <!-- Direct Buy Now CTA (Píldora) -->
             <button 
               @click="handleBuyNow"
               class="w-full bg-transparent text-primary font-label text-xs uppercase tracking-widest py-3.5 rounded-full border border-primary hover:bg-surface-container transition-all flex items-center justify-center gap-2 shadow-2xs"
@@ -336,7 +336,7 @@ const handleAddReview = () => {
             </div>
 
             <!-- Shipping Results -->
-            <div v-if="shippingEstimate" class="bg-surface-container rounded-2xl p-4 space-y-2 text-xs font-sans text-secondary border border-outline-variant animate-in fade-in shadow-2xs">
+            <div v-if="shippingEstimate" class="bg-surface-container rounded-xs p-4 space-y-2 text-xs font-sans text-secondary border border-outline-variant animate-in fade-in shadow-2xs">
               <div class="flex justify-between items-center text-primary font-medium">
                 <span>📦 Envío Estándar a Domicilio:</span>
                 <span class="font-bold text-tertiary">{{ shippingEstimate.standardCost }} ({{ shippingEstimate.standardDays }})</span>
@@ -350,11 +350,11 @@ const handleAddReview = () => {
 
           <!-- Trust Badges Mini Grid -->
           <div class="grid grid-cols-2 gap-3 pt-2">
-            <div class="flex items-center gap-2 p-3 bg-surface-container rounded-2xl border border-outline-variant shadow-2xs">
+            <div class="flex items-center gap-2 p-3 bg-surface-container rounded-xs border border-outline-variant shadow-2xs">
               <span class="material-symbols-outlined text-base text-primary">verified</span>
               <span class="font-label text-[10px] uppercase text-primary">Batch Code Verificable</span>
             </div>
-            <div class="flex items-center gap-2 p-3 bg-surface-container rounded-2xl border border-outline-variant shadow-2xs">
+            <div class="flex items-center gap-2 p-3 bg-surface-container rounded-xs border border-outline-variant shadow-2xs">
               <span class="material-symbols-outlined text-base text-primary">redeem</span>
               <span class="font-label text-[10px] uppercase text-primary">+1 Muestra de Regalo</span>
             </div>
@@ -366,7 +366,7 @@ const handleAddReview = () => {
 
       <!-- DETAILED TABS SECTION: PYRAMID, DESCRIPTION, LONGEVITY, REVIEWS -->
       <div class="mb-20 border-t border-outline-variant pt-12">
-        <!-- Tabs Header (Pills) -->
+        <!-- Tabs Header: Píldoras -->
         <div class="flex flex-wrap gap-2 bg-surface-container p-1.5 rounded-full border border-outline-variant mb-8 max-w-2xl mx-auto justify-center shadow-2xs">
           <button
             @click="activeTab = 'pyramid'"
@@ -404,7 +404,7 @@ const handleAddReview = () => {
         </div>
 
         <!-- Tab 2: Storytelling & Usage Ritual -->
-        <div v-if="activeTab === 'description'" class="bg-surface-container border border-outline-variant rounded-3xl p-8 space-y-6 animate-in fade-in duration-300 shadow-xs">
+        <div v-if="activeTab === 'description'" class="bg-surface-container border border-outline-variant rounded-xs p-8 space-y-6 animate-in fade-in duration-300 shadow-xs">
           <div>
             <h3 class="font-serif text-2xl text-primary font-normal mb-3">La Historia Olfativa</h3>
             <p class="font-sans text-secondary text-base leading-relaxed">
@@ -418,13 +418,13 @@ const handleAddReview = () => {
               {{ product.usageTips }}
             </p>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 font-label text-xs uppercase tracking-wider text-secondary">
-              <div class="p-4 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
+              <div class="p-4 bg-surface rounded-xs border border-outline-variant shadow-2xs">
                 <strong>1. Puntos de Pulso:</strong> Muñecas, clavículas y cuello.
               </div>
-              <div class="p-4 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
+              <div class="p-4 bg-surface rounded-xs border border-outline-variant shadow-2xs">
                 <strong>2. No Frotar:</strong> Deja secar al aire para no romper las notas.
               </div>
-              <div class="p-4 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
+              <div class="p-4 bg-surface rounded-xs border border-outline-variant shadow-2xs">
                 <strong>3. Hidratación:</strong> Aplica sobre piel hidratada para mayor fijación.
               </div>
             </div>
@@ -432,21 +432,21 @@ const handleAddReview = () => {
         </div>
 
         <!-- Tab 3: Technical Specifications -->
-        <div v-if="activeTab === 'characteristics'" class="bg-surface-container border border-outline-variant rounded-3xl p-8 animate-in fade-in duration-300 shadow-xs">
+        <div v-if="activeTab === 'characteristics'" class="bg-surface-container border border-outline-variant rounded-xs p-8 animate-in fade-in duration-300 shadow-xs">
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="p-5 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
+            <div class="p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs">
               <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Duración en Piel</span>
               <p class="font-serif text-lg text-primary font-medium">{{ product.characteristics.longevity }}</p>
             </div>
-            <div class="p-5 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
+            <div class="p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs">
               <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Estela / Proyección</span>
               <p class="font-serif text-lg text-primary font-medium">{{ product.characteristics.sillage }}</p>
             </div>
-            <div class="p-5 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
+            <div class="p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs">
               <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Estación Ideal</span>
               <p class="font-serif text-lg text-primary font-medium">{{ product.characteristics.season }}</p>
             </div>
-            <div class="p-5 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
+            <div class="p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs">
               <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Ocasión Sugerida</span>
               <p class="font-serif text-lg text-primary font-medium">{{ product.characteristics.occasion }}</p>
             </div>
@@ -454,7 +454,7 @@ const handleAddReview = () => {
         </div>
 
         <!-- Tab 4: Reviews & Leave Review -->
-        <div v-if="activeTab === 'reviews'" class="bg-surface-container border border-outline-variant rounded-3xl p-8 space-y-6 animate-in fade-in duration-300 shadow-xs">
+        <div v-if="activeTab === 'reviews'" class="bg-surface-container border border-outline-variant rounded-xs p-8 space-y-6 animate-in fade-in duration-300 shadow-xs">
           <div class="flex justify-between items-center border-b border-outline-variant pb-4">
             <div>
               <h3 class="font-serif text-2xl text-primary font-normal">Opiniones de Clientes Verificados</h3>
@@ -473,7 +473,7 @@ const handleAddReview = () => {
             <div 
               v-for="rev in product.reviews" 
               :key="rev.id"
-              class="bg-surface p-6 rounded-2xl border border-outline-variant space-y-2 shadow-2xs"
+              class="bg-surface p-6 rounded-xs border border-outline-variant space-y-2 shadow-2xs"
             >
               <div class="flex justify-between items-center">
                 <div class="flex items-center gap-2">
@@ -526,14 +526,14 @@ const handleAddReview = () => {
 
     </div>
 
-    <!-- LEAVE REVIEW MODAL (Rounded 3xl) -->
+    <!-- LEAVE REVIEW MODAL (Estructura Limpia con Botones Píldora) -->
     <Teleport to="body">
       <div 
         v-if="isReviewModalOpen"
         class="fixed inset-0 z-50 bg-primary/60 backdrop-blur-xs flex items-center justify-center p-4"
         @click.self="isReviewModalOpen = false"
       >
-        <div class="bg-surface w-full max-w-lg border border-outline rounded-3xl p-6 md:p-8 space-y-4 shadow-2xl overflow-hidden">
+        <div class="bg-surface w-full max-w-lg border border-outline rounded-xs p-6 md:p-8 space-y-4 shadow-2xl overflow-hidden">
           <div class="flex justify-between items-center border-b border-outline-variant pb-3">
             <h3 class="font-serif text-2xl text-primary font-normal">Dejar tu Reseña</h3>
             <button @click="isReviewModalOpen = false" class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-secondary hover:text-primary">
@@ -573,7 +573,7 @@ const handleAddReview = () => {
                 type="text" 
                 placeholder="Ej. Martina S."
                 required
-                class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
+                class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-sm font-sans focus:border-primary focus:outline-none"
               />
             </div>
 
@@ -586,7 +586,7 @@ const handleAddReview = () => {
                 rows="4" 
                 placeholder="¿Qué te pareció la duración, proyección y notas de esta fragancia?"
                 required
-                class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
+                class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-sm font-sans focus:border-primary focus:outline-none"
               ></textarea>
             </div>
 

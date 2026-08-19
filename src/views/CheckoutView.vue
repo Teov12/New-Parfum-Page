@@ -83,7 +83,7 @@ const handleFinalOrder = () => {
   <div class="bg-surface-container py-12">
     <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
       
-      <!-- Checkout Stepper Progress (Rounded-full Pills) -->
+      <!-- Checkout Stepper Progress (Círculos & Píldoras) -->
       <div class="max-w-xl mx-auto mb-10">
         <div class="flex items-center justify-between relative">
           <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[2px] bg-outline-variant z-0"></div>
@@ -123,8 +123,8 @@ const handleFinalOrder = () => {
         </div>
       </div>
 
-      <!-- SUCCESS CONFIRMATION SCREEN (Step 3 - Rounded 3xl) -->
-      <div v-if="currentStep === 3 && orderResult" class="max-w-2xl mx-auto bg-surface border border-outline-variant rounded-3xl p-8 sm:p-12 text-center shadow-lg space-y-6">
+      <!-- SUCCESS CONFIRMATION SCREEN (Step 3) -->
+      <div v-if="currentStep === 3 && orderResult" class="max-w-2xl mx-auto bg-surface border border-outline-variant rounded-xs p-8 sm:p-12 text-center shadow-lg space-y-6">
         <div class="w-20 h-20 bg-surface-container rounded-full border border-outline-variant flex items-center justify-center mx-auto text-tertiary shadow-sm">
           <span class="material-symbols-outlined text-4xl">check_circle</span>
         </div>
@@ -139,7 +139,7 @@ const handleFinalOrder = () => {
           </p>
         </div>
 
-        <div class="bg-surface-container rounded-2xl p-6 text-left space-y-4 border border-outline-variant text-sm font-sans shadow-2xs">
+        <div class="bg-surface-container rounded-xs p-6 text-left space-y-4 border border-outline-variant text-sm font-sans shadow-2xs">
           <div class="flex justify-between items-center border-b border-outline-variant pb-3">
             <span class="font-label text-xs uppercase text-secondary">Número de Pedido:</span>
             <span class="font-mono font-bold text-primary text-base">{{ orderResult.orderNumber }}</span>
@@ -183,8 +183,8 @@ const handleFinalOrder = () => {
       <!-- MAIN CHECKOUT WORKFLOW (Steps 1 & 2) -->
       <div v-else class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        <!-- FORM COLUMN (7 cols - Rounded 3xl) -->
-        <div class="lg:col-span-7 bg-surface border border-outline-variant rounded-3xl p-6 sm:p-10 shadow-xs space-y-8">
+        <!-- FORM COLUMN (7 cols) -->
+        <div class="lg:col-span-7 bg-surface border border-outline-variant rounded-xs p-6 sm:p-10 shadow-xs space-y-8">
           
           <!-- STEP 1: Delivery Details -->
           <div v-if="currentStep === 1" class="space-y-6">
@@ -204,7 +204,7 @@ const handleFinalOrder = () => {
                   type="email" 
                   required
                   placeholder="ejemplo@correo.com"
-                  class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
+                  class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-sm font-sans focus:border-primary focus:outline-none"
                 />
               </div>
 
@@ -217,7 +217,7 @@ const handleFinalOrder = () => {
                     type="text" 
                     required
                     placeholder="Tu nombre"
-                    class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
+                    class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-sm font-sans focus:border-primary focus:outline-none"
                   />
                 </div>
                 <div>
@@ -227,7 +227,7 @@ const handleFinalOrder = () => {
                     type="text" 
                     required
                     placeholder="Tu apellido"
-                    class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
+                    class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-sm font-sans focus:border-primary focus:outline-none"
                   />
                 </div>
               </div>
@@ -241,7 +241,7 @@ const handleFinalOrder = () => {
                     type="tel" 
                     required
                     placeholder="+54 9 11 1234-5678"
-                    class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
+                    class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-sm font-sans focus:border-primary focus:outline-none"
                   />
                 </div>
                 <div>
@@ -251,7 +251,7 @@ const handleFinalOrder = () => {
                     type="text" 
                     required
                     placeholder="Para factura y seguro"
-                    class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
+                    class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-sm font-sans focus:border-primary focus:outline-none"
                   />
                 </div>
               </div>
@@ -265,7 +265,7 @@ const handleFinalOrder = () => {
                     type="text" 
                     required
                     placeholder="Av. Alvear 1850"
-                    class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
+                    class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-sm font-sans focus:border-primary focus:outline-none"
                   />
                 </div>
                 <div>
@@ -274,7 +274,7 @@ const handleFinalOrder = () => {
                     v-model="form.apartment"
                     type="text" 
                     placeholder="Piso 4B"
-                    class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
+                    class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-sm font-sans focus:border-primary focus:outline-none"
                   />
                 </div>
               </div>
@@ -287,14 +287,14 @@ const handleFinalOrder = () => {
                     v-model="form.city"
                     type="text" 
                     required
-                    class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
+                    class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-sm font-sans focus:border-primary focus:outline-none"
                   />
                 </div>
                 <div>
                   <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">Provincia</label>
                   <select 
                     v-model="form.province"
-                    class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
+                    class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-sm font-sans focus:border-primary focus:outline-none"
                   >
                     <option value="CABA">CABA</option>
                     <option value="Buenos Aires">Buenos Aires (GBA / Interior)</option>
@@ -310,7 +310,7 @@ const handleFinalOrder = () => {
                     v-model="form.postalCode"
                     type="text" 
                     required
-                    class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
+                    class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-sm font-sans focus:border-primary focus:outline-none"
                   />
                 </div>
               </div>
@@ -323,7 +323,7 @@ const handleFinalOrder = () => {
 
                 <div 
                   @click="form.shippingType = 'standard'"
-                  class="p-4 rounded-2xl border cursor-pointer flex justify-between items-center transition-all shadow-2xs"
+                  class="p-4 rounded-xs border cursor-pointer flex justify-between items-center transition-all shadow-2xs"
                   :class="form.shippingType === 'standard' ? 'bg-surface-container border-primary ring-1 ring-primary' : 'bg-surface border-outline-variant'"
                 >
                   <div class="flex items-center gap-3">
@@ -340,7 +340,7 @@ const handleFinalOrder = () => {
 
                 <div 
                   @click="form.shippingType = 'express'"
-                  class="p-4 rounded-2xl border cursor-pointer flex justify-between items-center transition-all shadow-2xs"
+                  class="p-4 rounded-xs border cursor-pointer flex justify-between items-center transition-all shadow-2xs"
                   :class="form.shippingType === 'express' ? 'bg-surface-container border-primary ring-1 ring-primary' : 'bg-surface border-outline-variant'"
                 >
                   <div class="flex items-center gap-3">
@@ -354,7 +354,7 @@ const handleFinalOrder = () => {
                 </div>
               </div>
 
-              <!-- Submit Step 1 -->
+              <!-- Submit Step 1: Píldora -->
               <div class="pt-4">
                 <button 
                   type="submit"
@@ -386,7 +386,7 @@ const handleFinalOrder = () => {
               <!-- Option 1: Transfer (10% OFF) -->
               <div 
                 @click="form.paymentMethod = 'transfer'"
-                class="p-5 rounded-2xl border cursor-pointer transition-all shadow-2xs"
+                class="p-5 rounded-xs border cursor-pointer transition-all shadow-2xs"
                 :class="form.paymentMethod === 'transfer' ? 'bg-surface-container border-primary ring-1 ring-primary' : 'bg-surface border-outline-variant'"
               >
                 <div class="flex justify-between items-start mb-2">
@@ -409,7 +409,7 @@ const handleFinalOrder = () => {
               <!-- Option 2: Credit / Debit Card -->
               <div 
                 @click="form.paymentMethod = 'credit_card'"
-                class="p-5 rounded-2xl border cursor-pointer transition-all shadow-2xs"
+                class="p-5 rounded-xs border cursor-pointer transition-all shadow-2xs"
                 :class="form.paymentMethod === 'credit_card' ? 'bg-surface-container border-primary ring-1 ring-primary' : 'bg-surface border-outline-variant'"
               >
                 <div class="flex justify-between items-start mb-2">
@@ -428,18 +428,18 @@ const handleFinalOrder = () => {
                   <input 
                     type="text" 
                     placeholder="Número de Tarjeta (16 dígitos)"
-                    class="w-full bg-surface border border-outline-variant rounded-xl p-2.5 text-xs font-mono"
+                    class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-mono"
                   />
                   <div class="grid grid-cols-2 gap-3">
                     <input 
                       type="text" 
                       placeholder="MM/AA"
-                      class="w-full bg-surface border border-outline-variant rounded-xl p-2.5 text-xs font-mono"
+                      class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-mono"
                     />
                     <input 
                       type="text" 
                       placeholder="CVV"
-                      class="w-full bg-surface border border-outline-variant rounded-xl p-2.5 text-xs font-mono"
+                      class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-mono"
                     />
                   </div>
                 </div>
@@ -448,7 +448,7 @@ const handleFinalOrder = () => {
               <!-- Option 3: Mercado Pago -->
               <div 
                 @click="form.paymentMethod = 'mercado_pago'"
-                class="p-5 rounded-2xl border cursor-pointer transition-all shadow-2xs"
+                class="p-5 rounded-xs border cursor-pointer transition-all shadow-2xs"
                 :class="form.paymentMethod === 'mercado_pago' ? 'bg-surface-container border-primary ring-1 ring-primary' : 'bg-surface border-outline-variant'"
               >
                 <div class="flex items-center gap-3">
@@ -470,11 +470,11 @@ const handleFinalOrder = () => {
                 v-model="form.notes"
                 rows="2" 
                 placeholder="Ej. Por favor incluir dedicatoria manuscrita: 'Para mamá con amor'"
-                class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-xs font-sans focus:border-primary focus:outline-none"
+                class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none"
               ></textarea>
             </div>
 
-            <!-- Confirm Order Button -->
+            <!-- Confirm Order Button: Píldora -->
             <div class="pt-4">
               <button 
                 @click="handleFinalOrder"
@@ -490,8 +490,8 @@ const handleFinalOrder = () => {
 
         </div>
 
-        <!-- ORDER SUMMARY COLUMN (5 cols - Rounded 3xl) -->
-        <div class="lg:col-span-5 sticky top-28 bg-surface border border-outline-variant rounded-3xl p-6 sm:p-8 space-y-6 shadow-md">
+        <!-- ORDER SUMMARY COLUMN (5 cols) -->
+        <div class="lg:col-span-5 sticky top-28 bg-surface border border-outline-variant rounded-xs p-6 sm:p-8 space-y-6 shadow-md">
           <h3 class="font-serif text-xl text-primary font-normal border-b border-outline-variant pb-3">
             Detalle de tu Pedido
           </h3>
@@ -506,7 +506,7 @@ const handleFinalOrder = () => {
               <img 
                 :src="item.image" 
                 :alt="item.name"
-                class="w-12 h-14 object-cover bg-surface-container rounded-xl border border-outline-variant flex-shrink-0"
+                class="w-12 h-14 object-cover bg-surface-container rounded-xs border border-outline-variant flex-shrink-0"
               />
               <div class="flex-grow min-w-0">
                 <h4 class="font-serif text-sm text-primary truncate">{{ item.name }}</h4>
@@ -519,7 +519,7 @@ const handleFinalOrder = () => {
           </div>
 
           <!-- Courtesy Sample Pill -->
-          <div class="bg-surface-container p-3.5 rounded-2xl border border-outline-variant text-xs flex items-center gap-2 text-tertiary">
+          <div class="bg-surface-container p-3.5 rounded-full border border-outline-variant text-xs flex items-center gap-2 text-tertiary px-4">
             <span class="material-symbols-outlined text-base">card_giftcard</span>
             <span class="truncate">Muestra de Cortesía: <strong>{{ cartStore.selectedSample }}</strong></span>
           </div>
