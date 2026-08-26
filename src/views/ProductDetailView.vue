@@ -1,7 +1,7 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
-import { products } from '@/data/products'
+import { useProductStore } from '@/stores/products'
 import { useCartStore } from '@/stores/cart'
 import { useWishlistStore } from '@/stores/wishlist'
 import { useToastStore } from '@/stores/toast'
@@ -10,14 +10,14 @@ import ProductCard from '@/components/product/ProductCard.vue'
 
 const route = useRoute()
 const router = useRouter()
+const productStore = useProductStore()
 const cartStore = useCartStore()
 const wishlistStore = useWishlistStore()
 const toastStore = useToastStore()
 
 // Find product by slug
 const product = computed(() => {
-  const found = products.find(p => p.slug === route.params.slug || p.id === route.params.slug)
-  return found || products[0] // fallback to first product (YSL Libre)
+  return productStore.items.find(p => p.slug === route.params.slug || p.id === route.params.slug) || null
 })
 
 // Selected size state
@@ -30,45 +30,56 @@ const activeTab = ref('pyramid')
 const postalCode = ref('')
 const shippingEstimate = ref(null)
 
-// Review submission state
-const isReviewModalOpen = ref(false)
-const newReviewAuthor = ref('')
-const newReviewComment = ref('')
-const newReviewRating = ref(5)
-
 const initProduct = () => {
-  if (product.value) {
+  if (product.value && product.value.sizes && product.value.sizes.length > 0) {
     selectedSize.value = product.value.sizes.find(s => s.default) || product.value.sizes[0]
     selectedImageIndex.value = 0
     quantity.value = 1
     shippingEstimate.value = null
+  } else {
+    selectedSize.value = null
   }
 }
+
+onMounted(() => {
+  if (productStore.items.length === 0) {
+    productStore.fetchProducts()
+  }
+})
 
 watch(() => route.params.slug, () => {
   initProduct()
 }, { immediate: true })
 
+watch(() => product.value, () => {
+  initProduct()
+})
+
 const currentPrice = computed(() => {
-  return selectedSize.value ? selectedSize.value.price : product.value.price
+  if (!product.value) return 0
+  return selectedSize.value ? selectedSize.value.price : (product.value.price || 0)
 })
 
 const relatedProducts = computed(() => {
-  return products.filter(p => p.id !== product.value.id).slice(0, 4)
+  if (!product.value) return productStore.items.slice(0, 4)
+  return productStore.items.filter(p => p.id !== product.value.id).slice(0, 4)
 })
 
 const handleAddToCart = () => {
+  if (!product.value) return
   cartStore.addItem(product.value, selectedSize.value, quantity.value)
-  toastStore.show(`¡Agregaste ${quantity.value}x ${product.value.name} (${selectedSize.value.size}) a tu bolsa!`, 'success')
+  toastStore.show(`¡Agregaste ${quantity.value}x ${product.value.name} (${selectedSize.value?.size || ''}) a tu bolsa!`, 'success')
 }
 
 const handleBuyNow = () => {
+  if (!product.value) return
   cartStore.addItem(product.value, selectedSize.value, quantity.value)
   cartStore.closeDrawer()
   router.push('/checkout')
 }
 
 const handleToggleWishlist = () => {
+  if (!product.value) return
   wishlistStore.toggleWishlist(product.value.id)
   const isNowIn = wishlistStore.isInWishlist(product.value.id)
   toastStore.show(
@@ -90,30 +101,11 @@ const calculateShipping = () => {
     expressDays: 'Mismo día / 24 hs (Express Gicca)'
   }
 }
-
-const handleAddReview = () => {
-  if (!newReviewAuthor.value.trim() || !newReviewComment.value.trim()) {
-    toastStore.show('Por favor completá tu nombre y opinión.', 'error')
-    return
-  }
-  product.value.reviews.unshift({
-    id: Date.now(),
-    author: newReviewAuthor.value,
-    rating: newReviewRating.value,
-    date: 'Hoy',
-    comment: newReviewComment.value,
-    verified: true
-  })
-  isReviewModalOpen.value = false
-  newReviewAuthor.value = ''
-  newReviewComment.value = ''
-  toastStore.show('¡Muchas gracias por compartir tu experiencia olfativa!', 'success')
-}
 </script>
 
 <template>
   <div class="bg-surface py-8">
-    <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+    <div v-if="product" class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
       
       <!-- Breadcrumbs -->
       <nav class="font-label text-xs uppercase tracking-widest text-secondary flex items-center gap-2 mb-8">
@@ -181,24 +173,19 @@ const handleAddReview = () => {
         <!-- DETAILS & BUY BOX (5 cols) -->
         <div class="lg:col-span-5 space-y-6">
           
-          <!-- Brand & Rating Header -->
+          <!-- Brand Header -->
           <div class="border-b border-outline-variant pb-5">
             <div class="flex justify-between items-center mb-2">
               <RouterLink 
                 :to="`/catalogo?brand=${encodeURIComponent(product.brand)}`" 
-                class="font-label text-xs uppercase tracking-[0.2em] text-secondary hover:text-primary transition-colors"
+                class="font-label text-xs uppercase tracking-[0.2em] text-secondary hover:text-primary transition-colors font-bold"
               >
                 {{ product.brand }}
               </RouterLink>
 
-              <!-- Star Rating -->
-              <div class="flex items-center gap-1.5 text-xs text-secondary">
-                <div class="flex text-primary">
-                  <span v-for="star in 5" :key="star" class="material-symbols-outlined text-sm fill-icon">star</span>
-                </div>
-                <span class="font-bold text-primary">{{ product.rating }}</span>
-                <span>({{ product.reviewCount || product.reviews.length }} opiniones)</span>
-              </div>
+              <span class="font-label text-[10px] uppercase tracking-widest text-emerald-700 font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                100% Original
+              </span>
             </div>
 
             <!-- Product Title -->
@@ -328,11 +315,11 @@ const handleAddReview = () => {
             <!-- Shipping Results -->
             <div v-if="shippingEstimate" class="bg-surface-container rounded-xs p-4 space-y-2 text-xs font-sans text-secondary border border-outline-variant animate-in fade-in shadow-2xs">
               <div class="flex justify-between items-center text-primary font-medium">
-                <span>📦 Envío Estándar a Domicilio:</span>
+                <span>Envío Estándar a Domicilio:</span>
                 <span class="font-bold text-tertiary">{{ shippingEstimate.standardCost }} ({{ shippingEstimate.standardDays }})</span>
               </div>
               <div class="flex justify-between items-center text-primary font-medium">
-                <span>⚡ Envío Express Gicca:</span>
+                <span>Envío Express Gicca:</span>
                 <span class="font-bold">{{ shippingEstimate.expressCost }} ({{ shippingEstimate.expressDays }})</span>
               </div>
             </div>
@@ -378,13 +365,6 @@ const handleAddReview = () => {
             :class="activeTab === 'characteristics' ? 'bg-primary-container text-on-primary shadow-xs' : 'text-secondary hover:text-primary'"
           >
             Ficha Técnica
-          </button>
-          <button
-            @click="activeTab = 'reviews'"
-            class="font-label text-xs sm:text-sm uppercase tracking-wider py-2 px-5 rounded-full transition-all"
-            :class="activeTab === 'reviews' ? 'bg-primary-container text-on-primary shadow-xs' : 'text-secondary hover:text-primary'"
-          >
-            Reseñas ({{ product.reviews.length }})
           </button>
         </div>
 
@@ -442,64 +422,10 @@ const handleAddReview = () => {
             </div>
           </div>
         </div>
-
-        <!-- Tab 4: Reviews & Leave Review -->
-        <div v-if="activeTab === 'reviews'" class="bg-surface-container border border-outline-variant rounded-xs p-8 space-y-6 animate-in fade-in duration-300 shadow-xs">
-          <div class="flex justify-between items-center border-b border-outline-variant pb-4">
-            <div>
-              <h3 class="font-sans text-2xl text-primary font-normal">Opiniones de Clientes Verificados</h3>
-              <p class="font-sans text-xs text-secondary">Basado en {{ product.reviews.length }} compras verificadas</p>
-            </div>
-            <button 
-              @click="isReviewModalOpen = true"
-              class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-6 py-2.5 rounded-full hover:bg-inverse-surface transition-all shadow-xs"
-            >
-              Escribir Reseña
-            </button>
-          </div>
-
-          <!-- Reviews List -->
-          <div v-if="product.reviews.length > 0" class="space-y-4">
-            <div 
-              v-for="rev in product.reviews" 
-              :key="rev.id"
-              class="bg-surface p-6 rounded-xs border border-outline-variant space-y-2 shadow-2xs"
-            >
-              <div class="flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                  <span class="font-sans text-base text-primary font-medium">{{ rev.author }}</span>
-                  <span v-if="rev.verified" class="font-label text-[10px] uppercase text-tertiary bg-surface-container px-2.5 py-0.5 rounded-full border border-outline-variant flex items-center gap-1">
-                    <span class="material-symbols-outlined text-xs">verified</span>
-                    Comprador Verificado
-                  </span>
-                </div>
-                <span class="font-sans text-xs text-secondary">{{ rev.date }}</span>
-              </div>
-
-              <div class="flex text-primary text-sm">
-                <span v-for="s in rev.rating" :key="s" class="material-symbols-outlined text-sm fill-icon">star</span>
-              </div>
-
-              <p class="font-sans text-sm text-secondary leading-relaxed">
-                "{{ rev.comment }}"
-              </p>
-            </div>
-          </div>
-
-          <div v-else class="text-center py-8 text-secondary">
-            <p class="font-sans text-lg text-primary mb-2">Sé el primero en dejar una reseña para esta fragancia.</p>
-            <button 
-              @click="isReviewModalOpen = true"
-              class="underline font-label text-xs uppercase tracking-widest text-primary"
-            >
-              Compartir mi experiencia
-            </button>
-          </div>
-        </div>
       </div>
 
       <!-- RELATED FRAGRANCES SECTION -->
-      <div class="border-t border-outline-variant pt-16">
+      <div v-if="relatedProducts.length > 0" class="border-t border-outline-variant pt-16">
         <div class="text-center max-w-xl mx-auto mb-12">
           <p class="font-label text-label-sm text-secondary uppercase tracking-widest mb-2">Completá tu Colección</p>
           <h2 class="font-sans text-3xl md:text-headline-lg text-primary font-normal">Fragancias Complementarias</h2>
@@ -516,88 +442,19 @@ const handleAddReview = () => {
 
     </div>
 
-    <!-- LEAVE REVIEW MODAL (Estructura Limpia con Botones Píldora) -->
-    <Teleport to="body">
-      <div 
-        v-if="isReviewModalOpen"
-        class="fixed inset-0 z-50 bg-primary/60 backdrop-blur-xs flex items-center justify-center p-4"
-        @click.self="isReviewModalOpen = false"
+    <!-- Product Not Found Fallback -->
+    <div v-else class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-24 text-center">
+      <span class="material-symbols-outlined text-6xl text-neutral-300 mb-4">search_off</span>
+      <h2 class="font-sans text-3xl text-primary font-normal mb-3">Fragancia no encontrada</h2>
+      <p class="font-sans text-secondary text-sm max-w-md mx-auto mb-8">
+        No pudimos encontrar la fragancia solicitada o el catálogo se encuentra en actualización.
+      </p>
+      <RouterLink 
+        to="/catalogo"
+        class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 rounded-full inline-block hover:bg-inverse-surface transition-all shadow-xs"
       >
-        <div class="bg-surface w-full max-w-lg border border-outline rounded-xs p-6 md:p-8 space-y-4 shadow-2xl overflow-hidden">
-          <div class="flex justify-between items-center border-b border-outline-variant pb-3">
-            <h3 class="font-sans text-2xl text-primary font-normal">Dejar tu Reseña</h3>
-            <button @click="isReviewModalOpen = false" class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-secondary hover:text-primary">
-              <span class="material-symbols-outlined text-2xl">close</span>
-            </button>
-          </div>
-
-          <form @submit.prevent="handleAddReview" class="space-y-4">
-            <div>
-              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">
-                Puntuación:
-              </label>
-              <div class="flex gap-2">
-                <button
-                  type="button"
-                  v-for="star in 5"
-                  :key="star"
-                  @click="newReviewRating = star"
-                  class="text-primary hover:scale-110 transition-transform"
-                >
-                  <span 
-                    class="material-symbols-outlined text-2xl"
-                    :class="star <= newReviewRating ? 'fill-icon' : ''"
-                  >
-                    star
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">
-                Tu Nombre:
-              </label>
-              <input 
-                v-model="newReviewAuthor"
-                type="text" 
-                placeholder="Ej. Martina S."
-                required
-                class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-sm font-sans focus:border-primary focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">
-                Tu Opinión / Experiencia:
-              </label>
-              <textarea 
-                v-model="newReviewComment"
-                rows="4" 
-                placeholder="¿Qué te pareció la duración, proyección y notas de esta fragancia?"
-                required
-                class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-sm font-sans focus:border-primary focus:outline-none"
-              ></textarea>
-            </div>
-
-            <div class="flex justify-end gap-3 pt-2">
-              <button 
-                type="button" 
-                @click="isReviewModalOpen = false"
-                class="font-label text-xs uppercase tracking-widest px-5 py-2.5 rounded-full border border-outline text-secondary"
-              >
-                Cancelar
-              </button>
-              <button 
-                type="submit"
-                class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-7 py-2.5 rounded-full hover:bg-inverse-surface transition-all shadow-xs"
-              >
-                Publicar Reseña
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </Teleport>
+        Explorar Catálogo
+      </RouterLink>
+    </div>
   </div>
 </template>

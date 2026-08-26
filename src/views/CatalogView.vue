@@ -1,13 +1,15 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { products, olfactiveFamilies, brandsList } from '@/data/products'
+import { olfactiveFamilies, brandsList } from '@/data/products'
 import { useWishlistStore } from '@/stores/wishlist'
+import { useProductStore } from '@/stores/products'
 import ProductCard from '@/components/product/ProductCard.vue'
 
 const route = useRoute()
 const router = useRouter()
 const wishlistStore = useWishlistStore()
+const productStore = useProductStore()
 
 // State filters
 const searchQuery = ref('')
@@ -22,6 +24,11 @@ const sortBy = ref('popularity')
 const isMobileFiltersOpen = ref(false)
 
 const concentrations = ['Parfum', 'Eau de Parfum', 'Eau de Toilette']
+
+const availableBrands = computed(() => {
+  const dynamic = productStore.brandsList
+  return dynamic.length > 0 ? dynamic : brandsList
+})
 
 // Initialize filters from query params
 const initFromQuery = () => {
@@ -62,6 +69,9 @@ const initFromQuery = () => {
 
 onMounted(() => {
   initFromQuery()
+  if (productStore.items.length === 0) {
+    productStore.fetchProducts()
+  }
 })
 
 watch(() => route.query, () => {
@@ -70,7 +80,7 @@ watch(() => route.query, () => {
 
 // Filter & Sort Pipeline
 const filteredProducts = computed(() => {
-  return products.filter(p => {
+  return productStore.items.filter(p => {
     // Search
     if (searchQuery.value.trim()) {
       const q = searchQuery.value.toLowerCase().trim()
@@ -279,10 +289,6 @@ const activeFiltersCount = computed(() => {
                 <input type="checkbox" value="arabes" v-model="selectedCategories" class="accent-primary w-4 h-4 rounded-xs cursor-pointer" />
                 <span>Perfumería Árabe</span>
               </label>
-              <label class="flex items-center gap-2.5 cursor-pointer hover:text-primary">
-                <input type="checkbox" value="nicho" v-model="selectedCategories" class="accent-primary w-4 h-4 rounded-xs cursor-pointer" />
-                <span>Nicho Exclusivo</span>
-              </label>
             </div>
           </div>
 
@@ -311,7 +317,7 @@ const activeFiltersCount = computed(() => {
             <h3 class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-3">Marcas Oficiales</h3>
             <div class="space-y-2 max-h-48 overflow-y-auto pr-2 scrollbar-thin">
               <label 
-                v-for="brand in brandsList" 
+                v-for="brand in availableBrands" 
                 :key="brand"
                 class="flex items-center gap-2.5 cursor-pointer hover:text-primary font-sans text-sm text-secondary"
               >
@@ -401,7 +407,7 @@ const activeFiltersCount = computed(() => {
               :key="c" 
               class="inline-flex items-center gap-1.5 bg-neutral-100 text-xs font-sans font-medium px-3 py-1 rounded-full border border-neutral-200"
             >
-              {{ c === 'disenador' ? 'Diseñador' : c === 'arabes' ? 'Árabes' : 'Nicho' }}
+              {{ c === 'disenador' ? 'Diseñador' : 'Perfumes Árabes' }}
               <button @click="selectedCategories = selectedCategories.filter(x => x !== c)" class="hover:text-rose-600 text-xs">✕</button>
             </span>
 
@@ -491,7 +497,6 @@ const activeFiltersCount = computed(() => {
               <div class="space-y-2 font-sans text-sm text-secondary">
                 <label class="flex items-center gap-2"><input type="checkbox" value="disenador" v-model="selectedCategories" class="accent-primary rounded-xs" /> Diseñador</label>
                 <label class="flex items-center gap-2"><input type="checkbox" value="arabes" v-model="selectedCategories" class="accent-primary rounded-xs" /> Perfumes Árabes</label>
-                <label class="flex items-center gap-2"><input type="checkbox" value="nicho" v-model="selectedCategories" class="accent-primary rounded-xs" /> Nicho Exclusivo</label>
               </div>
             </div>
 

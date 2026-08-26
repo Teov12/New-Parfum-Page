@@ -108,7 +108,7 @@ const handleSubmitContact = () => {
               <div class="flex items-start gap-3 p-3 bg-surface rounded-xs border border-outline-variant shadow-2xs">
                 <span class="material-symbols-outlined text-primary text-xl mt-0.5">location_on</span>
                 <div>
-                  <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold">Atelier Privado</h4>
+                  <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold">Showroom & Retiros</h4>
                   <p class="mt-0.5">Recoleta, Ciudad Autónoma de Buenos Aires</p>
                   <p class="text-xs text-outline">Visitas exclusivas con cita previa.</p>
                 </div>

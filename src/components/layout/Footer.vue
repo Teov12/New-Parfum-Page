@@ -30,12 +30,12 @@ const handleSubscribe = () => {
             Gicca Perfumes
           </h3>
           <p class="font-sans text-sm text-secondary leading-relaxed mb-6 max-w-sm">
-            Elevando la experiencia sensorial a través de una curaduría inquebrantable de fragancias excepcionales, perfumería nicho y fórmulas de autor importadas de los principales talleres del mundo.
+            Elevando la experiencia sensorial a través de una curaduría inquebrantable de fragancias excepcionales y fórmulas de autor importadas de los principales orígenes del mundo.
           </p>
           <div class="space-y-1.5 text-xs font-label uppercase tracking-widest text-secondary">
-            <p>📍 Buenos Aires, Argentina</p>
-            <p>✉️ concierge@giccaperfumes.com</p>
-            <p>📞 Asesoría VIP WhatsApp: +54 9 3564 62-2055</p>
+            <p>Buenos Aires, Argentina</p>
+            <p>concierge@giccaperfumes.com</p>
+            <p>Asesoría VIP WhatsApp: +54 9 3564 62-2055</p>
           </div>
         </div>
 
@@ -98,11 +98,6 @@ const handleSubscribe = () => {
           Atención VIP
         </h4>
         <ul class="space-y-3 font-sans text-sm text-secondary">
-          <li>
-            <RouterLink to="/nosotros" class="hover:text-primary transition-colors">
-              El Atelier Gicca
-            </RouterLink>
-          </li>
           <li>
             <RouterLink to="/contacto" class="hover:text-primary transition-colors">
               Asesoría & Contacto
@@ -183,10 +178,10 @@ const handleSubscribe = () => {
     <div class="border-t border-outline-variant bg-surface py-6">
       <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-label text-secondary uppercase tracking-wider">
         <p>© 2026 Gicca Perfumes Boutique. Todos los derechos reservados.</p>
-        <div class="flex gap-6">
+        <div class="flex flex-wrap gap-4 sm:gap-6 items-center">
+          <RouterLink to="/admin" class="hover:text-primary transition-colors text-secondary font-bold">Acceso Admin</RouterLink>
           <a href="#" class="hover:text-primary transition-colors">Términos y Condiciones</a>
           <a href="#" class="hover:text-primary transition-colors">Privacidad</a>
-          <a href="#" class="hover:text-primary transition-colors">Defensa del Consumidor</a>
         </div>
       </div>
     </div>

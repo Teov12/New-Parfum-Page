@@ -1,43 +1,11 @@
 <script setup>
-import { ref, computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import { products, olfactiveFamilies } from '@/data/products'
-import ProductCard from '@/components/product/ProductCard.vue'
-
-const selectedCategoryTab = ref('all')
-
-const filteredProducts = computed(() => {
-  if (selectedCategoryTab.value === 'all') {
-    return products.slice(0, 4)
-  }
-  return products.filter(p => p.gender === selectedCategoryTab.value).slice(0, 4)
-})
+import { olfactiveFamilies } from '@/data/products'
 
 const trustBadges = [
   { icon: 'verified_user', title: '100% Originales', desc: 'Garantía de procedencia directa de casas oficiales.' },
   { icon: 'local_shipping', title: 'Envíos Asegurados', desc: 'Entregas a todo el país con seguimiento en tiempo real.' },
   { icon: 'credit_card', title: 'Cuotas Sin Interés', desc: '3 y 6 cuotas con todas las tarjetas bancarias.' }
-]
-
-const testimonials = [
-  {
-    quote: "La curaduría de Gicca es inigualable. Compré YSL Libre y la experiencia desde el packaging hasta la muestra de regalo superó mis expectativas.",
-    author: "Florencia Casares",
-    location: "Recoleta, Buenos Aires",
-    rating: 5
-  },
-  {
-    quote: "Encontrar Baccarat Rouge 540 original en Argentina era casi imposible hasta que descubrí esta boutique. Asesoramiento impecable por WhatsApp.",
-    author: "Ignacio De la Serna",
-    location: "Córdoba Capital",
-    rating: 5
-  },
-  {
-    quote: "Presentación digna de una perfumería de París. Llegó en 24 horas a Rosario. Se nota el amor por el detalle y el lujo silencioso.",
-    author: "María Eugenia Ramos",
-    location: "Rosario, Santa Fe",
-    rating: 5
-  }
 ]
 </script>
 
@@ -87,14 +55,14 @@ const testimonials = [
           </div>
 
           <!-- Quick Stats -->
-          <div class="grid grid-cols-3 gap-6 pt-10 mt-10 border-t border-outline-variant max-w-md">
+          <div class="grid grid-cols-2 gap-6 pt-10 mt-10 border-t border-outline-variant max-w-md">
             <div>
               <p class="font-sans text-2xl text-primary font-normal">100%</p>
               <p class="font-label text-[11px] text-secondary uppercase tracking-wider">Originales Certificados</p>
             </div>
             <div>
-              <p class="font-sans text-2xl text-primary font-normal">4.9 ★</p>
-              <p class="font-label text-[11px] text-secondary uppercase tracking-wider">+99 Clientes Felices</p>
+              <p class="font-sans text-2xl text-primary font-normal">Envíos</p>
+              <p class="font-label text-[11px] text-secondary uppercase tracking-wider">A Todo el País</p>
             </div>
           </div>
 
@@ -181,7 +149,7 @@ const testimonials = [
           </div>
         </RouterLink>
 
-        <!-- Category 3: Unisex & Nicho (Span 6 cols) -->
+        <!-- Category 3: Unisex (Span 6 cols) -->
         <RouterLink 
           to="/catalogo?gender=unisex"
           class="group relative md:col-span-6 bg-white rounded-3xl border border-outline-variant/60 hover:border-primary p-8 md:p-10 flex flex-col justify-between hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 shadow-sm"
@@ -192,14 +160,14 @@ const testimonials = [
                 <span class="material-symbols-outlined text-2xl">all_inclusive</span>
               </div>
               <span class="font-sans text-[11px] font-semibold uppercase tracking-widest text-secondary block">Sin Género • Pura Expresión</span>
-              <h3 class="font-sans text-2xl md:text-3xl font-extrabold text-primary mb-2">Fragancias Unisex & Nicho</h3>
+              <h3 class="font-sans text-2xl md:text-3xl font-extrabold text-primary mb-2">Colección Unisex</h3>
             </div>
             <span class="font-sans text-xs font-bold bg-neutral-100 px-3.5 py-1.5 rounded-full text-primary uppercase">
-              18 Variedades
+              Variedad
             </span>
           </div>
           <p class="font-sans text-sm text-secondary max-w-md my-4 leading-relaxed">
-            Aromas vanguardistas donde el azafrán, el ámbar gris y la madera de oud rompen todas las convenciones.
+            Aromas versátiles y vanguardistas donde las maderas, cítricos y resinas componen esencias envolventes para todos.
           </p>
           <span class="font-sans text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5 group-hover:translate-x-1.5 transition-transform">
             <span>Ver Selección Unisex</span>
@@ -236,134 +204,6 @@ const testimonials = [
       </div>
     </section>
 
-    <!-- BEST SELLERS SECTION -->
-    <section class="py-16 md:py-24 bg-surface-container border-y border-outline-variant">
-      <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
-        
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
-          <div>
-            <p class="font-label text-label-sm text-secondary uppercase tracking-widest mb-2">Curaduría Destacada</p>
-            <h2 class="font-sans text-3xl md:text-headline-lg text-primary font-normal">Fragancias Icónicas</h2>
-          </div>
-
-          <!-- Category Filter Tabs: Píldoras -->
-          <div class="flex flex-wrap gap-2 bg-surface p-1.5 rounded-full border border-outline-variant shadow-2xs">
-            <button
-              @click="selectedCategoryTab = 'all'"
-              class="font-label text-xs uppercase tracking-wider px-4 py-2 rounded-full transition-all"
-              :class="selectedCategoryTab === 'all' 
-                ? 'bg-primary-container text-on-primary shadow-xs' 
-                : 'text-secondary hover:text-primary'"
-            >
-              Todos los Íconos
-            </button>
-            <button
-              @click="selectedCategoryTab = 'woman'"
-              class="font-label text-xs uppercase tracking-wider px-4 py-2 rounded-full transition-all"
-              :class="selectedCategoryTab === 'woman' 
-                ? 'bg-primary-container text-on-primary shadow-xs' 
-                : 'text-secondary hover:text-primary'"
-            >
-              Mujer
-            </button>
-            <button
-              @click="selectedCategoryTab = 'man'"
-              class="font-label text-xs uppercase tracking-wider px-4 py-2 rounded-full transition-all"
-              :class="selectedCategoryTab === 'man' 
-                ? 'bg-primary-container text-on-primary shadow-xs' 
-                : 'text-secondary hover:text-primary'"
-            >
-              Hombre
-            </button>
-            <button
-              @click="selectedCategoryTab = 'unisex'"
-              class="font-label text-xs uppercase tracking-wider px-4 py-2 rounded-full transition-all"
-              :class="selectedCategoryTab === 'unisex' 
-                ? 'bg-primary-container text-on-primary shadow-xs' 
-                : 'text-secondary hover:text-primary'"
-            >
-              Unisex
-            </button>
-          </div>
-        </div>
-
-        <!-- Products Grid (4 cols) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <ProductCard 
-            v-for="product in filteredProducts" 
-            :key="product.id" 
-            :product="product" 
-          />
-        </div>
-
-        <!-- View All Link (Píldora) -->
-        <div class="text-center mt-12">
-          <RouterLink 
-            to="/catalogo"
-            class="inline-flex items-center gap-2 bg-surface text-primary font-label text-label-sm py-3.5 px-9 rounded-full border border-outline hover:border-primary hover:bg-surface-container transition-all uppercase tracking-widest shadow-2xs"
-          >
-            <span>Ver Todos los 124 Perfumes</span>
-            <span class="material-symbols-outlined text-sm">arrow_forward</span>
-          </RouterLink>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- EDITORIAL SPOTLIGHT: ATELIER STORY -->
-    <section class="py-20 lg:py-28 max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-        
-        <!-- Image Container (5 cols - Encuadre limpio 2px) -->
-        <div class="lg:col-span-5 relative">
-          <div class="aspect-[4/5] bg-surface-container rounded-xs border border-outline-variant overflow-hidden shadow-md">
-            <img 
-              src="https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=1000&q=85" 
-              alt="Atelier de Perfumes Gicca"
-              class="w-full h-full object-cover"
-            />
-          </div>
-          <div class="absolute -bottom-6 -right-6 bg-surface-container-high border border-outline-variant rounded-xs p-6 hidden sm:block max-w-xs shadow-lg">
-            <p class="font-sans text-lg text-primary italic mb-1">"El perfume es la forma más intensa del recuerdo."</p>
-            <p class="font-label text-[10px] text-secondary uppercase tracking-widest">— Jean-Paul Guerlain</p>
-          </div>
-        </div>
-
-        <!-- Story Text (7 cols) -->
-        <div class="lg:col-span-7 lg:pl-8">
-          <p class="font-label text-label-sm text-secondary uppercase tracking-[0.2em] mb-3">La Filosofía Gicca</p>
-          <h2 class="font-sans text-3xl sm:text-4xl text-primary font-normal leading-tight mb-6">
-            El arte de vestir la piel <br />con alta perfumería.
-          </h2>
-          
-          <div class="space-y-4 font-sans text-secondary text-sm sm:text-base leading-relaxed mb-8">
-            <p>
-              En <strong>Gicca Perfumes</strong> creemos que una fragancia no es un accesorio superficial, sino una extensión de tu identidad invisible. Seleccionamos rigurosamente cada fórmula en colaboración con distribuidores oficiales autorizados en Francia, Italia y Medio Oriente.
-            </p>
-            <p>
-              Nuestro compromiso es brindarte la misma experiencia exquisita de las boutiques más prestigiosas del mundo: asesoramiento experto, embalaje de regalo personalizado y la certeza innegociable de recibir piezas 100% auténticas.
-            </p>
-          </div>
-
-          <div class="flex flex-wrap gap-4">
-            <RouterLink 
-              to="/nosotros"
-              class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 rounded-full border border-primary-container hover:bg-surface hover:text-primary-container transition-all shadow-xs"
-            >
-              Conocé Nuestro Atelier
-            </RouterLink>
-            <RouterLink 
-              to="/contacto"
-              class="bg-surface text-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 rounded-full border border-outline hover:border-primary hover:bg-surface-container transition-all shadow-2xs"
-            >
-              Hablar con un Asesor VIP
-            </RouterLink>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
     <!-- OLFACTIVE FAMILIES EXPLORER (Estructura Editorial Recta de 2px con Badges en Píldora) -->
     <section class="py-16 md:py-24 bg-surface-container-low border-t border-outline-variant">
       <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
@@ -390,11 +230,10 @@ const testimonials = [
                   class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               </div>
-              <div class="flex justify-between items-baseline mb-2">
+              <div class="mb-2">
                 <h3 class="font-sans text-2xl text-primary font-normal group-hover:text-primary-container transition-colors">
                   {{ family.name }}
                 </h3>
-                <span class="font-label text-xs text-secondary uppercase bg-surface-container px-2.5 py-0.5 rounded-full">{{ family.count }} aromas</span>
               </div>
               <p class="font-sans text-xs text-secondary leading-relaxed mb-4">
                 {{ family.description }}
@@ -428,37 +267,6 @@ const testimonials = [
           <span>Comenzar el Test Ahora</span>
           <span class="material-symbols-outlined text-sm">arrow_forward</span>
         </RouterLink>
-      </div>
-    </section>
-
-    <!-- TESTIMONIALS SECTION -->
-    <section class="py-16 md:py-24 max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
-      <div class="text-center max-w-xl mx-auto mb-14">
-        <p class="font-label text-label-sm text-secondary uppercase tracking-widest mb-2">Experiencias Reales</p>
-        <h2 class="font-sans text-3xl md:text-headline-lg text-primary font-normal">Lo Que Dicen Nuestros Clientes</h2>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div 
-          v-for="(item, index) in testimonials" 
-          :key="index"
-          class="bg-surface-container rounded-xs border border-outline-variant p-8 flex flex-col justify-between relative shadow-xs hover:shadow-md transition-shadow"
-        >
-          <span class="font-sans text-5xl text-outline-variant absolute top-4 right-6 pointer-events-none">“</span>
-          <div>
-            <div class="flex gap-1 text-primary mb-4">
-              <span v-for="star in 5" :key="star" class="material-symbols-outlined text-sm fill-icon">star</span>
-            </div>
-            <p class="font-sans text-sm text-primary leading-relaxed italic mb-6">
-              "{{ item.quote }}"
-            </p>
-          </div>
-
-          <div class="border-t border-outline-variant pt-4">
-            <h4 class="font-sans text-base text-primary font-medium">{{ item.author }}</h4>
-            <p class="font-label text-[11px] text-secondary uppercase tracking-wider">{{ item.location }}</p>
-          </div>
-        </div>
       </div>
     </section>
 

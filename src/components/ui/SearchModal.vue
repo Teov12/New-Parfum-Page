@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { products } from '@/data/products'
+import { useProductStore } from '@/stores/products'
 
 const props = defineProps({
   isOpen: {
@@ -13,19 +13,20 @@ const props = defineProps({
 const emit = defineEmits(['close'])
 
 const router = useRouter()
+const productStore = useProductStore()
 const searchQuery = ref('')
 const inputRef = ref(null)
 
 const filteredProducts = computed(() => {
-  if (!searchQuery.value.trim()) return products.slice(0, 4)
+  if (!searchQuery.value.trim()) return productStore.items.slice(0, 4)
   const q = searchQuery.value.toLowerCase().trim()
-  return products.filter(p => 
-    p.name.toLowerCase().includes(q) ||
-    p.brand.toLowerCase().includes(q) ||
-    p.fragranceFamily.toLowerCase().includes(q) ||
-    p.olfactoryPyramid.topNotes.some(n => n.toLowerCase().includes(q)) ||
-    p.olfactoryPyramid.heartNotes.some(n => n.toLowerCase().includes(q)) ||
-    p.olfactoryPyramid.baseNotes.some(n => n.toLowerCase().includes(q))
+  return productStore.items.filter(p => 
+    p.name?.toLowerCase().includes(q) ||
+    p.brand?.toLowerCase().includes(q) ||
+    p.fragranceFamily?.toLowerCase().includes(q) ||
+    p.olfactoryPyramid?.topNotes?.some(n => n.toLowerCase().includes(q)) ||
+    p.olfactoryPyramid?.heartNotes?.some(n => n.toLowerCase().includes(q)) ||
+    p.olfactoryPyramid?.baseNotes?.some(n => n.toLowerCase().includes(q))
   )
 })
 

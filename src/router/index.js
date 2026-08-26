@@ -4,9 +4,9 @@ import CatalogView from '../views/CatalogView.vue'
 import ProductDetailView from '../views/ProductDetailView.vue'
 import CartView from '../views/CartView.vue'
 import CheckoutView from '../views/CheckoutView.vue'
-import AboutView from '../views/AboutView.vue'
 import ContactView from '../views/ContactView.vue'
 import QuizView from '../views/QuizView.vue'
+import AdminView from '../views/AdminView.vue'
 
 const routes = [
   {
@@ -41,9 +41,7 @@ const routes = [
   },
   {
     path: '/nosotros',
-    name: 'about',
-    component: AboutView,
-    meta: { title: 'El Atelier & Filosofía | Gicca Perfumes' }
+    redirect: '/'
   },
   {
     path: '/contacto',
@@ -56,6 +54,12 @@ const routes = [
     name: 'quiz',
     component: QuizView,
     meta: { title: 'Encontrá tu Perfume Ideal | Gicca Perfumes' }
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: AdminView,
+    meta: { title: 'Panel de Administración | Gicca Perfumes' }
   }
 ]
 

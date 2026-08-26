@@ -1,12 +1,19 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
-import { products } from '@/data/products'
+import { useProductStore } from '@/stores/products'
 import { useCartStore } from '@/stores/cart'
 import { useToastStore } from '@/stores/toast'
 
+const productStore = useProductStore()
 const cartStore = useCartStore()
 const toastStore = useToastStore()
+
+onMounted(() => {
+  if (productStore.items.length === 0) {
+    productStore.fetchProducts()
+  }
+})
 
 const currentStep = ref(0)
 const answers = ref({
@@ -73,15 +80,16 @@ const selectOption = (key, val) => {
 }
 
 const matchResult = computed(() => {
+  if (!productStore.items || productStore.items.length === 0) return null
   // Return matching product
-  let matched = products.find(p => p.gender === answers.value.gender && p.fragranceFamily === answers.value.family)
+  let matched = productStore.items.find(p => p.gender === answers.value.gender && p.fragranceFamily === answers.value.family)
   if (!matched) {
-    matched = products.find(p => p.fragranceFamily === answers.value.family)
+    matched = productStore.items.find(p => p.fragranceFamily === answers.value.family)
   }
   if (!matched) {
-    matched = products.find(p => p.gender === answers.value.gender)
+    matched = productStore.items.find(p => p.gender === answers.value.gender)
   }
-  return matched || products[0]
+  return matched || productStore.items[0] || null
 })
 
 const restart = () => {
@@ -90,7 +98,8 @@ const restart = () => {
 }
 
 const handleAddRecommended = () => {
-  const defaultSize = matchResult.value.sizes.find(s => s.default) || matchResult.value.sizes[0]
+  if (!matchResult.value) return
+  const defaultSize = matchResult.value.sizes?.find(s => s.default) || matchResult.value.sizes?.[0]
   cartStore.addItem(matchResult.value, defaultSize, 1)
   toastStore.show(`¡${matchResult.value.name} agregado a tu bolsa!`, 'success')
 }
@@ -155,7 +164,7 @@ const handleAddRecommended = () => {
 
       <!-- FINAL RESULT SCREEN -->
       <div 
-        v-else 
+        v-else-if="matchResult" 
         class="bg-surface border border-outline-variant rounded-xs p-8 sm:p-12 shadow-lg space-y-8 animate-in zoom-in-95 text-center"
       >
         <div class="inline-flex items-center gap-1.5 bg-surface-container px-4 py-1.5 rounded-full border border-outline-variant text-tertiary font-label text-xs uppercase tracking-widest font-bold">
@@ -225,6 +234,32 @@ const handleAddRecommended = () => {
             class="font-label text-xs uppercase tracking-widest text-secondary hover:text-primary underline"
           >
             Reiniciar Quiz Olfativo
+          </button>
+        </div>
+      </div>
+
+      <!-- EMPTY PRODUCTS QUIZ RESULT FALLBACK -->
+      <div 
+        v-else 
+        class="bg-surface border border-outline-variant rounded-xs p-8 sm:p-12 shadow-lg space-y-6 animate-in zoom-in-95 text-center"
+      >
+        <span class="material-symbols-outlined text-6xl text-neutral-300">auto_awesome</span>
+        <h2 class="font-sans text-3xl text-primary font-normal">¡Test completado con éxito!</h2>
+        <p class="font-sans text-sm text-secondary max-w-md mx-auto leading-relaxed">
+          Hemos registrado tus preferencias olfativas. Próximamente se sincronizarán nuevas fragancias personalizadas para vos en nuestro catálogo.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+          <RouterLink 
+            to="/catalogo"
+            class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 rounded-full hover:bg-inverse-surface transition-all shadow-xs"
+          >
+            Ir al Catálogo
+          </RouterLink>
+          <button 
+            @click="restart"
+            class="bg-surface text-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 rounded-full border border-outline hover:bg-surface-container transition-all shadow-2xs"
+          >
+            Reiniciar Test
           </button>
         </div>
       </div>
