@@ -10,7 +10,7 @@ defineProps({
 <template>
   <div class="bg-surface-container border border-outline-variant rounded-xs p-6 sm:p-8 space-y-6 shadow-xs">
     <div class="border-b border-outline-variant pb-3 flex justify-between items-baseline">
-      <h3 class="font-serif text-xl text-primary font-medium">Pirámide Olfativa</h3>
+      <h3 class="font-sans text-xl text-primary font-medium">Pirámide Olfativa</h3>
       <span class="font-label text-[11px] uppercase tracking-widest text-secondary">Evolución en Piel</span>
     </div>
 

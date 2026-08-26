@@ -119,7 +119,7 @@ const handleAddRecommended = () => {
         class="bg-surface border border-outline-variant rounded-xs p-8 sm:p-12 shadow-md space-y-8 animate-in fade-in"
       >
         <div class="text-center">
-          <h1 class="font-serif text-3xl sm:text-4xl text-primary font-normal mb-2">
+          <h1 class="font-sans text-3xl sm:text-4xl text-primary font-normal mb-2">
             {{ questions[currentStep].title }}
           </h1>
           <p class="font-sans text-sm text-secondary">
@@ -137,7 +137,7 @@ const handleAddRecommended = () => {
             <span class="material-symbols-outlined text-3xl text-primary group-hover:scale-110 transition-transform">
               {{ opt.icon }}
             </span>
-            <span class="font-serif text-base text-primary font-medium">
+            <span class="font-sans text-base text-primary font-medium">
               {{ opt.label }}
             </span>
           </button>
@@ -165,7 +165,7 @@ const handleAddRecommended = () => {
 
         <div>
           <span class="font-label text-xs uppercase tracking-[0.25em] text-secondary block mb-1">Tu Fragancia Ideal es:</span>
-          <h2 class="font-serif text-4xl sm:text-5xl text-primary font-normal mb-2">
+          <h2 class="font-sans text-4xl sm:text-5xl text-primary font-normal mb-2">
             {{ matchResult.name }}
           </h2>
           <p class="font-sans text-sm text-secondary">

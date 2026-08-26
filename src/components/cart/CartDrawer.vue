@@ -58,7 +58,7 @@ const goToCartPage = () => {
       <!-- Header -->
       <div class="p-6 border-b border-outline-variant flex justify-between items-center bg-surface">
         <div>
-          <h2 class="font-serif text-2xl text-primary font-medium tracking-tight">Tu Bolsa</h2>
+          <h2 class="font-sans text-2xl text-primary font-medium tracking-tight">Tu Bolsa</h2>
           <p class="font-label text-label-sm text-secondary uppercase tracking-wider">
             {{ cartStore.totalItems }} {{ cartStore.totalItems === 1 ? 'artículo' : 'artículos' }}
           </p>
@@ -96,7 +96,7 @@ const goToCartPage = () => {
       <div class="flex-grow overflow-y-auto p-6 space-y-4">
         <div v-if="cartStore.items.length === 0" class="h-full flex flex-col items-center justify-center text-center py-16">
           <span class="material-symbols-outlined text-5xl text-outline mb-4">shopping_bag</span>
-          <h3 class="font-serif text-xl text-primary mb-2">Tu bolsa está vacía</h3>
+          <h3 class="font-sans text-xl text-primary mb-2">Tu bolsa está vacía</h3>
           <p class="font-sans text-sm text-secondary max-w-xs mb-8">
             Descubrí nuestra exclusiva selección de fragancias de lujo y perfumería de autor.
           </p>
@@ -126,7 +126,7 @@ const goToCartPage = () => {
               <div class="flex justify-between items-start gap-2">
                 <div>
                   <span class="font-label text-[10px] text-secondary uppercase tracking-widest">{{ item.brand }}</span>
-                  <h4 class="font-serif text-base text-primary font-medium leading-snug line-clamp-1">
+                  <h4 class="font-sans text-base text-primary font-medium leading-snug line-clamp-1">
                     {{ item.name }}
                   </h4>
                 </div>
@@ -200,41 +200,11 @@ const goToCartPage = () => {
 
       <!-- Footer & Totals -->
       <div v-if="cartStore.items.length > 0" class="p-6 bg-surface border-t border-outline-variant space-y-4">
-        <!-- Coupon Form (Píldora) -->
-        <div v-if="!cartStore.coupon" class="flex gap-2">
-          <input 
-            v-model="couponInput"
-            type="text" 
-            placeholder="CUPÓN (ej. GICCA10)"
-            class="flex-grow bg-surface border border-outline-variant rounded-full px-4 py-2 text-xs font-label uppercase tracking-widest text-primary focus:border-primary focus:outline-none"
-            @keyup.enter="handleApplyCoupon"
-          />
-          <button 
-            @click="handleApplyCoupon"
-            class="bg-surface-container text-primary font-label text-xs px-5 py-2 uppercase tracking-widest rounded-full border border-outline hover:bg-secondary-container transition-colors shadow-2xs"
-          >
-            Aplicar
-          </button>
-        </div>
-        <div v-else class="flex justify-between items-center bg-surface-container rounded-full px-4 py-2 text-xs border border-outline-variant">
-          <span class="text-tertiary font-semibold flex items-center gap-1">
-            <span class="material-symbols-outlined text-sm">check_circle</span>
-            {{ cartStore.coupon.label }} ({{ cartStore.coupon.code }})
-          </span>
-          <button @click="cartStore.removeCoupon" class="text-xs text-secondary hover:text-error underline">
-            Quitar
-          </button>
-        </div>
-
         <!-- Breakdown -->
         <div class="space-y-1.5 text-sm font-sans border-b border-outline-variant pb-3">
           <div class="flex justify-between text-secondary">
             <span>Subtotal</span>
             <span>${{ cartStore.subtotal.toLocaleString('es-AR') }}</span>
-          </div>
-          <div v-if="cartStore.discountAmount > 0" class="flex justify-between text-tertiary font-medium">
-            <span>Descuento aplicado</span>
-            <span>-${{ cartStore.discountAmount.toLocaleString('es-AR') }}</span>
           </div>
           <div class="flex justify-between text-secondary">
             <span>Envío estimado</span>
@@ -244,7 +214,7 @@ const goToCartPage = () => {
 
         <!-- Total -->
         <div class="flex justify-between items-baseline pt-1">
-          <span class="font-serif text-lg text-primary">Total Estimado</span>
+          <span class="font-sans text-lg text-primary">Total Estimado</span>
           <div class="text-right">
             <span class="font-sans text-2xl font-bold text-primary">
               ${{ cartStore.total.toLocaleString('es-AR') }}

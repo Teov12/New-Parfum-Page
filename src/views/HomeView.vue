@@ -16,7 +16,6 @@ const filteredProducts = computed(() => {
 const trustBadges = [
   { icon: 'verified_user', title: '100% Originales', desc: 'Garantía de procedencia directa de casas oficiales.' },
   { icon: 'local_shipping', title: 'Envíos Asegurados', desc: 'Entregas a todo el país con seguimiento en tiempo real.' },
-  { icon: 'card_giftcard', title: 'Muestras de Cortesía', desc: 'Elegí 1 muestra de autor gratis en cada pedido.' },
   { icon: 'credit_card', title: 'Cuotas Sin Interés', desc: '3 y 6 cuotas con todas las tarjetas bancarias.' }
 ]
 
@@ -60,14 +59,7 @@ const testimonials = [
       <div class="relative z-10 w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-20 lg:py-32 grid grid-cols-1 lg:grid-cols-12 gap-gutter">
         <div class="lg:col-span-7 flex flex-col justify-center">
           
-          <div class="inline-flex items-center gap-2 mb-6">
-            <span class="w-8 h-[1px] bg-primary"></span>
-            <p class="font-label text-label-sm text-primary uppercase tracking-[0.25em]">
-              Colección Alta Perfumería 2026
-            </p>
-          </div>
-
-          <h1 class="font-serif text-4xl sm:text-5xl lg:text-display-lg text-primary mb-6 leading-[1.08] tracking-tight font-normal">
+          <h1 class="font-sans text-4xl sm:text-5xl lg:text-display-lg text-primary mb-6 leading-[1.08] tracking-tight font-normal">
             Encontrá tu nueva <br />
             <span class="italic">fragancia favorita.</span>
           </h1>
@@ -97,16 +89,12 @@ const testimonials = [
           <!-- Quick Stats -->
           <div class="grid grid-cols-3 gap-6 pt-10 mt-10 border-t border-outline-variant max-w-md">
             <div>
-              <p class="font-serif text-2xl text-primary font-normal">100%</p>
+              <p class="font-sans text-2xl text-primary font-normal">100%</p>
               <p class="font-label text-[11px] text-secondary uppercase tracking-wider">Originales Certificados</p>
             </div>
             <div>
-              <p class="font-serif text-2xl text-primary font-normal">48hs</p>
-              <p class="font-label text-[11px] text-secondary uppercase tracking-wider">Envío Express País</p>
-            </div>
-            <div>
-              <p class="font-serif text-2xl text-primary font-normal">4.9 ★</p>
-              <p class="font-label text-[11px] text-secondary uppercase tracking-wider">+5.000 Clientes Felices</p>
+              <p class="font-sans text-2xl text-primary font-normal">4.9 ★</p>
+              <p class="font-label text-[11px] text-secondary uppercase tracking-wider">+99 Clientes Felices</p>
             </div>
           </div>
 
@@ -115,30 +103,30 @@ const testimonials = [
     </header>
 
     <!-- TRUST PERKS BAR -->
-    <section class="border-b border-outline-variant bg-surface">
-      <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <section class="border-b border-outline-variant/60 bg-surface">
+      <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div 
           v-for="badge in trustBadges" 
           :key="badge.title"
-          class="flex items-start gap-4 p-4 rounded-xs bg-surface-container-low/50 hover:bg-surface-container border border-outline-variant/60 hover:border-outline-variant transition-all shadow-2xs"
+          class="flex items-start gap-4 p-4 rounded-2xl bg-white/70 hover:bg-white border border-outline-variant/50 hover:border-outline-variant hover:shadow-md transition-all duration-300"
         >
-          <div class="w-11 h-11 bg-surface rounded-full border border-outline-variant flex items-center justify-center flex-shrink-0 text-primary shadow-2xs">
-            <span class="material-symbols-outlined text-lg">{{ badge.icon }}</span>
+          <div class="w-11 h-11 bg-surface-container rounded-xl flex items-center justify-center flex-shrink-0 text-primary shadow-xs">
+            <span class="material-symbols-outlined text-xl">{{ badge.icon }}</span>
           </div>
           <div>
-            <h4 class="font-serif text-base text-primary font-medium mb-0.5">{{ badge.title }}</h4>
+            <h4 class="font-sans text-sm font-bold text-primary mb-0.5">{{ badge.title }}</h4>
             <p class="font-sans text-xs text-secondary leading-relaxed">{{ badge.desc }}</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- BENTO GRID CATEGORIES (Estructura Editorial Recta de 2px con Badges en Píldora) -->
+    <!-- BENTO GRID CATEGORIES -->
     <section class="py-16 md:py-24 max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
       <div class="text-center max-w-xl mx-auto mb-14">
-        <p class="font-label text-label-sm text-secondary uppercase tracking-widest mb-2">Explorá por Universo</p>
-        <h2 class="font-serif text-3xl md:text-headline-lg text-primary font-normal">Colecciones Curadas</h2>
-        <div class="w-12 h-[1px] bg-primary mx-auto mt-4"></div>
+        <p class="font-sans text-xs font-semibold text-neutral-500 uppercase tracking-widest mb-2">Explorá por Universo</p>
+        <h2 class="font-sans text-3xl md:text-4xl font-extrabold text-primary tracking-tight">Colecciones Curadas</h2>
+        <div class="w-12 h-1 bg-primary rounded-full mx-auto mt-4"></div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -146,22 +134,22 @@ const testimonials = [
         <!-- Category 1: Mujer (Span 6 cols) -->
         <RouterLink 
           to="/catalogo?gender=woman"
-          class="group relative md:col-span-6 aspect-[4/3] md:aspect-[16/11] overflow-hidden bg-surface-container border border-outline-variant hover:border-primary rounded-xs transition-all duration-300 flex flex-col justify-end p-8 shadow-xs hover:shadow-md"
+          class="group relative md:col-span-6 aspect-[4/3] md:aspect-[16/11] overflow-hidden bg-neutral-900 rounded-3xl border border-outline-variant/60 hover:border-primary transition-all duration-500 flex flex-col justify-end p-8 shadow-md hover:shadow-2xl hover:-translate-y-1"
         >
           <img 
             src="https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1200&q=85" 
             alt="Colección Mujer"
-            class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-90"
+            class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-108 opacity-85"
           />
-          <div class="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/30 to-transparent"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent"></div>
           
-          <div class="relative z-10 text-on-primary">
-            <span class="font-label text-xs uppercase tracking-widest text-on-primary-container mb-1 block">Alta Costura Femenina</span>
-            <h3 class="font-serif text-3xl md:text-4xl font-normal mb-2">Colección Mujer</h3>
-            <p class="font-sans text-sm text-surface/90 max-w-sm mb-4">
+          <div class="relative z-10 text-white">
+            <span class="font-sans text-[11px] font-semibold uppercase tracking-widest text-white/70 mb-1.5 block">Alta Costura Femenina</span>
+            <h3 class="font-sans text-2xl sm:text-3xl font-extrabold mb-2 text-white">Colección Mujer</h3>
+            <p class="font-sans text-xs sm:text-sm text-white/80 max-w-sm mb-4 leading-relaxed">
               Bouquets florales radiantes, notas envolventes de vainilla y composiciones de elegancia absoluta.
             </p>
-            <span class="font-label text-xs uppercase tracking-widest underline flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+            <span class="font-sans text-xs font-bold uppercase tracking-wider text-white inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 group-hover:bg-white group-hover:text-black transition-all">
               <span>Explorar Fragancias</span>
               <span class="material-symbols-outlined text-sm">arrow_forward</span>
             </span>
@@ -171,22 +159,22 @@ const testimonials = [
         <!-- Category 2: Hombre (Span 6 cols) -->
         <RouterLink 
           to="/catalogo?gender=man"
-          class="group relative md:col-span-6 aspect-[4/3] md:aspect-[16/11] overflow-hidden bg-surface-container border border-outline-variant hover:border-primary rounded-xs transition-all duration-300 flex flex-col justify-end p-8 shadow-xs hover:shadow-md"
+          class="group relative md:col-span-6 aspect-[4/3] md:aspect-[16/11] overflow-hidden bg-neutral-900 rounded-3xl border border-outline-variant/60 hover:border-primary transition-all duration-500 flex flex-col justify-end p-8 shadow-md hover:shadow-2xl hover:-translate-y-1"
         >
           <img 
             src="https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85" 
             alt="Colección Hombre"
-            class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-90"
+            class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-108 opacity-85"
           />
-          <div class="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/30 to-transparent"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent"></div>
           
-          <div class="relative z-10 text-on-primary">
-            <span class="font-label text-xs uppercase tracking-widest text-on-primary-container mb-1 block">Carácter & Distinción</span>
-            <h3 class="font-serif text-3xl md:text-4xl font-normal mb-2">Colección Hombre</h3>
-            <p class="font-sans text-sm text-surface/90 max-w-sm mb-4">
+          <div class="relative z-10 text-white">
+            <span class="font-sans text-[11px] font-semibold uppercase tracking-widest text-white/70 mb-1.5 block">Carácter & Distinción</span>
+            <h3 class="font-sans text-2xl sm:text-3xl font-extrabold mb-2 text-white">Colección Hombre</h3>
+            <p class="font-sans text-xs sm:text-sm text-white/80 max-w-sm mb-4 leading-relaxed">
               Maderas profundas de cedro y sándalo, cítricos italianos y resinas ambarinas de presencia imponente.
             </p>
-            <span class="font-label text-xs uppercase tracking-widest underline flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+            <span class="font-sans text-xs font-bold uppercase tracking-wider text-white inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 group-hover:bg-white group-hover:text-black transition-all">
               <span>Explorar Fragancias</span>
               <span class="material-symbols-outlined text-sm">arrow_forward</span>
             </span>
@@ -196,47 +184,51 @@ const testimonials = [
         <!-- Category 3: Unisex & Nicho (Span 6 cols) -->
         <RouterLink 
           to="/catalogo?gender=unisex"
-          class="group relative md:col-span-6 bg-surface-container-high border border-outline-variant rounded-xs p-8 md:p-10 flex flex-col justify-between hover:border-primary transition-all duration-300 shadow-xs hover:shadow-md"
+          class="group relative md:col-span-6 bg-white rounded-3xl border border-outline-variant/60 hover:border-primary p-8 md:p-10 flex flex-col justify-between hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 shadow-sm"
         >
           <div class="flex justify-between items-start">
             <div>
-              <span class="material-symbols-outlined text-3xl text-primary-container mb-3">all_inclusive</span>
-              <span class="font-label text-xs uppercase tracking-widest text-secondary block">Sin Género • Pura Expresión</span>
-              <h3 class="font-serif text-2xl md:text-3xl text-primary font-normal mb-2">Fragancias Unisex & Nicho</h3>
+              <div class="w-12 h-12 rounded-2xl bg-surface-container flex items-center justify-center text-primary mb-4 shadow-xs">
+                <span class="material-symbols-outlined text-2xl">all_inclusive</span>
+              </div>
+              <span class="font-sans text-[11px] font-semibold uppercase tracking-widest text-secondary block">Sin Género • Pura Expresión</span>
+              <h3 class="font-sans text-2xl md:text-3xl font-extrabold text-primary mb-2">Fragancias Unisex & Nicho</h3>
             </div>
-            <span class="font-label text-xs bg-surface px-3 py-1 rounded-full border border-outline-variant text-primary uppercase shadow-2xs">
+            <span class="font-sans text-xs font-bold bg-neutral-100 px-3.5 py-1.5 rounded-full text-primary uppercase">
               18 Variedades
             </span>
           </div>
-          <p class="font-sans text-sm text-secondary max-w-md my-4">
+          <p class="font-sans text-sm text-secondary max-w-md my-4 leading-relaxed">
             Aromas vanguardistas donde el azafrán, el ámbar gris y la madera de oud rompen todas las convenciones.
           </p>
-          <span class="font-label text-xs uppercase tracking-widest text-primary font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+          <span class="font-sans text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5 group-hover:translate-x-1.5 transition-transform">
             <span>Ver Selección Unisex</span>
             <span class="material-symbols-outlined text-sm">arrow_forward</span>
           </span>
         </RouterLink>
 
-        <!-- Category 4: Ofertas & Exclusivos (Span 6 cols) -->
+        <!-- Category 4: Perfumería Árabe (Span 6 cols) -->
         <RouterLink 
-          to="/catalogo?offers=true"
-          class="group relative md:col-span-6 bg-secondary-container border border-outline-variant rounded-xs p-8 md:p-10 flex flex-col justify-between hover:border-primary transition-all duration-300 shadow-xs hover:shadow-md"
+          to="/catalogo?category=arabes"
+          class="group relative md:col-span-6 bg-white rounded-3xl border border-outline-variant/60 hover:border-primary p-8 md:p-10 flex flex-col justify-between hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 shadow-sm"
         >
           <div class="flex justify-between items-start">
             <div>
-              <span class="material-symbols-outlined text-3xl text-primary-container mb-3">sell</span>
-              <span class="font-label text-xs uppercase tracking-widest text-secondary block">Oportunidades de Lujo</span>
-              <h3 class="font-serif text-2xl md:text-3xl text-primary font-normal mb-2">Ofertas de Temporada</h3>
+              <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center mb-4 shadow-xs">
+                <span class="material-symbols-outlined text-2xl">diamond</span>
+              </div>
+              <span class="font-sans text-[11px] font-semibold uppercase tracking-widest text-secondary block">Lujo de Oriente Medio</span>
+              <h3 class="font-sans text-2xl md:text-3xl font-extrabold text-primary mb-2">Perfumería Árabe</h3>
             </div>
-            <span class="font-label text-xs bg-primary-container text-on-primary px-3 py-1 rounded-full uppercase tracking-widest font-bold shadow-xs">
-              Hasta 20% OFF
+            <span class="font-sans text-xs font-bold bg-neutral-100 text-neutral-800 px-3.5 py-1.5 rounded-full uppercase">
+              Exclusivos
             </span>
           </div>
-          <p class="font-sans text-sm text-secondary max-w-md my-4">
-            Unidades limitadas con precios especiales y sets de regalo con estuches de edición coleccionista.
+          <p class="font-sans text-sm text-secondary max-w-md my-4 leading-relaxed">
+            Creaciones opulentas de Dubai, maderas de agar, azafrán, praliné y estelas magnéticas de altísima duración.
           </p>
-          <span class="font-label text-xs uppercase tracking-widest text-primary font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-            <span>Aprovechar Ofertas</span>
+          <span class="font-sans text-xs font-bold uppercase tracking-wider text-amber-800 flex items-center gap-1.5 group-hover:translate-x-1.5 transition-transform">
+            <span>Explorar Colección Árabe</span>
             <span class="material-symbols-outlined text-sm">arrow_forward</span>
           </span>
         </RouterLink>
@@ -251,7 +243,7 @@ const testimonials = [
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
           <div>
             <p class="font-label text-label-sm text-secondary uppercase tracking-widest mb-2">Curaduría Destacada</p>
-            <h2 class="font-serif text-3xl md:text-headline-lg text-primary font-normal">Fragancias Icónicas</h2>
+            <h2 class="font-sans text-3xl md:text-headline-lg text-primary font-normal">Fragancias Icónicas</h2>
           </div>
 
           <!-- Category Filter Tabs: Píldoras -->
@@ -332,7 +324,7 @@ const testimonials = [
             />
           </div>
           <div class="absolute -bottom-6 -right-6 bg-surface-container-high border border-outline-variant rounded-xs p-6 hidden sm:block max-w-xs shadow-lg">
-            <p class="font-serif text-lg text-primary italic mb-1">"El perfume es la forma más intensa del recuerdo."</p>
+            <p class="font-sans text-lg text-primary italic mb-1">"El perfume es la forma más intensa del recuerdo."</p>
             <p class="font-label text-[10px] text-secondary uppercase tracking-widest">— Jean-Paul Guerlain</p>
           </div>
         </div>
@@ -340,7 +332,7 @@ const testimonials = [
         <!-- Story Text (7 cols) -->
         <div class="lg:col-span-7 lg:pl-8">
           <p class="font-label text-label-sm text-secondary uppercase tracking-[0.2em] mb-3">La Filosofía Gicca</p>
-          <h2 class="font-serif text-3xl sm:text-4xl text-primary font-normal leading-tight mb-6">
+          <h2 class="font-sans text-3xl sm:text-4xl text-primary font-normal leading-tight mb-6">
             El arte de vestir la piel <br />con alta perfumería.
           </h2>
           
@@ -377,7 +369,7 @@ const testimonials = [
       <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
         <div class="text-center max-w-xl mx-auto mb-14">
           <p class="font-label text-label-sm text-secondary uppercase tracking-widest mb-2">Guía Olfativa</p>
-          <h2 class="font-serif text-3xl md:text-headline-lg text-primary font-normal">Familias Aromáticas</h2>
+          <h2 class="font-sans text-3xl md:text-headline-lg text-primary font-normal">Familias Aromáticas</h2>
           <p class="font-sans text-sm text-secondary mt-2">
             Comprender las notas es el primer paso para descubrir la firma olfativa que resuena con tu esencia.
           </p>
@@ -399,7 +391,7 @@ const testimonials = [
                 />
               </div>
               <div class="flex justify-between items-baseline mb-2">
-                <h3 class="font-serif text-2xl text-primary font-normal group-hover:text-primary-container transition-colors">
+                <h3 class="font-sans text-2xl text-primary font-normal group-hover:text-primary-container transition-colors">
                   {{ family.name }}
                 </h3>
                 <span class="font-label text-xs text-secondary uppercase bg-surface-container px-2.5 py-0.5 rounded-full">{{ family.count }} aromas</span>
@@ -423,7 +415,7 @@ const testimonials = [
       <div class="bg-primary-container text-on-primary rounded-xs p-10 md:p-16 text-center shadow-lg border border-primary">
         <span class="material-symbols-outlined text-4xl text-on-primary-container mb-3">auto_awesome</span>
         <p class="font-label text-xs uppercase tracking-[0.25em] text-on-primary-container mb-2">¿Indeciso sobre qué fragancia elegir?</p>
-        <h2 class="font-serif text-3xl sm:text-4xl md:text-5xl font-normal max-w-2xl mx-auto mb-6 leading-tight">
+        <h2 class="font-sans text-3xl sm:text-4xl md:text-5xl font-normal max-w-2xl mx-auto mb-6 leading-tight">
           Hacé nuestro Quiz Olfativo en 60 segundos
         </h2>
         <p class="font-sans text-sm sm:text-base text-surface/85 max-w-xl mx-auto mb-8 leading-relaxed">
@@ -443,7 +435,7 @@ const testimonials = [
     <section class="py-16 md:py-24 max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
       <div class="text-center max-w-xl mx-auto mb-14">
         <p class="font-label text-label-sm text-secondary uppercase tracking-widest mb-2">Experiencias Reales</p>
-        <h2 class="font-serif text-3xl md:text-headline-lg text-primary font-normal">Lo Que Dicen Nuestros Clientes</h2>
+        <h2 class="font-sans text-3xl md:text-headline-lg text-primary font-normal">Lo Que Dicen Nuestros Clientes</h2>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -452,7 +444,7 @@ const testimonials = [
           :key="index"
           class="bg-surface-container rounded-xs border border-outline-variant p-8 flex flex-col justify-between relative shadow-xs hover:shadow-md transition-shadow"
         >
-          <span class="font-serif text-5xl text-outline-variant absolute top-4 right-6 pointer-events-none">“</span>
+          <span class="font-sans text-5xl text-outline-variant absolute top-4 right-6 pointer-events-none">“</span>
           <div>
             <div class="flex gap-1 text-primary mb-4">
               <span v-for="star in 5" :key="star" class="material-symbols-outlined text-sm fill-icon">star</span>
@@ -463,7 +455,7 @@ const testimonials = [
           </div>
 
           <div class="border-t border-outline-variant pt-4">
-            <h4 class="font-serif text-base text-primary font-medium">{{ item.author }}</h4>
+            <h4 class="font-sans text-base text-primary font-medium">{{ item.author }}</h4>
             <p class="font-label text-[11px] text-secondary uppercase tracking-wider">{{ item.location }}</p>
           </div>
         </div>

@@ -13,19 +13,16 @@ const isSearchOpen = ref(false)
 const isMobileMenuOpen = ref(false)
 
 const navLinks = [
-  { name: 'Inicio', path: '/' },
-  { name: 'Perfumes', path: '/catalogo' },
-  { name: 'Woman', path: '/catalogo?gender=woman' },
-  { name: 'Man', path: '/catalogo?gender=man' },
+  { name: 'Masculino', path: '/catalogo?gender=man' },
+  { name: 'Femenino', path: '/catalogo?gender=woman' },
   { name: 'Unisex', path: '/catalogo?gender=unisex' },
-  { name: 'Ofertas', path: '/catalogo?offers=true' },
-  { name: 'El Atelier', path: '/nosotros' },
-  { name: 'Contacto', path: '/contacto' }
+  { name: 'Árabes', path: '/catalogo?category=arabes' },
+  { name: 'Diseñador', path: '/catalogo?category=disenador' }
 ]
 
 const isActive = (path) => {
   if (path === '/' && route.path === '/') return true
-  if (path !== '/' && route.fullPath.startsWith(path)) return true
+  if (path !== '/' && route.fullPath === path) return true
   return false
 }
 </script>
@@ -36,11 +33,8 @@ const isActive = (path) => {
       
       <!-- Brand Logo -->
       <RouterLink to="/" class="flex items-baseline gap-2 group">
-        <span class="font-serif text-2xl sm:text-3xl text-primary font-normal tracking-tight group-hover:text-primary-container transition-colors">
+        <span class="font-sans text-2xl sm:text-3xl text-primary font-normal tracking-tight group-hover:text-primary-container transition-colors">
           Gicca Perfumes
-        </span>
-        <span class="hidden sm:inline-block font-label text-[10px] text-secondary uppercase tracking-widest border-l border-outline-variant pl-2">
-          Boutique de Alta Perfumería
         </span>
       </RouterLink>
 

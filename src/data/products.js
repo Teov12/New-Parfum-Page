@@ -6,10 +6,11 @@ export const products = [
     name: 'Libre Eau de Parfum',
     concentration: 'Eau de Parfum',
     gender: 'woman',
+    category: 'disenador',
     fragranceFamily: 'Floral',
     price: 150000,
     originalPrice: 175000,
-    discountPercentage: 14,
+    discountPercentage: 0,
     rating: 4.9,
     reviewCount: 48,
     isFeatured: true,
@@ -66,10 +67,11 @@ export const products = [
     name: 'Sauvage Parfum',
     concentration: 'Parfum',
     gender: 'man',
+    category: 'disenador',
     fragranceFamily: 'Amaderada',
     price: 185000,
     originalPrice: 205000,
-    discountPercentage: 10,
+    discountPercentage: 0,
     rating: 5.0,
     reviewCount: 64,
     isFeatured: true,
@@ -117,10 +119,11 @@ export const products = [
     name: 'Baccarat Rouge 540 Extrait',
     concentration: 'Parfum',
     gender: 'unisex',
+    category: 'nicho',
     fragranceFamily: 'Oriental',
     price: 320000,
     originalPrice: 350000,
-    discountPercentage: 9,
+    discountPercentage: 0,
     rating: 5.0,
     reviewCount: 32,
     isFeatured: true,
@@ -168,6 +171,7 @@ export const products = [
     name: 'Coco Mademoiselle',
     concentration: 'Eau de Parfum',
     gender: 'woman',
+    category: 'disenador',
     fragranceFamily: 'Floral',
     price: 165000,
     originalPrice: 165000,
@@ -218,10 +222,11 @@ export const products = [
     name: 'Black Orchid Parfum',
     concentration: 'Parfum',
     gender: 'unisex',
+    category: 'disenador',
     fragranceFamily: 'Oriental',
     price: 195000,
     originalPrice: 220000,
-    discountPercentage: 11,
+    discountPercentage: 0,
     rating: 4.9,
     reviewCount: 29,
     isFeatured: false,
@@ -259,16 +264,17 @@ export const products = [
     name: "J'adore Eau de Parfum",
     concentration: 'Eau de Parfum',
     gender: 'woman',
+    category: 'disenador',
     fragranceFamily: 'Floral',
     price: 148000,
     originalPrice: 168000,
-    discountPercentage: 12,
+    discountPercentage: 0,
     rating: 4.9,
     reviewCount: 41,
     isFeatured: true,
     isNew: false,
     isBestSeller: true,
-    badge: 'Oferta Especial',
+    badge: 'Exclusivo',
     shortDescription: 'Un ramo floral generoso y equilibrado. Ylang-ylang de las Comoras, rosa damascena y jazmín sambac.',
     description: 'J’adore es el gran bouquet floral femenino de Dior. Tallado al milímetro como una flor hecha a medida, combina las flores más hermosas de todo el mundo en una estela radiante, sensual y envolvente.',
     images: [
@@ -300,6 +306,7 @@ export const products = [
     name: 'Gypsy Water',
     concentration: 'Eau de Parfum',
     gender: 'unisex',
+    category: 'nicho',
     fragranceFamily: 'Amaderada',
     price: 240000,
     originalPrice: 240000,
@@ -341,10 +348,11 @@ export const products = [
     name: 'Acqua Di Giò Profondo',
     concentration: 'Eau de Parfum',
     gender: 'man',
+    category: 'disenador',
     fragranceFamily: 'Cítrica',
     price: 142000,
     originalPrice: 160000,
-    discountPercentage: 11,
+    discountPercentage: 0,
     rating: 4.9,
     reviewCount: 37,
     isFeatured: true,
@@ -373,6 +381,147 @@ export const products = [
       occasion: 'Deportes, Oficina, Salidas de Verano'
     },
     usageTips: 'Perfecto para aplicar justo después de una ducha revitalizante.',
+    reviews: []
+  },
+  {
+    id: 'lattafa-khamrah',
+    slug: 'lattafa-khamrah-eau-de-parfum',
+    brand: 'Lattafa',
+    name: 'Khamrah Eau de Parfum',
+    concentration: 'Eau de Parfum',
+    gender: 'unisex',
+    category: 'arabes',
+    fragranceFamily: 'Oriental',
+    price: 85000,
+    originalPrice: 98000,
+    discountPercentage: 0,
+    rating: 5.0,
+    reviewCount: 78,
+    isFeatured: true,
+    isNew: true,
+    isBestSeller: true,
+    badge: 'Viral Árabe',
+    shortDescription: 'La joya oriental de Dubai. Una mezcla adictiva de canela, praliné, dátiles y maderas ambarinas.',
+    description: 'Lattafa Khamrah es una lujosa fragancia oriental especiada que combina especias preciosas con la calidez de notas amaderadas y la dulzura gourmand del praliné y la vainilla. Un perfume suntuoso e hipnótico que deja una estela opulenta e inolvidable.',
+    images: [
+      'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1000&q=85',
+      'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1000&q=85'
+    ],
+    sizes: [
+      { size: '100 ml', price: 85000, default: true }
+    ],
+    olfactoryPyramid: {
+      topNotes: ['Canela', 'Nuez Moscada', 'Bergamota'],
+      heartNotes: ['Dátiles', 'Praliné', 'Nardos', 'Mahonia'],
+      baseNotes: ['Vainilla', 'Haba Tonka', 'Benjuí', 'Madera de Ámbar', 'Madera de Akigala']
+    },
+    characteristics: {
+      longevity: '14+ horas',
+      sillage: 'Proyección Enorme',
+      season: 'Otoño / Invierno / Noche',
+      occasion: 'Eventos, Citas, Celebraciones'
+    },
+    usageTips: 'Fragancia de alta potencia. Dos o tres atomizaciones son suficientes para todo el día.',
+    reviews: [
+      {
+        id: 10,
+        author: 'Nicolás F.',
+        rating: 5,
+        date: '18 de Agosto, 2026',
+        comment: 'El mejor perfume árabe que probé en mi vida. Calidad de nicho a una fracción de precio.',
+        verified: true
+      }
+    ]
+  },
+  {
+    id: 'armaf-club-de-nuit-intense',
+    slug: 'armaf-club-de-nuit-intense-man-parfum',
+    brand: 'Armaf',
+    name: 'Club de Nuit Intense Man Pure Parfum',
+    concentration: 'Parfum',
+    gender: 'man',
+    category: 'arabes',
+    fragranceFamily: 'Amaderada',
+    price: 92000,
+    originalPrice: 105000,
+    discountPercentage: 0,
+    rating: 4.9,
+    reviewCount: 95,
+    isFeatured: true,
+    isNew: false,
+    isBestSeller: true,
+    badge: 'Best Seller Árabe',
+    shortDescription: 'La bestia negra de la perfumería árabe. Grosella negra, limón ahumado, abedul y ámbar gris.',
+    description: 'Armaf Club de Nuit Intense Man Pure Parfum es una obra maestra aclamada mundialmente por su carácter magnético, ahumado y viril. Diseñada para el hombre seguro que impone su presencia con elegancia y distinción duradera.',
+    images: [
+      'https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1000&q=85',
+      'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1000&q=85'
+    ],
+    sizes: [
+      { size: '150 ml', price: 92000, default: true }
+    ],
+    olfactoryPyramid: {
+      topNotes: ['Limón', 'Piña', 'Grosella Negra', 'Bergamota', 'Manzana'],
+      heartNotes: ['Abedul Ahumado', 'Jazmín', 'Rosa'],
+      baseNotes: ['Ámbar Gris', 'Almizcle', 'Pachulí', 'Vainilla']
+    },
+    characteristics: {
+      longevity: '12+ horas',
+      sillage: 'Poderosa',
+      season: 'Todo el año / Noche y Día',
+      occasion: 'Uso Diario Imponente, Salidas Nocturnas'
+    },
+    usageTips: 'Excelente adherencia en prendas y piel.',
+    reviews: [
+      {
+        id: 11,
+        author: 'Gonzalo T.',
+        rating: 5,
+        date: '15 de Agosto, 2026',
+        comment: 'La versión Pure Parfum no tiene esa salida cítrica agresiva del EDT, es súper cremosa y dura 12 horas.',
+        verified: true
+      }
+    ]
+  },
+  {
+    id: 'swiss-arabian-shaghaf-oud',
+    slug: 'swiss-arabian-shaghaf-oud-eau-de-parfum',
+    brand: 'Swiss Arabian',
+    name: 'Shaghaf Oud Eau de Parfum',
+    concentration: 'Eau de Parfum',
+    gender: 'unisex',
+    category: 'arabes',
+    fragranceFamily: 'Oriental',
+    price: 110000,
+    originalPrice: 125000,
+    discountPercentage: 0,
+    rating: 4.9,
+    reviewCount: 34,
+    isFeatured: false,
+    isNew: true,
+    isBestSeller: false,
+    badge: 'Oud Dorado',
+    shortDescription: 'Un viaje sensorial a los palacios árabes. Rosa de Damasco, azafrán, praliné y madera de agar (oud).',
+    description: 'Shaghaf Oud es una fragancia oriental gourmand que abraza con su aura cálida y dorada. Combina la opulencia de la madera de oud tradicional con notas dulces de praliné y vainilla y la elegancia de la rosa de Damasco.',
+    images: [
+      'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1000&q=85',
+      'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1000&q=85'
+    ],
+    sizes: [
+      { size: '75 ml', price: 110000, default: true }
+    ],
+    olfactoryPyramid: {
+      topNotes: ['Azafrán de Oriente'],
+      heartNotes: ['Rosa de Damasco', 'Madera de Oud'],
+      baseNotes: ['Praliné Dulce', 'Vainilla', 'Madera de Agar']
+    },
+    characteristics: {
+      longevity: '14+ horas',
+      sillage: 'Pesada e Inmortal',
+      season: 'Otoño / Invierno',
+      occasion: 'Ocasiones Especiales, Noches Frías'
+    },
+    usageTips: 'Aplicar a distancia sobre los hombros y el pecho.',
     reviews: []
   }
 ];
@@ -411,5 +560,8 @@ export const brandsList = [
   'Maison Francis Kurkdjian',
   'Tom Ford',
   'Byredo',
-  'Giorgio Armani'
+  'Giorgio Armani',
+  'Lattafa',
+  'Armaf',
+  'Swiss Arabian'
 ];

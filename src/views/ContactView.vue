@@ -33,8 +33,8 @@ const faqs = [
   },
   {
     id: 4,
-    q: '¿Qué medios de pago aceptan y cómo aplico el descuento por transferencia?',
-    a: 'Aceptamos todas las tarjetas de crédito bancarias con 3 y 6 cuotas fijas a través de Mercado Pago. Si elegís abonar por Transferencia Bancaria, obtenés un 10% de descuento automático en el checkout.'
+    q: '¿Qué medios de pago aceptan?',
+    a: 'Aceptamos tarjetas de crédito bancarias con 3 y 6 cuotas fijas a través de Mercado Pago, tarjetas de débito y Transferencia Bancaria directa con confirmación inmediata.'
   },
   {
     id: 5,
@@ -70,7 +70,7 @@ const handleSubmitContact = () => {
       <!-- Header -->
       <div class="text-center max-w-2xl mx-auto mb-16">
         <span class="font-label text-xs uppercase tracking-[0.25em] text-secondary mb-2 block">Concierge & Soporte</span>
-        <h1 class="font-serif text-4xl sm:text-5xl text-primary font-normal tracking-tight mb-4">
+        <h1 class="font-sans text-4xl sm:text-5xl text-primary font-normal tracking-tight mb-4">
           Estamos a tu Disposición
         </h1>
         <p class="font-sans text-secondary text-sm sm:text-base leading-relaxed">
@@ -84,14 +84,14 @@ const handleSubmitContact = () => {
         <!-- Contact Channels (5 cols) -->
         <div class="lg:col-span-5 space-y-6">
           <div class="bg-surface-container border border-outline-variant rounded-xs p-8 space-y-6 shadow-xs">
-            <h3 class="font-serif text-2xl text-primary font-normal">Canales de Atención VIP</h3>
+            <h3 class="font-sans text-2xl text-primary font-normal">Canales de Atención VIP</h3>
 
             <div class="space-y-4 font-sans text-sm text-secondary">
               <div class="flex items-start gap-3 p-3 bg-surface rounded-xs border border-outline-variant shadow-2xs">
                 <span class="material-symbols-outlined text-primary text-xl mt-0.5">chat</span>
                 <div>
                   <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold">WhatsApp Concierge</h4>
-                  <p class="mt-0.5">+54 9 11 5824-9910</p>
+                  <p class="mt-0.5">+54 9 3564 62-2055</p>
                   <p class="text-xs text-outline">Lunes a Sábados de 09:00 a 20:00 hs.</p>
                 </div>
               </div>
@@ -117,7 +117,7 @@ const handleSubmitContact = () => {
 
             <!-- WhatsApp Direct Action Button (Píldora) -->
             <a 
-              href="https://wa.me/5491158249910?text=Hola%20Gicca%20Perfumes!%20Me%20gustar%C3%ADa%20recibir%20asesoramiento%20sobre%20sus%20fragancias."
+              href="https://wa.me/5493564622055?text=Hola%20Gicca%20Perfumes!%20Me%20gustar%C3%ADa%20recibir%20asesoramiento%20sobre%20sus%20fragancias."
               target="_blank"
               class="w-full bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-3.5 px-6 rounded-full border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-2 text-center block shadow-xs"
             >
@@ -129,7 +129,7 @@ const handleSubmitContact = () => {
 
         <!-- Form (7 cols) -->
         <div class="lg:col-span-7 bg-surface-container border border-outline-variant rounded-xs p-8 md:p-10 shadow-xs">
-          <h3 class="font-serif text-2xl text-primary font-normal mb-1">Envíanos un Mensaje</h3>
+          <h3 class="font-sans text-2xl text-primary font-normal mb-1">Envíanos un Mensaje</h3>
           <p class="font-sans text-xs text-secondary mb-6">Completá tus datos y te responderemos a la brevedad.</p>
 
           <form @submit.prevent="handleSubmitContact" class="space-y-4">
@@ -222,7 +222,7 @@ const handleSubmitContact = () => {
       <div id="faq" class="max-w-3xl mx-auto border-t border-outline-variant pt-16">
         <div class="text-center mb-12">
           <span class="font-label text-xs uppercase tracking-widest text-secondary mb-2 block">Dudas Comunes</span>
-          <h2 class="font-serif text-3xl sm:text-4xl text-primary font-normal">Preguntas Frecuentes</h2>
+          <h2 class="font-sans text-3xl sm:text-4xl text-primary font-normal">Preguntas Frecuentes</h2>
         </div>
 
         <div class="space-y-4">
@@ -233,7 +233,7 @@ const handleSubmitContact = () => {
           >
             <button 
               @click="toggleFaq(faq.id)"
-              class="w-full text-left p-5 sm:p-6 flex justify-between items-center gap-4 font-serif text-lg text-primary font-medium"
+              class="w-full text-left p-5 sm:p-6 flex justify-between items-center gap-4 font-sans text-lg text-primary font-medium"
             >
               <span>{{ faq.q }}</span>
               <span class="material-symbols-outlined text-xl transition-transform" :class="openFaq === faq.id ? 'rotate-180' : ''">

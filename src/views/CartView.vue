@@ -47,7 +47,7 @@ const proceedToCheckout = () => {
           <span class="text-primary font-bold">Bolsa de Compras</span>
         </nav>
 
-        <h1 class="font-serif text-4xl md:text-5xl text-primary font-normal tracking-tight">
+        <h1 class="font-sans text-4xl md:text-5xl text-primary font-normal tracking-tight">
           Bolsa de Compras
         </h1>
       </div>
@@ -55,7 +55,7 @@ const proceedToCheckout = () => {
       <!-- If Cart is Empty -->
       <div v-if="cartStore.items.length === 0" class="bg-surface border border-outline-variant rounded-xs p-16 text-center shadow-xs">
         <span class="material-symbols-outlined text-6xl text-outline mb-4">shopping_bag</span>
-        <h2 class="font-serif text-3xl text-primary font-normal mb-2">Tu bolsa está actualmente vacía</h2>
+        <h2 class="font-sans text-3xl text-primary font-normal mb-2">Tu bolsa está actualmente vacía</h2>
         <p class="font-sans text-secondary max-w-md mx-auto mb-8 leading-relaxed">
           Explorá nuestras colecciones de fragancias de autor, clásicos del lujo y descubrí tu próxima firma olfativa.
         </p>
@@ -97,7 +97,7 @@ const proceedToCheckout = () => {
           <!-- Items Table / Cards -->
           <div class="bg-surface border border-outline-variant rounded-xs p-6 sm:p-8 space-y-6 shadow-xs">
             <div class="border-b border-outline-variant pb-4 flex justify-between items-center">
-              <h2 class="font-serif text-xl text-primary font-medium">
+              <h2 class="font-sans text-xl text-primary font-medium">
                 Artículos en tu pedido ({{ cartStore.totalItems }})
               </h2>
               <button 
@@ -123,7 +123,7 @@ const proceedToCheckout = () => {
                   />
                   <div>
                     <span class="font-label text-xs uppercase tracking-widest text-secondary">{{ item.brand }}</span>
-                    <RouterLink :to="`/producto/${item.slug}`" class="block font-serif text-lg text-primary font-medium hover:text-primary-container">
+                    <RouterLink :to="`/producto/${item.slug}`" class="block font-sans text-lg text-primary font-medium hover:text-primary-container">
                       {{ item.name }}
                     </RouterLink>
                     <div class="flex items-center gap-2 mt-1">
@@ -184,7 +184,7 @@ const proceedToCheckout = () => {
             <div class="flex items-center gap-2">
               <span class="material-symbols-outlined text-2xl text-tertiary">card_giftcard</span>
               <div>
-                <h3 class="font-serif text-lg text-primary font-medium">Muestra de Cortesía Sin Cargo</h3>
+                <h3 class="font-sans text-lg text-primary font-medium">Muestra de Cortesía Sin Cargo</h3>
                 <p class="font-sans text-xs text-secondary">Cada pedido incluye una muestra de perfumería exclusiva de regalo.</p>
               </div>
             </div>
@@ -201,7 +201,7 @@ const proceedToCheckout = () => {
               >
                 <div>
                   <span class="font-label text-[10px] uppercase tracking-widest text-secondary block">{{ sample.brand }}</span>
-                  <p class="font-serif text-sm text-primary font-medium">{{ sample.name }}</p>
+                  <p class="font-sans text-sm text-primary font-medium">{{ sample.name }}</p>
                   <p class="text-xs text-secondary">{{ sample.family }}</p>
                 </div>
                 <span 
@@ -220,52 +220,15 @@ const proceedToCheckout = () => {
         <div class="lg:col-span-4 sticky top-28 space-y-6">
           
           <div class="bg-surface border border-outline-variant rounded-xs p-6 sm:p-8 space-y-6 shadow-md">
-            <h2 class="font-serif text-2xl text-primary font-normal border-b border-outline-variant pb-4">
+            <h2 class="font-sans text-2xl text-primary font-normal border-b border-outline-variant pb-4">
               Resumen de Compra
             </h2>
 
-            <!-- Coupon Input (Píldora) -->
-            <div class="space-y-2">
-              <label class="font-label text-xs uppercase tracking-widest text-primary font-bold">
-                Cupón de Descuento
-              </label>
-              <div class="flex gap-2">
-                <input 
-                  v-model="couponInput"
-                  type="text" 
-                  placeholder="GICCA10 / LUJO15"
-                  class="flex-grow bg-surface-container border border-outline-variant rounded-full px-4 py-2.5 text-xs font-label uppercase tracking-widest text-primary focus:border-primary focus:outline-none"
-                  @keyup.enter="handleApplyCoupon"
-                />
-                <button 
-                  @click="handleApplyCoupon"
-                  class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-5 py-2.5 rounded-full hover:bg-inverse-surface transition-colors shadow-2xs"
-                >
-                  Aplicar
-                </button>
-              </div>
-
-              <!-- Active coupon badge (Píldora) -->
-              <div v-if="cartStore.coupon" class="bg-surface-container p-3 rounded-full border border-outline-variant flex justify-between items-center text-xs px-4">
-                <span class="text-tertiary font-semibold flex items-center gap-1">
-                  <span class="material-symbols-outlined text-sm">check_circle</span>
-                  {{ cartStore.coupon.label }} ({{ cartStore.coupon.code }})
-                </span>
-                <button @click="cartStore.removeCoupon" class="text-xs text-secondary hover:text-error underline">
-                  Quitar
-                </button>
-              </div>
-            </div>
-
             <!-- Price Breakdown -->
-            <div class="space-y-3 font-sans text-sm border-t border-b border-outline-variant py-4">
+            <div class="space-y-3 font-sans text-sm border-b border-outline-variant pb-4">
               <div class="flex justify-between text-secondary">
                 <span>Subtotal</span>
                 <span class="text-primary font-medium">${{ cartStore.subtotal.toLocaleString('es-AR') }}</span>
-              </div>
-              <div v-if="cartStore.discountAmount > 0" class="flex justify-between text-tertiary font-medium">
-                <span>Descuento</span>
-                <span>-${{ cartStore.discountAmount.toLocaleString('es-AR') }}</span>
               </div>
               <div class="flex justify-between text-secondary">
                 <span>Envío estimado</span>
@@ -278,7 +241,7 @@ const proceedToCheckout = () => {
             <!-- Total -->
             <div class="flex justify-between items-baseline">
               <div>
-                <span class="font-serif text-xl text-primary font-normal">Total a Pagar</span>
+                <span class="font-sans text-xl text-primary font-normal">Total a Pagar</span>
                 <p class="text-xs font-sans text-secondary">IVA incluido</p>
               </div>
               <div class="text-right">
@@ -302,7 +265,7 @@ const proceedToCheckout = () => {
               </button>
 
               <a 
-                :href="`https://wa.me/5491158249910?text=${encodeURIComponent('Hola Gicca Perfumes, quiero consultar sobre mi pedido de: ' + cartStore.items.map(i => `${i.quantity}x ${i.name} (${i.size})`).join(', '))}`"
+                :href="`https://wa.me/5493564622055?text=${encodeURIComponent('Hola Gicca Perfumes, quiero consultar sobre mi pedido de: ' + cartStore.items.map(i => `${i.quantity}x ${i.name} (${i.size})`).join(', '))}`"
                 target="_blank"
                 class="w-full bg-surface text-primary font-label text-xs uppercase tracking-widest py-3.5 rounded-full border border-outline hover:bg-surface-container transition-all flex items-center justify-center gap-2 text-center shadow-2xs"
               >

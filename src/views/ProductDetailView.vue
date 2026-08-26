@@ -202,7 +202,7 @@ const handleAddReview = () => {
             </div>
 
             <!-- Product Title -->
-            <h1 class="font-serif text-3xl sm:text-4xl text-primary font-normal leading-tight mb-2">
+            <h1 class="font-sans text-3xl sm:text-4xl text-primary font-normal leading-tight mb-2">
               {{ product.name }}
             </h1>
 
@@ -217,22 +217,12 @@ const handleAddReview = () => {
               <span class="font-sans font-bold text-3xl text-primary">
                 ${{ currentPrice.toLocaleString('es-AR') }}
               </span>
-              <span v-if="product.discountPercentage > 0" class="text-sm font-sans text-secondary line-through">
-                ${{ product.originalPrice.toLocaleString('es-AR') }}
-              </span>
-              <span v-if="product.discountPercentage > 0" class="bg-secondary-container text-primary font-label text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider font-bold">
-                {{ product.discountPercentage }}% OFF
-              </span>
             </div>
 
             <div class="space-y-1 text-xs font-label text-secondary uppercase tracking-wider">
               <p class="text-primary font-medium flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-sm text-tertiary">credit_card</span>
                 <strong>3 y 6 cuotas fijas</strong> de ${{ Math.round(currentPrice / 3).toLocaleString('es-AR') }}
-              </p>
-              <p class="text-tertiary font-semibold flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-sm">payments</span>
-                <strong>10% OFF extra</strong> pagando por Transferencia Bancaria (${{ Math.round(currentPrice * 0.9).toLocaleString('es-AR') }})
               </p>
             </div>
           </div>
@@ -406,14 +396,14 @@ const handleAddReview = () => {
         <!-- Tab 2: Storytelling & Usage Ritual -->
         <div v-if="activeTab === 'description'" class="bg-surface-container border border-outline-variant rounded-xs p-8 space-y-6 animate-in fade-in duration-300 shadow-xs">
           <div>
-            <h3 class="font-serif text-2xl text-primary font-normal mb-3">La Historia Olfativa</h3>
+            <h3 class="font-sans text-2xl text-primary font-normal mb-3">La Historia Olfativa</h3>
             <p class="font-sans text-secondary text-base leading-relaxed">
               {{ product.description }}
             </p>
           </div>
 
           <div class="border-t border-outline-variant pt-6">
-            <h4 class="font-serif text-xl text-primary font-medium mb-2">Ritual de Aplicación Recomendado</h4>
+            <h4 class="font-sans text-xl text-primary font-medium mb-2">Ritual de Aplicación Recomendado</h4>
             <p class="font-sans text-secondary text-sm leading-relaxed mb-4">
               {{ product.usageTips }}
             </p>
@@ -436,19 +426,19 @@ const handleAddReview = () => {
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div class="p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs">
               <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Duración en Piel</span>
-              <p class="font-serif text-lg text-primary font-medium">{{ product.characteristics.longevity }}</p>
+              <p class="font-sans text-lg text-primary font-medium">{{ product.characteristics.longevity }}</p>
             </div>
             <div class="p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs">
               <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Estela / Proyección</span>
-              <p class="font-serif text-lg text-primary font-medium">{{ product.characteristics.sillage }}</p>
+              <p class="font-sans text-lg text-primary font-medium">{{ product.characteristics.sillage }}</p>
             </div>
             <div class="p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs">
               <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Estación Ideal</span>
-              <p class="font-serif text-lg text-primary font-medium">{{ product.characteristics.season }}</p>
+              <p class="font-sans text-lg text-primary font-medium">{{ product.characteristics.season }}</p>
             </div>
             <div class="p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs">
               <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Ocasión Sugerida</span>
-              <p class="font-serif text-lg text-primary font-medium">{{ product.characteristics.occasion }}</p>
+              <p class="font-sans text-lg text-primary font-medium">{{ product.characteristics.occasion }}</p>
             </div>
           </div>
         </div>
@@ -457,7 +447,7 @@ const handleAddReview = () => {
         <div v-if="activeTab === 'reviews'" class="bg-surface-container border border-outline-variant rounded-xs p-8 space-y-6 animate-in fade-in duration-300 shadow-xs">
           <div class="flex justify-between items-center border-b border-outline-variant pb-4">
             <div>
-              <h3 class="font-serif text-2xl text-primary font-normal">Opiniones de Clientes Verificados</h3>
+              <h3 class="font-sans text-2xl text-primary font-normal">Opiniones de Clientes Verificados</h3>
               <p class="font-sans text-xs text-secondary">Basado en {{ product.reviews.length }} compras verificadas</p>
             </div>
             <button 
@@ -477,7 +467,7 @@ const handleAddReview = () => {
             >
               <div class="flex justify-between items-center">
                 <div class="flex items-center gap-2">
-                  <span class="font-serif text-base text-primary font-medium">{{ rev.author }}</span>
+                  <span class="font-sans text-base text-primary font-medium">{{ rev.author }}</span>
                   <span v-if="rev.verified" class="font-label text-[10px] uppercase text-tertiary bg-surface-container px-2.5 py-0.5 rounded-full border border-outline-variant flex items-center gap-1">
                     <span class="material-symbols-outlined text-xs">verified</span>
                     Comprador Verificado
@@ -497,7 +487,7 @@ const handleAddReview = () => {
           </div>
 
           <div v-else class="text-center py-8 text-secondary">
-            <p class="font-serif text-lg text-primary mb-2">Sé el primero en dejar una reseña para esta fragancia.</p>
+            <p class="font-sans text-lg text-primary mb-2">Sé el primero en dejar una reseña para esta fragancia.</p>
             <button 
               @click="isReviewModalOpen = true"
               class="underline font-label text-xs uppercase tracking-widest text-primary"
@@ -512,7 +502,7 @@ const handleAddReview = () => {
       <div class="border-t border-outline-variant pt-16">
         <div class="text-center max-w-xl mx-auto mb-12">
           <p class="font-label text-label-sm text-secondary uppercase tracking-widest mb-2">Completá tu Colección</p>
-          <h2 class="font-serif text-3xl md:text-headline-lg text-primary font-normal">Fragancias Complementarias</h2>
+          <h2 class="font-sans text-3xl md:text-headline-lg text-primary font-normal">Fragancias Complementarias</h2>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -535,7 +525,7 @@ const handleAddReview = () => {
       >
         <div class="bg-surface w-full max-w-lg border border-outline rounded-xs p-6 md:p-8 space-y-4 shadow-2xl overflow-hidden">
           <div class="flex justify-between items-center border-b border-outline-variant pb-3">
-            <h3 class="font-serif text-2xl text-primary font-normal">Dejar tu Reseña</h3>
+            <h3 class="font-sans text-2xl text-primary font-normal">Dejar tu Reseña</h3>
             <button @click="isReviewModalOpen = false" class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-secondary hover:text-primary">
               <span class="material-symbols-outlined text-2xl">close</span>
             </button>

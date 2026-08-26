@@ -151,7 +151,7 @@ onUnmounted(() => {
                   <span class="text-xs text-outline">•</span>
                   <span class="text-xs text-secondary">{{ product.fragranceFamily }}</span>
                 </div>
-                <h4 class="font-serif text-base text-primary font-medium truncate group-hover:text-primary-container transition-colors">
+                <h4 class="font-sans text-base text-primary font-medium truncate group-hover:text-primary-container transition-colors">
                   {{ product.name }}
                 </h4>
                 <p class="text-xs text-secondary truncate">
@@ -169,7 +169,7 @@ onUnmounted(() => {
 
           <div v-else class="py-12 text-center text-secondary">
             <span class="material-symbols-outlined text-4xl mb-2 text-outline">search_off</span>
-            <p class="font-serif text-lg text-primary mb-1">No encontramos fragancias coincidentes</p>
+            <p class="font-sans text-lg text-primary mb-1">No encontramos fragancias coincidentes</p>
             <p class="text-sm">Probá buscando con otro término o explorá nuestro catálogo completo.</p>
           </div>
         </div>

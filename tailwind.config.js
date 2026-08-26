@@ -74,12 +74,12 @@ export default {
         'inverse-primary': '#e5beb3'
       },
       fontFamily: {
-        serif: ['"Libre Caslon Text"', 'serif'],
-        display: ['"Libre Caslon Text"', 'serif'],
-        headline: ['"Libre Caslon Text"', 'serif'],
-        sans: ['"Hanken Grotesk"', 'sans-serif'],
-        body: ['"Hanken Grotesk"', 'sans-serif'],
-        label: ['"Hanken Grotesk"', 'sans-serif']
+        sans: ['"Open Sans"', 'sans-serif'],
+        serif: ['"Open Sans"', 'sans-serif'],
+        display: ['"Open Sans"', 'sans-serif'],
+        headline: ['"Open Sans"', 'sans-serif'],
+        body: ['"Open Sans"', 'sans-serif'],
+        label: ['"Open Sans"', 'sans-serif']
       },
       fontSize: {
         'display-lg': ['64px', { lineHeight: '1.1', letterSpacing: '-0.02em' }],

@@ -36,15 +36,8 @@ const shippingCost = computed(() => {
   return form.value.shippingType === 'express' ? 6500 : 3900
 })
 
-const transferDiscount = computed(() => {
-  if (form.value.paymentMethod === 'transfer') {
-    return Math.round((cartStore.subtotal - cartStore.discountAmount) * 0.10)
-  }
-  return 0
-})
-
 const finalTotal = computed(() => {
-  return Math.max(0, cartStore.subtotal - cartStore.discountAmount - transferDiscount.value + shippingCost.value)
+  return Math.max(0, cartStore.subtotal + shippingCost.value)
 })
 
 const handleStep1Submit = () => {
@@ -131,7 +124,7 @@ const handleFinalOrder = () => {
 
         <div>
           <span class="font-label text-xs uppercase tracking-[0.2em] text-secondary">¡Orden Recibida Exitosamente!</span>
-          <h1 class="font-serif text-3xl sm:text-4xl text-primary font-normal mt-1 mb-2">
+          <h1 class="font-sans text-3xl sm:text-4xl text-primary font-normal mt-1 mb-2">
             Gracias por tu compra, {{ orderResult.customer.firstName }}
           </h1>
           <p class="font-sans text-secondary text-sm">
@@ -148,7 +141,7 @@ const handleFinalOrder = () => {
           <div class="flex justify-between items-center border-b border-outline-variant pb-3">
             <span class="font-label text-xs uppercase text-secondary">Método de Pago:</span>
             <span class="font-medium text-primary">
-              {{ orderResult.paymentMethod === 'transfer' ? 'Transferencia Bancaria (10% OFF aplicado)' : 'Tarjeta de Crédito / Débito' }}
+              {{ orderResult.paymentMethod === 'transfer' ? 'Transferencia Bancaria' : 'Tarjeta de Crédito / Débito' }}
             </span>
           </div>
 
@@ -158,7 +151,7 @@ const handleFinalOrder = () => {
           </div>
 
           <div class="flex justify-between items-center pt-1 text-base">
-            <span class="font-serif font-bold text-primary">Monto Total Abonado:</span>
+            <span class="font-sans font-bold text-primary">Monto Total Abonado:</span>
             <span class="font-sans font-bold text-primary text-xl">${{ orderResult.total.toLocaleString('es-AR') }}</span>
           </div>
         </div>
@@ -171,7 +164,7 @@ const handleFinalOrder = () => {
             Volver al Inicio
           </RouterLink>
           <a 
-            :href="`https://wa.me/5491158249910?text=${encodeURIComponent('Hola Gicca Perfumes, adjunto comprobante de mi pedido ' + orderResult.orderNumber)}`"
+            :href="`https://wa.me/5493564622055?text=${encodeURIComponent('Hola Gicca Perfumes, adjunto comprobante de mi pedido ' + orderResult.orderNumber)}`"
             target="_blank"
             class="bg-surface text-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 rounded-full border border-outline hover:bg-surface-container transition-all flex items-center justify-center gap-2 shadow-2xs"
           >
@@ -189,7 +182,7 @@ const handleFinalOrder = () => {
           <!-- STEP 1: Delivery Details -->
           <div v-if="currentStep === 1" class="space-y-6">
             <div class="border-b border-outline-variant pb-4">
-              <h2 class="font-serif text-2xl text-primary font-normal">1. Datos de Contacto & Entrega</h2>
+              <h2 class="font-sans text-2xl text-primary font-normal">1. Datos de Contacto & Entrega</h2>
               <p class="font-sans text-xs text-secondary mt-1">Ingresá los datos del destinatario para la guía de transporte asegurado.</p>
             </div>
 
@@ -329,7 +322,7 @@ const handleFinalOrder = () => {
                   <div class="flex items-center gap-3">
                     <span class="material-symbols-outlined text-xl text-primary">local_shipping</span>
                     <div>
-                      <p class="font-serif text-sm text-primary font-medium">Envío Estándar a Domicilio (24 a 48 hs)</p>
+                      <p class="font-sans text-sm text-primary font-medium">Envío Estándar a Domicilio (24 a 48 hs)</p>
                       <p class="text-xs text-secondary">Correo Argentino / Andreani con número de seguimiento</p>
                     </div>
                   </div>
@@ -346,7 +339,7 @@ const handleFinalOrder = () => {
                   <div class="flex items-center gap-3">
                     <span class="material-symbols-outlined text-xl text-primary">bolt</span>
                     <div>
-                      <p class="font-serif text-sm text-primary font-medium">Envío Prioritario Express Gicca (Mismo día / 24 hs)</p>
+                      <p class="font-sans text-sm text-primary font-medium">Envío Prioritario Express Gicca (Mismo día / 24 hs)</p>
                       <p class="text-xs text-secondary">Mensajería privada boutique con entrega personalizada</p>
                     </div>
                   </div>
@@ -371,7 +364,7 @@ const handleFinalOrder = () => {
           <div v-if="currentStep === 2" class="space-y-6">
             <div class="flex justify-between items-center border-b border-outline-variant pb-4">
               <div>
-                <h2 class="font-serif text-2xl text-primary font-normal">2. Método de Pago</h2>
+                <h2 class="font-sans text-2xl text-primary font-normal">2. Método de Pago</h2>
                 <p class="font-sans text-xs text-secondary mt-1">Seleccioná cómo deseas abonar tu orden.</p>
               </div>
               <button 
@@ -383,7 +376,7 @@ const handleFinalOrder = () => {
             </div>
 
             <div class="space-y-4">
-              <!-- Option 1: Transfer (10% OFF) -->
+              <!-- Option 1: Transfer -->
               <div 
                 @click="form.paymentMethod = 'transfer'"
                 class="p-5 rounded-xs border cursor-pointer transition-all shadow-2xs"
@@ -393,13 +386,10 @@ const handleFinalOrder = () => {
                   <div class="flex items-center gap-3">
                     <span class="material-symbols-outlined text-2xl text-tertiary">account_balance</span>
                     <div>
-                      <h4 class="font-serif text-base text-primary font-medium">Transferencia Bancaria Inmediata</h4>
+                      <h4 class="font-sans text-base text-primary font-medium">Transferencia Bancaria Inmediata</h4>
                       <p class="text-xs text-secondary">CBU / Alias oficial de Gicca Boutique</p>
                     </div>
                   </div>
-                  <span class="bg-secondary-container text-primary font-label text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full font-bold">
-                    10% OFF EXTRA
-                  </span>
                 </div>
                 <p class="font-sans text-xs text-secondary mt-2 pl-9">
                   Al confirmar tu pedido recibirás los datos de nuestra cuenta bancaria. Tenés 24 horas para enviar el comprobante.
@@ -416,7 +406,7 @@ const handleFinalOrder = () => {
                   <div class="flex items-center gap-3">
                     <span class="material-symbols-outlined text-2xl text-primary">credit_card</span>
                     <div>
-                      <h4 class="font-serif text-base text-primary font-medium">Tarjeta de Crédito o Débito</h4>
+                      <h4 class="font-sans text-base text-primary font-medium">Tarjeta de Crédito o Débito</h4>
                       <p class="text-xs text-secondary">Visa, Mastercard, American Express</p>
                     </div>
                   </div>
@@ -454,7 +444,7 @@ const handleFinalOrder = () => {
                 <div class="flex items-center gap-3">
                   <span class="material-symbols-outlined text-2xl text-primary">payments</span>
                   <div>
-                    <h4 class="font-serif text-base text-primary font-medium">Mercado Pago</h4>
+                    <h4 class="font-sans text-base text-primary font-medium">Mercado Pago</h4>
                     <p class="text-xs text-secondary">Dinero en cuenta o tarjetas guardadas</p>
                   </div>
                 </div>
@@ -492,7 +482,7 @@ const handleFinalOrder = () => {
 
         <!-- ORDER SUMMARY COLUMN (5 cols) -->
         <div class="lg:col-span-5 sticky top-28 bg-surface border border-outline-variant rounded-xs p-6 sm:p-8 space-y-6 shadow-md">
-          <h3 class="font-serif text-xl text-primary font-normal border-b border-outline-variant pb-3">
+          <h3 class="font-sans text-xl text-primary font-normal border-b border-outline-variant pb-3">
             Detalle de tu Pedido
           </h3>
 
@@ -509,7 +499,7 @@ const handleFinalOrder = () => {
                 class="w-12 h-14 object-cover bg-surface-container rounded-xs border border-outline-variant flex-shrink-0"
               />
               <div class="flex-grow min-w-0">
-                <h4 class="font-serif text-sm text-primary truncate">{{ item.name }}</h4>
+                <h4 class="font-sans text-sm text-primary truncate">{{ item.name }}</h4>
                 <p class="font-sans text-xs text-secondary">{{ item.quantity }}x {{ item.size }}</p>
               </div>
               <span class="font-sans font-semibold text-sm text-primary">
@@ -530,14 +520,6 @@ const handleFinalOrder = () => {
               <span>Subtotal</span>
               <span>${{ cartStore.subtotal.toLocaleString('es-AR') }}</span>
             </div>
-            <div v-if="cartStore.discountAmount > 0" class="flex justify-between text-tertiary font-medium">
-              <span>Cupón ({{ cartStore.coupon?.code }})</span>
-              <span>-${{ cartStore.discountAmount.toLocaleString('es-AR') }}</span>
-            </div>
-            <div v-if="transferDiscount > 0" class="flex justify-between text-tertiary font-bold">
-              <span>Descuento Transferencia (10% OFF)</span>
-              <span>-${{ transferDiscount.toLocaleString('es-AR') }}</span>
-            </div>
             <div class="flex justify-between text-secondary">
               <span>Envío ({{ form.shippingType === 'express' ? 'Express' : 'Estándar' }})</span>
               <span>{{ shippingCost === 0 ? 'GRATIS' : `$${shippingCost.toLocaleString('es-AR')}` }}</span>
@@ -546,7 +528,7 @@ const handleFinalOrder = () => {
 
           <!-- Total Final -->
           <div class="flex justify-between items-baseline">
-            <span class="font-serif text-lg text-primary">Total a Pagar</span>
+            <span class="font-sans text-lg text-primary">Total a Pagar</span>
             <span class="font-sans text-2xl font-bold text-primary">
               ${{ finalTotal.toLocaleString('es-AR') }}
             </span>

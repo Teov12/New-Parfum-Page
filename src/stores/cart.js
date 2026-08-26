@@ -16,16 +16,7 @@ export const useCartStore = defineStore('cart', {
       return state.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
     },
 
-    discountAmount: (state) => {
-      if (!state.coupon) return 0
-      const subtotal = state.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
-      if (state.coupon.type === 'percentage') {
-        return Math.round((subtotal * state.coupon.value) / 100)
-      } else if (state.coupon.type === 'fixed') {
-        return Math.min(subtotal, state.coupon.value)
-      }
-      return 0
-    },
+    discountAmount: () => 0,
 
     shippingCost: (state) => {
       const subtotal = state.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
@@ -33,8 +24,8 @@ export const useCartStore = defineStore('cart', {
       return subtotal >= state.freeShippingThreshold ? 0 : 4500
     },
 
-    total(state) {
-      return Math.max(0, this.subtotal - this.discountAmount + this.shippingCost)
+    total() {
+      return this.subtotal + this.shippingCost
     },
 
     amountForFreeShipping: (state) => {

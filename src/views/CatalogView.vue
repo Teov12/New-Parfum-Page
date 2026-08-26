@@ -12,10 +12,10 @@ const wishlistStore = useWishlistStore()
 // State filters
 const searchQuery = ref('')
 const selectedGenders = ref([])
+const selectedCategories = ref([])
 const selectedBrands = ref([])
 const selectedFamilies = ref([])
 const selectedConcentrations = ref([])
-const onlyOffers = ref(false)
 const onlyWishlist = ref(false)
 const maxPrice = ref(350000)
 const sortBy = ref('popularity')
@@ -31,6 +31,12 @@ const initFromQuery = () => {
     selectedGenders.value = []
   }
 
+  if (route.query.category) {
+    selectedCategories.value = [route.query.category]
+  } else {
+    selectedCategories.value = []
+  }
+
   if (route.query.family) {
     selectedFamilies.value = [route.query.family]
   } else {
@@ -41,12 +47,6 @@ const initFromQuery = () => {
     selectedBrands.value = [route.query.brand]
   } else {
     selectedBrands.value = []
-  }
-
-  if (route.query.offers === 'true') {
-    onlyOffers.value = true
-  } else {
-    onlyOffers.value = false
   }
 
   if (route.query.wishlist === 'true') {
@@ -89,6 +89,11 @@ const filteredProducts = computed(() => {
       return false
     }
 
+    // Category
+    if (selectedCategories.value.length > 0 && (!p.category || !selectedCategories.value.includes(p.category))) {
+      return false
+    }
+
     // Brands
     if (selectedBrands.value.length > 0 && !selectedBrands.value.includes(p.brand)) {
       return false
@@ -101,11 +106,6 @@ const filteredProducts = computed(() => {
 
     // Concentrations
     if (selectedConcentrations.value.length > 0 && !selectedConcentrations.value.includes(p.concentration)) {
-      return false
-    }
-
-    // Offers
-    if (onlyOffers.value && (!p.discountPercentage || p.discountPercentage <= 0)) {
       return false
     }
 
@@ -124,7 +124,6 @@ const filteredProducts = computed(() => {
     if (sortBy.value === 'price-asc') return a.price - b.price
     if (sortBy.value === 'price-desc') return b.price - a.price
     if (sortBy.value === 'rating') return b.rating - a.rating
-    if (sortBy.value === 'discount') return (b.discountPercentage || 0) - (a.discountPercentage || 0)
     // Default popularity / featured
     return (b.isBestSeller ? 1 : 0) - (a.isBestSeller ? 1 : 0)
   })
@@ -133,10 +132,10 @@ const filteredProducts = computed(() => {
 const clearAllFilters = () => {
   searchQuery.value = ''
   selectedGenders.value = []
+  selectedCategories.value = []
   selectedBrands.value = []
   selectedFamilies.value = []
   selectedConcentrations.value = []
-  onlyOffers.value = false
   onlyWishlist.value = false
   maxPrice.value = 350000
   sortBy.value = 'popularity'
@@ -147,10 +146,10 @@ const activeFiltersCount = computed(() => {
   let count = 0
   if (searchQuery.value) count++
   if (selectedGenders.value.length) count += selectedGenders.value.length
+  if (selectedCategories.value.length) count += selectedCategories.value.length
   if (selectedBrands.value.length) count += selectedBrands.value.length
   if (selectedFamilies.value.length) count += selectedFamilies.value.length
   if (selectedConcentrations.value.length) count += selectedConcentrations.value.length
-  if (onlyOffers.value) count++
   if (onlyWishlist.value) count++
   if (maxPrice.value < 350000) count++
   return count
@@ -172,7 +171,7 @@ const activeFiltersCount = computed(() => {
 
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-outline-variant pb-6 gap-4">
           <div>
-            <h1 class="font-serif text-4xl md:text-5xl text-primary font-normal tracking-tight">
+            <h1 class="font-sans text-4xl md:text-5xl text-primary font-normal tracking-tight">
               {{ onlyWishlist ? 'Tus Fragancias Favoritas' : 'Colección de Perfumes' }}
             </h1>
             <p class="font-sans text-sm text-secondary mt-1">
@@ -206,7 +205,6 @@ const activeFiltersCount = computed(() => {
                   <option value="rating">Mejor Valorados</option>
                   <option value="price-asc">Precio: Menor a Mayor</option>
                   <option value="price-desc">Precio: Mayor a Menor</option>
-                  <option value="discount">Mayor Descuento</option>
                 </select>
                 <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-base text-primary">
                   expand_more
@@ -220,12 +218,12 @@ const activeFiltersCount = computed(() => {
       <!-- Main Layout: Sidebar Filters + Products Grid -->
       <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         
-        <!-- SIDEBAR FILTERS (Estructura Limpia de 2px con Elementos Táctiles) -->
-        <aside class="hidden md:block md:col-span-3 bg-surface border border-outline-variant rounded-xs p-6 space-y-6 shadow-xs">
+        <!-- SIDEBAR FILTERS (Modern Clean Card) -->
+        <aside class="hidden md:block md:col-span-3 bg-white border border-neutral-200/80 rounded-2xl p-6 space-y-6 shadow-xs">
           
           <!-- Clear Filters Button -->
-          <div class="flex justify-between items-center border-b border-outline-variant pb-4">
-            <span class="font-serif text-lg text-primary font-medium">Filtros</span>
+          <div class="flex justify-between items-center border-b border-neutral-100 pb-4">
+            <span class="font-sans text-base font-bold text-neutral-900">Filtros</span>
             <button 
               v-if="activeFiltersCount > 0"
               @click="clearAllFilters"
@@ -264,7 +262,26 @@ const activeFiltersCount = computed(() => {
               </label>
               <label class="flex items-center gap-2.5 cursor-pointer hover:text-primary">
                 <input type="checkbox" value="unisex" v-model="selectedGenders" class="accent-primary w-4 h-4 rounded-xs cursor-pointer" />
-                <span>Unisex & Nicho</span>
+                <span>Unisex</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Category Filter -->
+          <div class="border-b border-outline-variant pb-5">
+            <h3 class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-3">Categoría</h3>
+            <div class="space-y-2 font-sans text-sm text-secondary">
+              <label class="flex items-center gap-2.5 cursor-pointer hover:text-primary">
+                <input type="checkbox" value="disenador" v-model="selectedCategories" class="accent-primary w-4 h-4 rounded-xs cursor-pointer" />
+                <span>Diseñador</span>
+              </label>
+              <label class="flex items-center gap-2.5 cursor-pointer hover:text-primary">
+                <input type="checkbox" value="arabes" v-model="selectedCategories" class="accent-primary w-4 h-4 rounded-xs cursor-pointer" />
+                <span>Perfumería Árabe</span>
+              </label>
+              <label class="flex items-center gap-2.5 cursor-pointer hover:text-primary">
+                <input type="checkbox" value="nicho" v-model="selectedCategories" class="accent-primary w-4 h-4 rounded-xs cursor-pointer" />
+                <span>Nicho Exclusivo</span>
               </label>
             </div>
           </div>
@@ -348,10 +365,6 @@ const activeFiltersCount = computed(() => {
           <!-- Special Toggles -->
           <div class="space-y-3 pt-1">
             <label class="flex items-center gap-2.5 cursor-pointer font-label text-xs uppercase tracking-wider text-primary">
-              <input type="checkbox" v-model="onlyOffers" class="accent-primary w-4 h-4 rounded-xs cursor-pointer" />
-              <span>Solo Ofertas Especiales</span>
-            </label>
-            <label class="flex items-center gap-2.5 cursor-pointer font-label text-xs uppercase tracking-wider text-primary">
               <input type="checkbox" v-model="onlyWishlist" class="accent-primary w-4 h-4 rounded-xs cursor-pointer" />
               <span>Solo Mis Favoritos ({{ wishlistStore.totalItems }})</span>
             </label>
@@ -362,48 +375,57 @@ const activeFiltersCount = computed(() => {
         <!-- PRODUCTS GRID (Desktop 9 cols) -->
         <main class="md:col-span-9">
           
-          <!-- Active Tags Bar (Píldoras) -->
-          <div v-if="activeFiltersCount > 0" class="flex flex-wrap items-center gap-2 mb-6 bg-surface p-3.5 rounded-xs border border-outline-variant shadow-2xs">
-            <span class="font-label text-[11px] uppercase tracking-widest text-secondary">Filtros Activos:</span>
+          <!-- Active Tags Bar -->
+          <div v-if="activeFiltersCount > 0" class="flex flex-wrap items-center gap-2 mb-6 bg-white p-4 rounded-2xl border border-neutral-200/80 shadow-xs">
+            <span class="font-sans text-xs font-semibold text-neutral-400 uppercase tracking-wider">Filtros Activos:</span>
             
             <span 
               v-if="searchQuery" 
-              class="inline-flex items-center gap-1 bg-surface-container text-xs font-sans px-3 py-1 rounded-full border border-outline-variant"
+              class="inline-flex items-center gap-1.5 bg-neutral-100 text-xs font-sans font-medium px-3 py-1 rounded-full border border-neutral-200"
             >
               "{{ searchQuery }}"
-              <button @click="searchQuery = ''" class="hover:text-error text-xs">✕</button>
+              <button @click="searchQuery = ''" class="hover:text-rose-600 text-xs">✕</button>
             </span>
 
             <span 
               v-for="g in selectedGenders" 
               :key="g" 
-              class="inline-flex items-center gap-1 bg-surface-container text-xs font-sans px-3 py-1 rounded-full border border-outline-variant"
+              class="inline-flex items-center gap-1.5 bg-neutral-100 text-xs font-sans font-medium px-3 py-1 rounded-full border border-neutral-200"
             >
               {{ g === 'woman' ? 'Mujer' : g === 'man' ? 'Hombre' : 'Unisex' }}
-              <button @click="selectedGenders = selectedGenders.filter(x => x !== g)" class="hover:text-error text-xs">✕</button>
+              <button @click="selectedGenders = selectedGenders.filter(x => x !== g)" class="hover:text-rose-600 text-xs">✕</button>
+            </span>
+
+            <span 
+              v-for="c in selectedCategories" 
+              :key="c" 
+              class="inline-flex items-center gap-1.5 bg-neutral-100 text-xs font-sans font-medium px-3 py-1 rounded-full border border-neutral-200"
+            >
+              {{ c === 'disenador' ? 'Diseñador' : c === 'arabes' ? 'Árabes' : 'Nicho' }}
+              <button @click="selectedCategories = selectedCategories.filter(x => x !== c)" class="hover:text-rose-600 text-xs">✕</button>
             </span>
 
             <span 
               v-for="f in selectedFamilies" 
               :key="f" 
-              class="inline-flex items-center gap-1 bg-surface-container text-xs font-sans px-3 py-1 rounded-full border border-outline-variant"
+              class="inline-flex items-center gap-1.5 bg-neutral-100 text-xs font-sans font-medium px-3 py-1 rounded-full border border-neutral-200"
             >
               {{ f }}
-              <button @click="selectedFamilies = selectedFamilies.filter(x => x !== f)" class="hover:text-error text-xs">✕</button>
+              <button @click="selectedFamilies = selectedFamilies.filter(x => x !== f)" class="hover:text-rose-600 text-xs">✕</button>
             </span>
 
             <span 
               v-for="b in selectedBrands" 
               :key="b" 
-              class="inline-flex items-center gap-1 bg-surface-container text-xs font-sans px-3 py-1 rounded-full border border-outline-variant"
+              class="inline-flex items-center gap-1.5 bg-neutral-100 text-xs font-sans font-medium px-3 py-1 rounded-full border border-neutral-200"
             >
               {{ b }}
-              <button @click="selectedBrands = selectedBrands.filter(x => x !== b)" class="hover:text-error text-xs">✕</button>
+              <button @click="selectedBrands = selectedBrands.filter(x => x !== b)" class="hover:text-rose-600 text-xs">✕</button>
             </span>
 
             <button 
               @click="clearAllFilters"
-              class="text-xs font-label uppercase tracking-wider text-error underline ml-auto"
+              class="text-xs font-sans font-semibold text-rose-600 hover:underline ml-auto"
             >
               Borrar todo
             </button>
@@ -419,15 +441,15 @@ const activeFiltersCount = computed(() => {
           </div>
 
           <!-- Empty State -->
-          <div v-else class="bg-surface border border-outline-variant rounded-xs p-16 text-center shadow-xs">
-            <span class="material-symbols-outlined text-6xl text-outline mb-4">search_off</span>
-            <h3 class="font-serif text-2xl text-primary mb-2 font-normal">No encontramos fragancias con esos filtros</h3>
-            <p class="font-sans text-sm text-secondary max-w-md mx-auto mb-8 leading-relaxed">
+          <div v-else class="bg-white border border-neutral-200/80 rounded-2xl p-16 text-center shadow-xs">
+            <span class="material-symbols-outlined text-6xl text-neutral-300 mb-4">search_off</span>
+            <h3 class="font-sans text-2xl font-bold text-neutral-900 mb-2">No encontramos fragancias con esos filtros</h3>
+            <p class="font-sans text-sm text-neutral-500 max-w-md mx-auto mb-8 leading-relaxed">
               Intentá seleccionando otra familia olfativa, ampliando el rango de precio o eliminando los filtros activos.
             </p>
             <button 
               @click="clearAllFilters"
-              class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 rounded-full hover:bg-surface hover:text-primary-container border border-primary-container transition-all shadow-xs"
+              class="bg-neutral-900 text-white font-sans text-xs font-semibold uppercase tracking-wider px-8 py-3.5 rounded-xl hover:bg-black transition-all shadow-sm hover:shadow-md"
             >
               Restablecer Filtros
             </button>
@@ -447,7 +469,7 @@ const activeFiltersCount = computed(() => {
       <div class="w-full max-w-xs bg-surface h-full p-6 overflow-y-auto flex flex-col justify-between border-l border-outline-variant shadow-2xl">
         <div>
           <div class="flex justify-between items-center border-b border-outline-variant pb-4 mb-6">
-            <h3 class="font-serif text-xl text-primary font-medium">Filtrar Colección</h3>
+            <h3 class="font-sans text-xl text-primary font-medium">Filtrar Colección</h3>
             <button @click="isMobileFiltersOpen = false" class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-primary">
               <span class="material-symbols-outlined text-2xl">close</span>
             </button>
@@ -461,6 +483,15 @@ const activeFiltersCount = computed(() => {
                 <label class="flex items-center gap-2"><input type="checkbox" value="woman" v-model="selectedGenders" class="accent-primary rounded-xs" /> Mujer</label>
                 <label class="flex items-center gap-2"><input type="checkbox" value="man" v-model="selectedGenders" class="accent-primary rounded-xs" /> Hombre</label>
                 <label class="flex items-center gap-2"><input type="checkbox" value="unisex" v-model="selectedGenders" class="accent-primary rounded-xs" /> Unisex</label>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-3">Categoría</h4>
+              <div class="space-y-2 font-sans text-sm text-secondary">
+                <label class="flex items-center gap-2"><input type="checkbox" value="disenador" v-model="selectedCategories" class="accent-primary rounded-xs" /> Diseñador</label>
+                <label class="flex items-center gap-2"><input type="checkbox" value="arabes" v-model="selectedCategories" class="accent-primary rounded-xs" /> Perfumes Árabes</label>
+                <label class="flex items-center gap-2"><input type="checkbox" value="nicho" v-model="selectedCategories" class="accent-primary rounded-xs" /> Nicho Exclusivo</label>
               </div>
             </div>
 

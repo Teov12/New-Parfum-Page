@@ -13,7 +13,7 @@ const handleSubscribe = () => {
     return
   }
   isSubscribed.value = true
-  toastStore.show('¡Gracias por unirte al Club Gicca! Te enviamos tu cupón del 10% OFF.', 'success')
+  toastStore.show('¡Gracias por unirte al Club Gicca! Te mantendremos al tanto de las novedades exclusivas.', 'success')
   emailInput.value = ''
 }
 </script>
@@ -26,7 +26,7 @@ const handleSubscribe = () => {
       <!-- Brand Story Column (4 cols) -->
       <div class="lg:col-span-4 flex flex-col justify-between">
         <div>
-          <h3 class="font-serif text-3xl text-primary font-normal tracking-tight mb-4">
+          <h3 class="font-sans text-3xl text-primary font-normal tracking-tight mb-4">
             Gicca Perfumes
           </h3>
           <p class="font-sans text-sm text-secondary leading-relaxed mb-6 max-w-sm">
@@ -35,7 +35,7 @@ const handleSubscribe = () => {
           <div class="space-y-1.5 text-xs font-label uppercase tracking-widest text-secondary">
             <p>📍 Buenos Aires, Argentina</p>
             <p>✉️ concierge@giccaperfumes.com</p>
-            <p>📞 Asesoría VIP WhatsApp: +54 9 11 5824-9910</p>
+            <p>📞 Asesoría VIP WhatsApp: +54 9 3564 62-2055</p>
           </div>
         </div>
 
@@ -46,7 +46,7 @@ const handleSubscribe = () => {
           <a href="#" class="w-10 h-10 rounded-full border border-outline flex items-center justify-center text-primary hover:bg-primary hover:text-surface transition-colors shadow-2xs" aria-label="TikTok">
             <span class="font-label text-xs font-bold">TT</span>
           </a>
-          <a href="#" class="w-10 h-10 rounded-full border border-outline flex items-center justify-center text-primary hover:bg-primary hover:text-surface transition-colors shadow-2xs" aria-label="WhatsApp">
+          <a href="https://wa.me/5493564622055" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full border border-outline flex items-center justify-center text-primary hover:bg-primary hover:text-surface transition-colors shadow-2xs" aria-label="WhatsApp">
             <span class="font-label text-xs font-bold">WA</span>
           </a>
         </div>
@@ -74,13 +74,13 @@ const handleSubscribe = () => {
             </RouterLink>
           </li>
           <li>
-            <RouterLink to="/catalogo?family=Oriental" class="hover:text-primary transition-colors">
-              Perfumería Nicho
+            <RouterLink to="/catalogo?category=arabes" class="hover:text-primary transition-colors">
+              Perfumería Árabe
             </RouterLink>
           </li>
           <li>
-            <RouterLink to="/catalogo?offers=true" class="hover:text-primary transition-colors font-medium text-primary">
-              Ofertas de Temporada
+            <RouterLink to="/catalogo?category=disenador" class="hover:text-primary transition-colors">
+              Diseñador
             </RouterLink>
           </li>
           <li>
@@ -137,7 +137,7 @@ const handleSubscribe = () => {
           El Círculo Olfativo
         </h4>
         <p class="font-sans text-sm text-secondary mb-4 leading-relaxed">
-          Unite a nuestra comunidad exclusiva. Recibí invitaciones a lanzamientos privados, notas de cata y <strong>10% OFF</strong> en tu primera orden.
+          Unite a nuestra comunidad exclusiva. Recibí invitaciones a lanzamientos privados, notas de cata y novedades selectas.
         </p>
 
         <form @submit.prevent="handleSubscribe" class="space-y-3">
