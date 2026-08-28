@@ -8,10 +8,13 @@ import { useToastStore } from '@/stores/toast'
 import OlfactivePyramid from '@/components/product/OlfactivePyramid.vue'
 import ProductCard from '@/components/product/ProductCard.vue'
 
+import { useShippingStore } from '@/stores/shipping'
+
 const route = useRoute()
 const router = useRouter()
 const productStore = useProductStore()
 const cartStore = useCartStore()
+const shippingStore = useShippingStore()
 const wishlistStore = useWishlistStore()
 const toastStore = useToastStore()
 
@@ -26,16 +29,16 @@ const selectedImageIndex = ref(0)
 const quantity = ref(1)
 const activeTab = ref('pyramid')
 
-// Postal code calculator state
-const postalCode = ref('')
-const shippingEstimate = ref(null)
+// Postal code calculator state (Andreani)
+const postalCode = ref(shippingStore.postalCode || '')
+const isCalculatingShipping = ref(false)
+const shippingEstimate = ref(shippingStore.hasQuote ? { destination: shippingStore.destination, options: shippingStore.options } : null)
 
 const initProduct = () => {
   if (product.value && product.value.sizes && product.value.sizes.length > 0) {
     selectedSize.value = product.value.sizes.find(s => s.default) || product.value.sizes[0]
     selectedImageIndex.value = 0
     quantity.value = 1
-    shippingEstimate.value = null
   } else {
     selectedSize.value = null
   }
@@ -88,17 +91,18 @@ const handleToggleWishlist = () => {
   )
 }
 
-const calculateShipping = () => {
+const calculateShipping = async () => {
   if (!postalCode.value || postalCode.value.length < 4) {
-    toastStore.show('Ingresá un código postal válido de 4 dígitos.', 'error')
+    toastStore.show('Ingresá un código postal válido de 4 dígitos (ej. 1414, 2400, 5000).', 'error')
     return
   }
-  const isCabaGba = postalCode.value.startsWith('1')
-  shippingEstimate.value = {
-    standardCost: currentPrice.value >= 200000 ? 'GRATIS' : (isCabaGba ? '$3.900' : '$5.200'),
-    standardDays: isCabaGba ? '24 a 48 hs hábiles' : '3 a 5 días hábiles',
-    expressCost: '$6.500',
-    expressDays: 'Mismo día / 24 hs (Express Gicca)'
+  isCalculatingShipping.value = true
+  const res = await shippingStore.calculateShipping(postalCode.value, currentPrice.value)
+  isCalculatingShipping.value = false
+  if (res && res.success) {
+    shippingEstimate.value = res
+  } else {
+    toastStore.show(shippingStore.error || 'Error al cotizar envío con Andreani', 'error')
   }
 }
 </script>
@@ -199,7 +203,7 @@ const calculateShipping = () => {
           </div>
 
           <!-- Price & Installments -->
-          <div class="bg-surface-container-low border border-outline-variant rounded-xs p-5 space-y-2 shadow-2xs">
+          <div class="bg-surface-container-low border border-outline-variant rounded-md p-5 space-y-2 shadow-[0_4px_16px_rgba(38,17,11,0.05)]">
             <div class="flex items-baseline gap-3">
               <span class="font-sans font-bold text-3xl text-primary">
                 ${{ currentPrice.toLocaleString('es-AR') }}
@@ -286,41 +290,64 @@ const calculateShipping = () => {
             </button>
           </div>
 
-          <!-- Shipping Calculator Mini Module -->
+          <!-- Shipping Calculator Mini Module (Andreani) -->
           <div class="border-t border-outline-variant pt-5 space-y-3">
             <div class="flex items-center justify-between">
               <span class="font-label text-xs uppercase tracking-widest text-primary font-bold flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-sm">local_shipping</span>
-                Calcular Envío a Domicilio:
+                <span class="material-symbols-outlined text-sm text-secondary">local_shipping</span>
+                <span>Calcular Envío con Andreani:</span>
               </span>
+              <span class="text-[10px] font-label uppercase text-secondary font-semibold">Despacho Oficial</span>
             </div>
 
             <div class="flex gap-2 bg-surface p-1 rounded-full border border-outline-variant focus-within:border-primary shadow-2xs">
               <input 
                 v-model="postalCode"
                 type="text" 
-                placeholder="Código Postal (ej. 1425)"
-                maxlength="5"
+                placeholder="Ingresá tu Código Postal (ej. 1414, 2400)"
+                maxlength="8"
                 class="bg-transparent text-xs font-sans px-4 py-2 text-primary w-full focus:outline-none"
                 @keyup.enter="calculateShipping"
               />
               <button 
                 @click="calculateShipping"
-                class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-5 py-2 rounded-full hover:bg-inverse-surface transition-colors flex-shrink-0 shadow-2xs"
+                :disabled="isCalculatingShipping"
+                class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-5 py-2 rounded-full hover:bg-inverse-surface transition-colors flex-shrink-0 shadow-2xs disabled:opacity-50 flex items-center gap-1.5"
               >
-                Calcular
+                <span v-if="isCalculatingShipping" class="material-symbols-outlined text-xs animate-spin">progress_activity</span>
+                <span>{{ isCalculatingShipping ? 'Cotizando...' : 'Calcular' }}</span>
               </button>
             </div>
 
-            <!-- Shipping Results -->
-            <div v-if="shippingEstimate" class="bg-surface-container rounded-xs p-4 space-y-2 text-xs font-sans text-secondary border border-outline-variant animate-in fade-in shadow-2xs">
-              <div class="flex justify-between items-center text-primary font-medium">
-                <span>Envío Estándar a Domicilio:</span>
-                <span class="font-bold text-tertiary">{{ shippingEstimate.standardCost }} ({{ shippingEstimate.standardDays }})</span>
+            <!-- Andreani Shipping Results -->
+            <div v-if="shippingEstimate && shippingEstimate.options" class="bg-surface-container-low rounded-md p-4 space-y-2.5 text-xs font-sans border border-outline-variant animate-in fade-in shadow-2xs">
+              <div class="flex justify-between items-center border-b border-outline-variant/60 pb-2">
+                <div class="flex items-center gap-1.5 text-primary font-bold">
+                  <span class="material-symbols-outlined text-sm text-emerald-700">pin_drop</span>
+                  <span>{{ shippingEstimate.destination.zone }} (CP {{ shippingEstimate.destination.postalCode }})</span>
+                </div>
+                <span class="text-[10px] text-secondary">Logística Andreani</span>
               </div>
-              <div class="flex justify-between items-center text-primary font-medium">
-                <span>Envío Express Gicca:</span>
-                <span class="font-bold">{{ shippingEstimate.expressCost }} ({{ shippingEstimate.expressDays }})</span>
+
+              <div 
+                v-for="opt in shippingEstimate.options" 
+                :key="opt.id"
+                class="flex justify-between items-center p-2.5 rounded-xs bg-surface border border-outline-variant/60 hover:border-primary transition-colors"
+              >
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-medium text-primary">{{ opt.name }}</span>
+                    <span v-if="opt.badge" class="text-[9px] font-label font-bold uppercase px-2 py-0.5 rounded-full" :class="opt.isFree ? 'bg-emerald-100 text-emerald-800' : 'bg-surface-container text-secondary'">
+                      {{ opt.badge }}
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-secondary mt-0.5">Plazo de entrega: <strong>{{ opt.estimatedDays }}</strong></p>
+                </div>
+                <div class="text-right">
+                  <span class="font-bold text-sm" :class="opt.isFree ? 'text-emerald-700' : 'text-primary'">
+                    {{ opt.price === 0 ? '¡GRATIS!' : `$${opt.price.toLocaleString('es-AR')}` }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -332,8 +359,8 @@ const calculateShipping = () => {
               <span class="font-label text-[10px] uppercase text-primary">Batch Code Verificable</span>
             </div>
             <div class="flex items-center gap-2 p-3 bg-surface-container rounded-xs border border-outline-variant shadow-2xs">
-              <span class="material-symbols-outlined text-base text-primary">redeem</span>
-              <span class="font-label text-[10px] uppercase text-primary">+1 Muestra de Regalo</span>
+              <span class="material-symbols-outlined text-base text-primary">local_shipping</span>
+              <span class="font-label text-[10px] uppercase text-primary">Envío Asegurado</span>
             </div>
           </div>
 

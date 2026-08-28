@@ -11,13 +11,6 @@ const router = useRouter()
 const couponInput = ref('')
 const couponMessage = ref(null)
 
-const sampleOptions = [
-  'Libre YSL 2ml - Muestra de Cortesía',
-  'Sauvage Parfum 2ml - Muestra de Cortesía',
-  'Baccarat Rouge 540 1.5ml - Muestra de Cortesía',
-  'Coco Mademoiselle 2ml - Muestra de Cortesía'
-]
-
 const handleApplyCoupon = () => {
   if (!couponInput.value.trim()) return
   const result = cartStore.applyCoupon(couponInput.value)
@@ -175,25 +168,6 @@ const goToCartPage = () => {
                 </span>
               </div>
             </div>
-          </div>
-        </div>
-
-        <!-- Courtesy Sample Selection (Boutique Feature) -->
-        <div v-if="cartStore.items.length > 0" class="pt-2">
-          <div class="bg-surface-container-low border border-outline-variant rounded-xs p-4">
-            <p class="font-label text-xs text-primary uppercase tracking-widest font-semibold flex items-center gap-1.5 mb-2">
-              <span class="material-symbols-outlined text-sm text-tertiary">card_giftcard</span>
-              Muestra de Cortesía Gratis:
-            </p>
-            <select 
-              v-model="cartStore.selectedSample" 
-              @change="cartStore.selectSample(cartStore.selectedSample)"
-              class="w-full bg-surface text-xs font-sans text-primary border border-outline-variant rounded-xs p-2.5 focus:ring-0 focus:border-primary"
-            >
-              <option v-for="sample in sampleOptions" :key="sample" :value="sample">
-                {{ sample }}
-              </option>
-            </select>
           </div>
         </div>
       </div>

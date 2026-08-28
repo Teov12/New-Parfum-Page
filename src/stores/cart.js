@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia'
+import { useShippingStore } from './shipping'
 
 export const useCartStore = defineStore('cart', {
   state: () => ({
     items: JSON.parse(localStorage.getItem('gicca_cart_items') || '[]'),
     coupon: JSON.parse(localStorage.getItem('gicca_cart_coupon') || 'null'),
     isDrawerOpen: false,
-    freeShippingThreshold: 200000,
-    selectedSample: localStorage.getItem('gicca_selected_sample') || 'Libre YSL 2ml - Muestra de Cortesía',
+    freeShippingThreshold: 200000
   }),
 
   getters: {
@@ -16,16 +16,32 @@ export const useCartStore = defineStore('cart', {
       return state.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
     },
 
-    discountAmount: () => 0,
+    discountAmount: (state) => {
+      if (!state.coupon) return 0
+      const subtotal = state.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
+      if (state.coupon.type === 'percentage') {
+        return Math.round((subtotal * state.coupon.value) / 100)
+      }
+      if (state.coupon.type === 'fixed') {
+        return Math.min(subtotal, state.coupon.value)
+      }
+      return 0
+    },
 
     shippingCost: (state) => {
       const subtotal = state.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
       if (subtotal === 0) return 0
-      return subtotal >= state.freeShippingThreshold ? 0 : 4500
+      
+      const shippingStore = useShippingStore()
+      if (shippingStore.selectedOption) {
+        return shippingStore.selectedOption.price
+      }
+      
+      return subtotal >= state.freeShippingThreshold ? 0 : 4800
     },
 
     total() {
-      return this.subtotal + this.shippingCost
+      return Math.max(0, this.subtotal - this.discountAmount) + this.shippingCost
     },
 
     amountForFreeShipping: (state) => {
@@ -44,9 +60,6 @@ export const useCartStore = defineStore('cart', {
     persist() {
       localStorage.setItem('gicca_cart_items', JSON.stringify(this.items))
       localStorage.setItem('gicca_cart_coupon', JSON.stringify(this.coupon))
-      if (this.selectedSample) {
-        localStorage.setItem('gicca_selected_sample', this.selectedSample)
-      }
     },
 
     addItem(product, chosenSize = null, quantity = 1) {
@@ -117,11 +130,6 @@ export const useCartStore = defineStore('cart', {
 
     removeCoupon() {
       this.coupon = null
-      this.persist()
-    },
-
-    selectSample(sampleName) {
-      this.selectedSample = sampleName
       this.persist()
     },
 

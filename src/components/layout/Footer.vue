@@ -179,7 +179,6 @@ const handleSubscribe = () => {
       <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-label text-secondary uppercase tracking-wider">
         <p>© 2026 Gicca Perfumes Boutique. Todos los derechos reservados.</p>
         <div class="flex flex-wrap gap-4 sm:gap-6 items-center">
-          <RouterLink to="/admin" class="hover:text-primary transition-colors text-secondary font-bold">Acceso Admin</RouterLink>
           <a href="#" class="hover:text-primary transition-colors">Términos y Condiciones</a>
           <a href="#" class="hover:text-primary transition-colors">Privacidad</a>
         </div>

@@ -37,16 +37,18 @@ const upload = multer({
 
 const router = express.Router()
 
-router.post('/', upload.single('image'), (req, res) => {
-  if (!req.file) {
+router.post('/', upload.any(), (req, res) => {
+  if (!req.files || req.files.length === 0) {
     return res.status(400).json({ error: 'No se subió ningún archivo' })
   }
 
-  const fileUrl = `/uploads/${req.file.filename}`
+  const urls = req.files.map(file => `/uploads/${file.filename}`)
+  
   res.json({
     success: true,
-    url: fileUrl,
-    filename: req.file.filename
+    url: urls[0],
+    urls: urls,
+    files: req.files.map(f => ({ url: `/uploads/${f.filename}`, filename: f.filename }))
   })
 })
 

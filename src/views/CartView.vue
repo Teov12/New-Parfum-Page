@@ -2,21 +2,34 @@
 import { ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
+import { useShippingStore } from '@/stores/shipping'
 import { useToastStore } from '@/stores/toast'
 
 const cartStore = useCartStore()
+const shippingStore = useShippingStore()
 const toastStore = useToastStore()
 const router = useRouter()
 
 const couponInput = ref('')
 const couponMessage = ref(null)
 
-const sampleOptions = [
-  { id: 1, name: 'YSL Libre Eau de Parfum (2ml)', brand: 'Yves Saint Laurent', family: 'Floral Ámbar' },
-  { id: 2, name: 'Dior Sauvage Parfum (2ml)', brand: 'Dior', family: 'Amaderada Cítrica' },
-  { id: 3, name: 'Baccarat Rouge 540 Extrait (1.5ml)', brand: 'Maison Francis Kurkdjian', family: 'Oriental Floral' },
-  { id: 4, name: 'Coco Mademoiselle EDP (2ml)', brand: 'Chanel', family: 'Floral Chipre' }
-]
+const postalCodeInput = ref(shippingStore.postalCode || '')
+const isCalculatingShipping = ref(false)
+
+const handleCalculateShipping = async () => {
+  if (!postalCodeInput.value || postalCodeInput.value.length < 4) {
+    toastStore.show('Ingresá un código postal válido de 4 dígitos.', 'error')
+    return
+  }
+  isCalculatingShipping.value = true
+  const res = await shippingStore.calculateShipping(postalCodeInput.value, cartStore.subtotal)
+  isCalculatingShipping.value = false
+  if (res && res.success) {
+    toastStore.show(`Envíos calculados para ${res.destination.zone}`, 'success')
+  } else {
+    toastStore.show(shippingStore.error || 'Error al cotizar envío con Andreani', 'error')
+  }
+}
 
 const handleApplyCoupon = () => {
   if (!couponInput.value.trim()) return
@@ -179,41 +192,6 @@ const proceedToCheckout = () => {
             </div>
           </div>
 
-          <!-- Courtesy Sample Selection Card -->
-          <div class="bg-surface border border-outline-variant rounded-xs p-6 sm:p-8 space-y-4 shadow-xs">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-2xl text-tertiary">card_giftcard</span>
-              <div>
-                <h3 class="font-sans text-lg text-primary font-medium">Muestra de Cortesía Sin Cargo</h3>
-                <p class="font-sans text-xs text-secondary">Cada pedido incluye una muestra de perfumería exclusiva de regalo.</p>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              <div 
-                v-for="sample in sampleOptions" 
-                :key="sample.id"
-                @click="cartStore.selectSample(sample.name)"
-                class="p-4 rounded-xs border cursor-pointer transition-all flex justify-between items-center shadow-2xs"
-                :class="cartStore.selectedSample === sample.name 
-                  ? 'bg-surface-container border-primary ring-1 ring-primary' 
-                  : 'bg-surface border-outline-variant hover:border-outline'"
-              >
-                <div>
-                  <span class="font-label text-[10px] uppercase tracking-widest text-secondary block">{{ sample.brand }}</span>
-                  <p class="font-sans text-sm text-primary font-medium">{{ sample.name }}</p>
-                  <p class="text-xs text-secondary">{{ sample.family }}</p>
-                </div>
-                <span 
-                  class="material-symbols-outlined text-xl"
-                  :class="cartStore.selectedSample === sample.name ? 'text-primary' : 'text-outline'"
-                >
-                  {{ cartStore.selectedSample === sample.name ? 'radio_button_checked' : 'radio_button_unchecked' }}
-                </span>
-              </div>
-            </div>
-          </div>
-
         </div>
 
         <!-- Sticky Order Summary Sidebar (4 cols) -->
@@ -224,6 +202,37 @@ const proceedToCheckout = () => {
               Resumen de Compra
             </h2>
 
+            <!-- Shipping Calculator Andreani -->
+            <div class="space-y-2 border-b border-outline-variant pb-4">
+              <div class="flex justify-between items-center">
+                <label class="font-label text-xs uppercase tracking-widest text-primary font-bold flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-sm text-secondary">local_shipping</span>
+                  <span>Calcular Envío Andreani</span>
+                </label>
+              </div>
+              <div class="flex gap-2">
+                <input 
+                  v-model="postalCodeInput"
+                  type="text" 
+                  placeholder="Código Postal (ej. 1414)"
+                  maxlength="8"
+                  class="bg-surface-container border border-outline-variant rounded-xs px-3 py-2 text-xs font-sans w-full focus:outline-none focus:border-primary"
+                  @keyup.enter="handleCalculateShipping"
+                />
+                <button 
+                  @click="handleCalculateShipping"
+                  :disabled="isCalculatingShipping"
+                  class="bg-surface text-primary border border-outline font-label text-[11px] uppercase tracking-wider px-3.5 py-2 rounded-xs hover:bg-surface-container transition-colors flex-shrink-0 disabled:opacity-50"
+                >
+                  {{ isCalculatingShipping ? '...' : 'Calcular' }}
+                </button>
+              </div>
+              <div v-if="shippingStore.destination" class="text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 p-2 rounded-xs flex items-center gap-1.5 mt-2">
+                <span class="material-symbols-outlined text-sm text-emerald-600">check_circle</span>
+                <span>Zona: <strong>{{ shippingStore.destination.zone }}</strong></span>
+              </div>
+            </div>
+
             <!-- Price Breakdown -->
             <div class="space-y-3 font-sans text-sm border-b border-outline-variant pb-4">
               <div class="flex justify-between text-secondary">
@@ -231,8 +240,8 @@ const proceedToCheckout = () => {
                 <span class="text-primary font-medium">${{ cartStore.subtotal.toLocaleString('es-AR') }}</span>
               </div>
               <div class="flex justify-between text-secondary">
-                <span>Envío estimado</span>
-                <span class="font-medium text-primary">
+                <span>Envío ({{ shippingStore.selectedOption?.carrier || 'Andreani' }})</span>
+                <span class="font-medium" :class="cartStore.shippingCost === 0 ? 'text-emerald-700' : 'text-primary'">
                   {{ cartStore.shippingCost === 0 ? '¡GRATIS!' : `$${cartStore.shippingCost.toLocaleString('es-AR')}` }}
                 </span>
               </div>

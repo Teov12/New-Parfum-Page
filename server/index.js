@@ -5,6 +5,8 @@ import { fileURLToPath } from 'url'
 import authRoutes from './routes/auth.js'
 import productRoutes from './routes/products.js'
 import uploadRoutes from './routes/upload.js'
+import shippingRoutes from './routes/shipping.js'
+import orderRoutes from './routes/orders.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -24,6 +26,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 app.use('/api/auth', authRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/upload', uploadRoutes)
+app.use('/api/shipping', shippingRoutes)
+app.use('/api/orders', orderRoutes)
 
 // Health Check
 app.get('/api/health', (req, res) => {

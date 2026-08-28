@@ -14,7 +14,7 @@ import { RouterLink } from 'vue-router'
       <span class="text-on-primary-container">•</span>
       <span class="font-medium">3 y 6 Cuotas Sin Interés</span>
       <span class="hidden sm:inline text-on-primary-container">•</span>
-      <span class="hidden sm:inline">Muestras de regalo con cada pedido</span>
+      <span class="hidden sm:inline">100% Fragancias Originales</span>
     </div>
 
     <div class="hidden lg:flex items-center gap-4">

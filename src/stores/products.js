@@ -96,6 +96,10 @@ export const useProductStore = defineStore('products', {
       }
     },
 
+    async createProduct(productData) {
+      return this.addProduct(productData)
+    },
+
     async updateProduct(id, productData) {
       this.loading = true
       try {

@@ -1,1 +1,111 @@
-[]
+[
+  {
+    "id": "prod_1787880385005_odb29z",
+    "slug": "asdasd",
+    "brand": "asdasdasd",
+    "name": "asdasd",
+    "concentration": "Eau de Parfum",
+    "gender": "man",
+    "category": "arabes",
+    "fragranceFamily": "Amaderada",
+    "price": 48000,
+    "originalPrice": 0,
+    "discountPercentage": 0,
+    "isFeatured": false,
+    "isNew": false,
+    "isBestSeller": false,
+    "badge": "",
+    "shortDescription": "",
+    "description": "",
+    "images": [
+      "/uploads/perfume_1787880338088_l5xa2h.png"
+    ],
+    "sizes": [
+      {
+        "size": "100 ml",
+        "price": 48000,
+        "default": true
+      }
+    ],
+    "olfactoryPyramid": {
+      "topNotes": [
+        "asd",
+        "addd",
+        "aa",
+        "dd"
+      ],
+      "heartNotes": [
+        "dasd",
+        "asd",
+        "adsad"
+      ],
+      "baseNotes": [
+        "adsad",
+        "asdasd",
+        "asdasd",
+        "asdasd"
+      ]
+    },
+    "characteristics": {
+      "longevity": "8 a 12 horas (Muy Duradera)",
+      "sillage": "Moderada (Radio de 1 metro)",
+      "season": "Primavera / Verano / Otoño / Invierno",
+      "occasion": "Uso diario y ocasiones especiales"
+    },
+    "usageTips": "Pulverizar en puntos de pulso (cuello y muñecas).",
+    "createdAt": "2026-08-28T01:26:25.005Z",
+    "updatedAt": "2026-08-28T01:26:25.005Z"
+  },
+  {
+    "id": "prod_1787879815888_az3922",
+    "slug": "asdad",
+    "brand": "asdasd",
+    "name": "ASdad",
+    "concentration": "Eau de Parfum",
+    "gender": "unisex",
+    "category": "disenador",
+    "fragranceFamily": "Amaderada",
+    "price": 215000,
+    "originalPrice": 0,
+    "discountPercentage": 0,
+    "isFeatured": false,
+    "isNew": false,
+    "isBestSeller": false,
+    "badge": "",
+    "shortDescription": "",
+    "description": "",
+    "images": [
+      "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1000&q=85"
+    ],
+    "sizes": [
+      {
+        "size": "100 ml",
+        "price": 215000,
+        "default": true
+      }
+    ],
+    "olfactoryPyramid": {
+      "topNotes": [
+        "Mandarina",
+        "Bergamota"
+      ],
+      "heartNotes": [
+        "Jazmín",
+        "Rosa"
+      ],
+      "baseNotes": [
+        "Vainilla",
+        "Cedro"
+      ]
+    },
+    "characteristics": {
+      "longevity": "8 a 12 horas",
+      "sillage": "Moderada / Alta",
+      "season": "Todo el año",
+      "occasion": "Uso Diario & Ocasiones Especiales"
+    },
+    "usageTips": "Para una estela envolvente, pulverizá sobre los puntos de pulso: cuello y muñecas.",
+    "createdAt": "2026-08-28T01:16:55.888Z",
+    "updatedAt": "2026-08-28T01:16:55.888Z"
+  }
+]

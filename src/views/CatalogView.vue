@@ -228,12 +228,12 @@ const activeFiltersCount = computed(() => {
       <!-- Main Layout: Sidebar Filters + Products Grid -->
       <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         
-        <!-- SIDEBAR FILTERS (Modern Clean Card) -->
-        <aside class="hidden md:block md:col-span-3 bg-white border border-neutral-200/80 rounded-2xl p-6 space-y-6 shadow-xs">
+        <!-- SIDEBAR FILTERS (Modern Warm Luxury Card) -->
+        <aside class="hidden md:block md:col-span-3 bg-surface border border-outline-variant rounded-md p-6 space-y-6 shadow-[0_4px_16px_rgba(38,17,11,0.04)]">
           
           <!-- Clear Filters Button -->
-          <div class="flex justify-between items-center border-b border-neutral-100 pb-4">
-            <span class="font-sans text-base font-bold text-neutral-900">Filtros</span>
+          <div class="flex justify-between items-center border-b border-outline-variant pb-4">
+            <span class="font-serif text-lg text-primary font-normal">Filtros</span>
             <button 
               v-if="activeFiltersCount > 0"
               @click="clearAllFilters"

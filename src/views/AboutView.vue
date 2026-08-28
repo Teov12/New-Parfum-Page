@@ -84,7 +84,7 @@ import { RouterLink } from 'vue-router'
             </div>
             <h4 class="font-sans text-2xl text-primary font-normal">Experiencia Sensorial VIP</h4>
             <p class="font-sans text-sm text-secondary leading-relaxed">
-              Desde la elección de muestras de cortesía hasta el desempacado perfumado con lazos de seda, comprar en Gicca es un ritual de deleite.
+              Desde la navegación guiada hasta el desempacado perfumado con lazos de seda, comprar en Gicca es un ritual de deleite.
             </p>
           </div>
         </div>

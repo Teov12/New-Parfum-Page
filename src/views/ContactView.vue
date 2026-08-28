@@ -1,19 +1,37 @@
 <script setup>
 import { ref } from 'vue'
+import { useForm, useField } from 'vee-validate'
+import * as yup from 'yup'
 import { useToastStore } from '@/stores/toast'
 
 const toastStore = useToastStore()
-
-const contactForm = ref({
-  name: '',
-  email: '',
-  phone: '',
-  subject: 'Asesoramiento Personalizado',
-  message: ''
-})
-
 const isSending = ref(false)
 const openFaq = ref(null)
+
+const validationSchema = yup.object({
+  name: yup.string().trim().required('El nombre completo es obligatorio').min(3, 'Mínimo 3 letras'),
+  email: yup.string().trim().required('El correo electrónico es obligatorio').email('Ingresá un email válido'),
+  phone: yup.string().trim().nullable(),
+  subject: yup.string().required('Seleccioná un motivo'),
+  message: yup.string().trim().required('El mensaje no puede estar vacío').min(10, 'Por favor escribí al menos 10 caracteres')
+})
+
+const { handleSubmit, resetForm } = useForm({
+  validationSchema,
+  initialValues: {
+    name: '',
+    email: '',
+    phone: '',
+    subject: 'Asesoramiento Personalizado',
+    message: ''
+  }
+})
+
+const { value: name, errorMessage: nameError } = useField('name')
+const { value: email, errorMessage: emailError } = useField('email')
+const { value: phone } = useField('phone')
+const { value: subject } = useField('subject')
+const { value: message, errorMessage: messageError } = useField('message')
 
 const faqs = [
   {
@@ -28,8 +46,8 @@ const faqs = [
   },
   {
     id: 3,
-    q: '¿Cómo funciona la muestra de cortesía gratis?',
-    a: 'En el carrito de compras podrás seleccionar 1 muestra exclusiva de cortesía (de 1.5ml a 2ml con atomizador) sin ningún costo adicional. Es ideal para conocer nuevas creaciones antes de adquirirlas en formato grande.'
+    q: '¿Cómo garantizan la originalidad de las fragancias?',
+    a: 'Todas nuestras piezas provienen directamente de distribuidores e importadores oficiales, con estampillado fiscal de importación y códigos de lote (Batch Code) verificables en bases de datos internacionales.'
   },
   {
     id: 4,
@@ -39,7 +57,7 @@ const faqs = [
   {
     id: 5,
     q: '¿Puedo realizar cambios si el perfume no es de mi agrado?',
-    a: 'Por normas sanitarias y de autenticidad de fragancias de lujo, los perfumes cerrados con celofán original pueden cambiarse dentro de los 30 días posteriores a la compra. Recomendamos siempre probar primero la muestra de cortesía incluida antes de abrir el empaque principal.'
+    a: 'Por normas sanitarias y de autenticidad de fragancias de lujo, los perfumes cerrados con celofán original intacto pueden cambiarse dentro de los 30 días posteriores a la compra.'
   }
 ]
 
@@ -47,20 +65,14 @@ const toggleFaq = (id) => {
   openFaq.value = openFaq.value === id ? null : id
 }
 
-const handleSubmitContact = () => {
+const handleSubmitContact = handleSubmit(async (formValues) => {
   isSending.value = true
   setTimeout(() => {
     isSending.value = false
     toastStore.show('¡Mensaje enviado con éxito! Un sommelier de Gicca se comunicará a la brevedad.', 'success')
-    contactForm.value = {
-      name: '',
-      email: '',
-      phone: '',
-      subject: 'Asesoramiento Personalizado',
-      message: ''
-    }
+    resetForm()
   }, 1000)
-}
+})
 </script>
 
 <template>
@@ -132,19 +144,23 @@ const handleSubmitContact = () => {
           <h3 class="font-sans text-2xl text-primary font-normal mb-1">Envíanos un Mensaje</h3>
           <p class="font-sans text-xs text-secondary mb-6">Completá tus datos y te responderemos a la brevedad.</p>
 
-          <form @submit.prevent="handleSubmitContact" class="space-y-4">
+          <form @submit.prevent="handleSubmitContact" class="space-y-4" novalidate>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">
                   Nombre Completo *
                 </label>
                 <input 
-                  v-model="contactForm.name"
+                  v-model="name"
                   type="text" 
-                  required
                   placeholder="Tu nombre"
-                  class="w-full bg-surface border border-outline-variant rounded-xs p-3 text-sm font-sans text-primary focus:border-primary focus:outline-none"
+                  class="w-full bg-surface border rounded-xs p-3 text-sm font-sans text-primary focus:outline-none transition-colors"
+                  :class="nameError ? 'border-red-500 bg-red-50/20' : 'border-outline-variant focus:border-primary'"
                 />
+                <p v-if="nameError" class="text-[11px] text-red-600 font-sans mt-1 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-xs">error</span>
+                  {{ nameError }}
+                </p>
               </div>
 
               <div>
@@ -152,12 +168,16 @@ const handleSubmitContact = () => {
                   Email *
                 </label>
                 <input 
-                  v-model="contactForm.email"
+                  v-model="email"
                   type="email" 
-                  required
                   placeholder="tu@email.com"
-                  class="w-full bg-surface border border-outline-variant rounded-xs p-3 text-sm font-sans text-primary focus:border-primary focus:outline-none"
+                  class="w-full bg-surface border rounded-xs p-3 text-sm font-sans text-primary focus:outline-none transition-colors"
+                  :class="emailError ? 'border-red-500 bg-red-50/20' : 'border-outline-variant focus:border-primary'"
                 />
+                <p v-if="emailError" class="text-[11px] text-red-600 font-sans mt-1 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-xs">error</span>
+                  {{ emailError }}
+                </p>
               </div>
             </div>
 
@@ -167,7 +187,7 @@ const handleSubmitContact = () => {
                   Teléfono / WhatsApp
                 </label>
                 <input 
-                  v-model="contactForm.phone"
+                  v-model="phone"
                   type="tel" 
                   placeholder="+54 9 11 ..."
                   class="w-full bg-surface border border-outline-variant rounded-xs p-3 text-sm font-sans text-primary focus:border-primary focus:outline-none"
@@ -179,7 +199,7 @@ const handleSubmitContact = () => {
                   Motivo de Consulta
                 </label>
                 <select 
-                  v-model="contactForm.subject"
+                  v-model="subject"
                   class="w-full bg-surface border border-outline-variant rounded-xs p-3 text-sm font-sans text-primary focus:border-primary focus:outline-none"
                 >
                   <option>Asesoramiento Personalizado</option>
@@ -196,22 +216,26 @@ const handleSubmitContact = () => {
                 Mensaje *
               </label>
               <textarea 
-                v-model="contactForm.message"
+                v-model="message"
                 rows="5" 
-                required
                 placeholder="Escribí aquí tus dudas, preferencias de aromas o detalles de tu pedido..."
-                class="w-full bg-surface border border-outline-variant rounded-xs p-3 text-sm font-sans text-primary focus:border-primary focus:outline-none"
+                class="w-full bg-surface border rounded-xs p-3 text-sm font-sans text-primary focus:outline-none transition-colors"
+                :class="messageError ? 'border-red-500 bg-red-50/20' : 'border-outline-variant focus:border-primary'"
               ></textarea>
+              <p v-if="messageError" class="text-[11px] text-red-600 font-sans mt-1 flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs">error</span>
+                {{ messageError }}
+              </p>
             </div>
 
             <button 
               type="submit"
               :disabled="isSending"
-              class="w-full bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-4 rounded-full border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-2 font-bold shadow-md disabled:opacity-50"
+              class="w-full bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-4 rounded-full border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-50"
             >
               <span v-if="isSending">Enviando mensaje...</span>
-              <span v-else>Enviar Consulta</span>
-              <span class="material-symbols-outlined text-sm">send</span>
+              <span v-else>Enviar Consulta al Concierge</span>
+              <span v-if="!isSending" class="material-symbols-outlined text-sm">send</span>
             </button>
           </form>
         </div>
