@@ -36,26 +36,26 @@ const handleWishlist = () => {
 </script>
 
 <template>
-  <!-- Modern Luxury Product Card with Original Palette and Elegant Shadows -->
-  <div class="group relative flex flex-col bg-surface border border-outline-variant hover:border-primary rounded-md overflow-hidden shadow-[0_4px_18px_rgba(38,17,11,0.06)] hover:shadow-[0_16px_35px_rgba(38,17,11,0.14)] hover:-translate-y-1.5 transition-all duration-300 ease-out">
+  <!-- Modern Luxury Product Card with Lightened Warm Palette and Soft Shadows -->
+  <div class="group relative flex flex-col h-full bg-surface border border-outline-variant hover:border-primary rounded-xl overflow-hidden shadow-[0_10px_25px_-8px_rgba(46,25,17,0.05),0_4px_10px_-4px_rgba(46,25,17,0.02)] hover:shadow-[0_20px_35px_-10px_rgba(46,25,17,0.10),0_8px_16px_-4px_rgba(46,25,17,0.05)] hover:-translate-y-1.5 transition-all duration-300 ease-out will-change-transform">
     
     <!-- Image & Floating Controls Container (3:4 ratio) -->
-    <div class="relative aspect-[3/4] bg-surface-container overflow-hidden">
+    <div class="relative aspect-[3/4] bg-surface-container overflow-hidden -mb-px">
       <!-- Product Image with Smooth Zoom -->
       <RouterLink :to="`/producto/${product.slug}`" class="block w-full h-full">
         <img 
           :src="product.images[0]" 
           :alt="product.name"
-          class="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
+          class="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
           loading="lazy"
         />
         <!-- Subtle gradient overlay on hover -->
-        <div class="absolute inset-0 bg-gradient-to-t from-primary/30 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-primary/30 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
       </RouterLink>
 
       <!-- Floating Badges Top-Left -->
       <div v-if="product.badge" class="absolute top-3 left-3 z-10">
-        <span class="bg-primary-container text-on-primary font-label text-[10px] font-bold px-3 py-1 uppercase tracking-wider rounded-md shadow-xs backdrop-blur-xs">
+        <span class="bg-primary-container text-on-primary font-label text-[10px] font-bold px-3 py-1 uppercase tracking-wider rounded-md shadow-xs backdrop-blur-sm">
           {{ product.badge }}
         </span>
       </div>
@@ -75,8 +75,8 @@ const handleWishlist = () => {
       </button>
 
       <!-- Quick Add Overlay -->
-      <div class="absolute bottom-0 left-0 w-full translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-20 hidden md:block">
-        <div class="bg-surface/95 backdrop-blur-md border-t border-outline-variant p-3 space-y-2 shadow-2xl">
+      <div class="absolute -bottom-px left-0 w-full translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-300 ease-out z-20 hidden md:block">
+        <div class="bg-surface border-t border-outline-variant p-3 space-y-2 shadow-[0_-6px_16px_rgba(46,25,17,0.04)]">
           <!-- Size Selector Pills -->
           <div class="flex justify-center gap-1.5">
             <button
@@ -95,7 +95,7 @@ const handleWishlist = () => {
           <!-- Add to Cart CTA Button -->
           <button 
             @click.stop="handleQuickAdd"
-            class="w-full bg-primary-container hover:bg-inverse-surface text-on-primary font-label text-xs font-bold py-2.5 px-4 rounded-md transition-all duration-200 flex items-center justify-center gap-2 shadow-xs hover:shadow-md active:scale-98"
+            class="w-full bg-primary-container hover:bg-inverse-surface text-on-primary font-label text-xs font-bold py-2.5 px-4 rounded-md transition-all duration-200 flex items-center justify-center gap-2 shadow-xs hover:shadow-md active:scale-[0.98]"
           >
             <span class="material-symbols-outlined text-sm">shopping_bag</span>
             <span>Añadir • ${{ selectedSize.price.toLocaleString('es-AR') }}</span>

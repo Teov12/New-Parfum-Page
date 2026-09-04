@@ -179,17 +179,13 @@ const calculateShipping = async () => {
           
           <!-- Brand Header -->
           <div class="border-b border-outline-variant pb-5">
-            <div class="flex justify-between items-center mb-2">
+            <div class="mb-2">
               <RouterLink 
                 :to="`/catalogo?brand=${encodeURIComponent(product.brand)}`" 
                 class="font-label text-xs uppercase tracking-[0.2em] text-secondary hover:text-primary transition-colors font-bold"
               >
                 {{ product.brand }}
               </RouterLink>
-
-              <span class="font-label text-[10px] uppercase tracking-widest text-emerald-700 font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                100% Original
-              </span>
             </div>
 
             <!-- Product Title -->
@@ -203,7 +199,7 @@ const calculateShipping = async () => {
           </div>
 
           <!-- Price & Installments -->
-          <div class="bg-surface-container-low border border-outline-variant rounded-md p-5 space-y-2 shadow-[0_4px_16px_rgba(38,17,11,0.05)]">
+          <div class="bg-surface-container-low border border-outline-variant rounded-md p-5 space-y-2 shadow-2xs">
             <div class="flex items-baseline gap-3">
               <span class="font-sans font-bold text-3xl text-primary">
                 ${{ currentPrice.toLocaleString('es-AR') }}
@@ -232,18 +228,18 @@ const calculateShipping = async () => {
               <span class="font-label text-xs text-secondary">{{ selectedSize?.size }}</span>
             </div>
 
-            <div class="grid grid-cols-3 gap-2.5">
+            <div class="grid grid-cols-3 gap-2">
               <button
                 v-for="s in product.sizes"
                 :key="s.size"
                 @click="selectedSize = s"
-                class="font-label text-xs uppercase tracking-wider py-3 px-2 rounded-full border text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-2xs"
+                class="font-label text-xs tracking-wider py-1.5 px-2 rounded-full border text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-2xs"
                 :class="selectedSize?.size === s.size 
                   ? 'bg-primary-container text-on-primary border-primary-container shadow-xs' 
                   : 'bg-surface text-primary border-outline-variant hover:border-primary'"
               >
-                <span class="font-bold">{{ s.size }}</span>
-                <span class="text-[10px] opacity-90">${{ s.price.toLocaleString('es-AR') }}</span>
+                <span class="font-bold text-xs">{{ s.size }}</span>
+                <span class="text-[10px] opacity-85">${{ s.price.toLocaleString('es-AR') }}</span>
               </button>
             </div>
           </div>
@@ -283,9 +279,9 @@ const calculateShipping = async () => {
             <!-- Direct Buy Now CTA (Píldora) -->
             <button 
               @click="handleBuyNow"
-              class="w-full bg-transparent text-primary font-label text-xs uppercase tracking-widest py-3.5 rounded-full border border-primary hover:bg-surface-container transition-all flex items-center justify-center gap-2 shadow-2xs"
+              class="w-full bg-transparent text-primary font-label text-xs uppercase tracking-widest py-3 rounded-full border border-primary hover:bg-surface-container transition-all flex items-center justify-center gap-2 shadow-2xs"
             >
-              <span>Comprar Ahora con 1 Click</span>
+              <span>Comprar Ahora</span>
               <span class="material-symbols-outlined text-sm">arrow_forward</span>
             </button>
           </div>
@@ -384,7 +380,7 @@ const calculateShipping = async () => {
             class="font-label text-xs sm:text-sm uppercase tracking-wider py-2 px-5 rounded-full transition-all"
             :class="activeTab === 'description' ? 'bg-primary-container text-on-primary shadow-xs' : 'text-secondary hover:text-primary'"
           >
-            Descripción & Ritual
+            Descripción & Cómo Usarlo
           </button>
           <button
             @click="activeTab = 'characteristics'"
@@ -410,7 +406,7 @@ const calculateShipping = async () => {
           </div>
 
           <div class="border-t border-outline-variant pt-6">
-            <h4 class="font-sans text-xl text-primary font-medium mb-2">Ritual de Aplicación Recomendado</h4>
+            <h4 class="font-sans text-xl text-primary font-medium mb-2">Consejos de Aplicación</h4>
             <p class="font-sans text-secondary text-sm leading-relaxed mb-4">
               {{ product.usageTips }}
             </p>
@@ -454,8 +450,8 @@ const calculateShipping = async () => {
       <!-- RELATED FRAGRANCES SECTION -->
       <div v-if="relatedProducts.length > 0" class="border-t border-outline-variant pt-16">
         <div class="text-center max-w-xl mx-auto mb-12">
-          <p class="font-label text-label-sm text-secondary uppercase tracking-widest mb-2">Completá tu Colección</p>
-          <h2 class="font-sans text-3xl md:text-headline-lg text-primary font-normal">Fragancias Complementarias</h2>
+          <p class="font-label text-label-sm text-secondary uppercase tracking-widest mb-2">También te pueden gustar</p>
+          <h2 class="font-sans text-3xl md:text-headline-lg text-primary font-normal">Perfumes Relacionados</h2>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -182,7 +182,7 @@ const activeFiltersCount = computed(() => {
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-outline-variant pb-6 gap-4">
           <div>
             <h1 class="font-sans text-4xl md:text-5xl text-primary font-normal tracking-tight">
-              {{ onlyWishlist ? 'Tus Fragancias Favoritas' : 'Colección de Perfumes' }}
+              {{ onlyWishlist ? 'Tus Fragancias Favoritas' : 'Catálogo de Perfumes' }}
             </h1>
             <p class="font-sans text-sm text-secondary mt-1">
               Mostrando {{ filteredProducts.length }} fragancias disponibles
@@ -229,7 +229,7 @@ const activeFiltersCount = computed(() => {
       <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         
         <!-- SIDEBAR FILTERS (Modern Warm Luxury Card) -->
-        <aside class="hidden md:block md:col-span-3 bg-surface border border-outline-variant rounded-md p-6 space-y-6 shadow-[0_4px_16px_rgba(38,17,11,0.04)]">
+        <aside class="hidden md:block md:col-span-3 bg-surface border border-outline-variant rounded-md p-6 space-y-6 shadow-xs">
           
           <!-- Clear Filters Button -->
           <div class="flex justify-between items-center border-b border-outline-variant pb-4">

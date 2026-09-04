@@ -598,7 +598,7 @@ const handleSaveManualOrder = async () => {
     items: [
       {
         id: prod?.id || 'custom',
-        name: prod?.name || 'Perfume Exclusivo',
+        name: prod?.name || 'Perfume Original',
         brand: prod?.brand || 'Gicca',
         size: manualOrderForm.value.selectedProductSize,
         quantity: Number(manualOrderForm.value.quantity) || 1,
@@ -662,7 +662,7 @@ const sendWhatsAppTracking = (order) => {
             <span class="material-symbols-outlined text-2xl">admin_panel_settings</span>
           </div>
           <h1 class="font-sans text-3xl font-normal text-primary">Gicca Admin</h1>
-          <p class="font-sans text-xs text-secondary">Acceso exclusivo a gestión de ventas y catálogo</p>
+          <p class="font-sans text-xs text-secondary">Panel de gestión de ventas y catálogo</p>
         </div>
 
         <form @submit.prevent="handleLogin" class="space-y-4">

@@ -57,7 +57,7 @@ const faqs = [
   {
     id: 5,
     q: '¿Puedo realizar cambios si el perfume no es de mi agrado?',
-    a: 'Por normas sanitarias y de autenticidad de fragancias de lujo, los perfumes cerrados con celofán original intacto pueden cambiarse dentro de los 30 días posteriores a la compra.'
+    a: 'Por razones sanitarias y de autenticidad, los perfumes cerrados con celofán original intacto pueden cambiarse dentro de los 30 días posteriores a la compra.'
   }
 ]
 
@@ -69,7 +69,7 @@ const handleSubmitContact = handleSubmit(async (formValues) => {
   isSending.value = true
   setTimeout(() => {
     isSending.value = false
-    toastStore.show('¡Mensaje enviado con éxito! Un sommelier de Gicca se comunicará a la brevedad.', 'success')
+    toastStore.show('¡Mensaje enviado con éxito! Nos comunicaremos con vos a la brevedad.', 'success')
     resetForm()
   }, 1000)
 })
@@ -81,12 +81,12 @@ const handleSubmitContact = handleSubmit(async (formValues) => {
       
       <!-- Header -->
       <div class="text-center max-w-2xl mx-auto mb-16">
-        <span class="font-label text-xs uppercase tracking-[0.25em] text-secondary mb-2 block">Concierge & Soporte</span>
+        <span class="font-label text-xs uppercase tracking-[0.25em] text-secondary mb-2 block">Contacto & Atención</span>
         <h1 class="font-sans text-4xl sm:text-5xl text-primary font-normal tracking-tight mb-4">
           Estamos a tu Disposición
         </h1>
         <p class="font-sans text-secondary text-sm sm:text-base leading-relaxed">
-          Ya sea que busques asesoramiento para una ocasión especial, un regalo inolvidable o tengas consultas sobre tu orden, nuestro equipo sommelier te responderá con dedicación.
+          Escribinos si tenés dudas sobre alguna fragancia, querés asesoramiento para elegir un perfume o tenés consultas sobre tu envío.
         </p>
       </div>
 
@@ -96,13 +96,13 @@ const handleSubmitContact = handleSubmit(async (formValues) => {
         <!-- Contact Channels (5 cols) -->
         <div class="lg:col-span-5 space-y-6">
           <div class="bg-surface-container border border-outline-variant rounded-xs p-8 space-y-6 shadow-xs">
-            <h3 class="font-sans text-2xl text-primary font-normal">Canales de Atención VIP</h3>
+            <h3 class="font-sans text-2xl text-primary font-normal">Canales de Contacto</h3>
 
             <div class="space-y-4 font-sans text-sm text-secondary">
               <div class="flex items-start gap-3 p-3 bg-surface rounded-xs border border-outline-variant shadow-2xs">
                 <span class="material-symbols-outlined text-primary text-xl mt-0.5">chat</span>
                 <div>
-                  <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold">WhatsApp Concierge</h4>
+                  <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold">WhatsApp de Ventas & Consultas</h4>
                   <p class="mt-0.5">+54 9 3564 62-2055</p>
                   <p class="text-xs text-outline">Lunes a Sábados de 09:00 a 20:00 hs.</p>
                 </div>
@@ -112,17 +112,17 @@ const handleSubmitContact = handleSubmit(async (formValues) => {
                 <span class="material-symbols-outlined text-primary text-xl mt-0.5">mail</span>
                 <div>
                   <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold">Correo Electrónico</h4>
-                  <p class="mt-0.5">concierge@giccaperfumes.com</p>
-                  <p class="text-xs text-outline">Respuesta garantizada en menos de 4 horas.</p>
+                  <p class="mt-0.5">contacto@giccaperfumes.com</p>
+                  <p class="text-xs text-outline">Te respondemos en el día.</p>
                 </div>
               </div>
 
               <div class="flex items-start gap-3 p-3 bg-surface rounded-xs border border-outline-variant shadow-2xs">
                 <span class="material-symbols-outlined text-primary text-xl mt-0.5">location_on</span>
                 <div>
-                  <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold">Showroom & Retiros</h4>
-                  <p class="mt-0.5">Recoleta, Ciudad Autónoma de Buenos Aires</p>
-                  <p class="text-xs text-outline">Visitas exclusivas con cita previa.</p>
+                  <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold">Punto de Retiro</h4>
+                  <p class="mt-0.5">Buenos Aires, Argentina</p>
+                  <p class="text-xs text-outline">Coordinar previamente por WhatsApp.</p>
                 </div>
               </div>
             </div>
@@ -133,7 +133,7 @@ const handleSubmitContact = handleSubmit(async (formValues) => {
               target="_blank"
               class="w-full bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-3.5 px-6 rounded-full border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-2 text-center block shadow-xs"
             >
-              <span>Abrir WhatsApp con Asesor</span>
+              <span>Escribir por WhatsApp</span>
               <span class="material-symbols-outlined text-sm">open_in_new</span>
             </a>
           </div>
@@ -234,7 +234,7 @@ const handleSubmitContact = handleSubmit(async (formValues) => {
               class="w-full bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-4 rounded-full border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-50"
             >
               <span v-if="isSending">Enviando mensaje...</span>
-              <span v-else>Enviar Consulta al Concierge</span>
+              <span v-else>Enviar Mensaje</span>
               <span v-if="!isSending" class="material-symbols-outlined text-sm">send</span>
             </button>
           </form>

@@ -8,54 +8,54 @@ export default {
     extend: {
       colors: {
         surface: {
-          DEFAULT: '#fff8f3',
-          dim: '#e3d8cb',
-          container: '#f7ecdf',
-          'container-low': '#fdf2e4',
-          'container-high': '#f1e7d9',
-          'container-highest': '#ece1d4',
+          DEFAULT: '#fffdfa',
+          dim: '#f3ece3',
+          container: '#fcf7f1',
+          'container-low': '#fefbf7',
+          'container-high': '#f7eee3',
+          'container-highest': '#f2e5d6',
           lowest: '#ffffff',
-          variant: '#ece1d4'
+          variant: '#f2e5d6'
         },
         primary: {
-          DEFAULT: '#26110b',
-          container: '#3d251e',
-          fixed: '#ffdbd1',
-          'fixed-dim': '#e5beb3'
+          DEFAULT: '#2e1911',
+          container: '#784233',
+          fixed: '#fde8e1',
+          'fixed-dim': '#f5cfc4'
         },
         'on-primary': {
           DEFAULT: '#ffffff',
-          container: '#ae8a81',
-          fixed: '#2b1610',
-          'fixed-variant': '#5c4038'
+          container: '#ffffff',
+          fixed: '#2e1911',
+          'fixed-variant': '#5c382e'
         },
         secondary: {
-          DEFAULT: '#5f5e59',
-          container: '#e5e2db',
-          fixed: '#e5e2db',
-          'fixed-dim': '#c9c6c0'
+          DEFAULT: '#6d6964',
+          container: '#f2eae1',
+          fixed: '#f2eae1',
+          'fixed-dim': '#ded5cb'
         },
         'on-secondary': {
           DEFAULT: '#ffffff',
-          container: '#65645f',
-          fixed: '#1c1c18',
-          'fixed-variant': '#474742'
+          container: '#706c67',
+          fixed: '#24211d',
+          'fixed-variant': '#54504b'
         },
         tertiary: {
-          DEFAULT: '#041a17',
-          container: '#192f2b',
-          fixed: '#cfe8e1',
-          'fixed-dim': '#b3ccc6'
+          DEFAULT: '#0b2622',
+          container: '#1f3d37',
+          fixed: '#dcf0eb',
+          'fixed-dim': '#c2ddd7'
         },
         'on-tertiary': {
           DEFAULT: '#ffffff',
-          container: '#7f9792',
-          fixed: '#081f1c',
-          'fixed-variant': '#354b47'
+          container: '#8fa8a3',
+          fixed: '#0e2925',
+          'fixed-variant': '#3f5753'
         },
         outline: {
-          DEFAULT: '#827470',
-          variant: '#d4c3bf'
+          DEFAULT: '#9c8e89',
+          variant: '#e8ded8'
         },
         error: {
           DEFAULT: '#ba1a1a',
@@ -66,12 +66,12 @@ export default {
           container: '#93000a'
         },
         'on-surface': {
-          DEFAULT: '#201b13',
-          variant: '#504441'
+          DEFAULT: '#241f18',
+          variant: '#5c4e4a'
         },
-        'inverse-surface': '#353027',
-        'inverse-on-surface': '#faefe1',
-        'inverse-primary': '#e5beb3'
+        'inverse-surface': '#5a3126',
+        'inverse-on-surface': '#fdf6ee',
+        'inverse-primary': '#f5cfc4'
       },
       fontFamily: {
         sans: ['"Open Sans"', 'sans-serif'],

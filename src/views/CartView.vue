@@ -70,13 +70,13 @@ const proceedToCheckout = () => {
         <span class="material-symbols-outlined text-6xl text-outline mb-4">shopping_bag</span>
         <h2 class="font-sans text-3xl text-primary font-normal mb-2">Tu bolsa está actualmente vacía</h2>
         <p class="font-sans text-secondary max-w-md mx-auto mb-8 leading-relaxed">
-          Explorá nuestras colecciones de fragancias de autor, clásicos del lujo y descubrí tu próxima firma olfativa.
+          Explorá nuestro catálogo de perfumes importados y fragancias árabes al mejor precio.
         </p>
         <RouterLink 
           to="/catalogo"
           class="inline-flex items-center gap-2 bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-9 py-4 rounded-full hover:bg-surface hover:text-primary-container border border-primary-container transition-all shadow-xs"
         >
-          <span>Explorar Colección de Perfumes</span>
+          <span>Ver Catálogo de Perfumes</span>
           <span class="material-symbols-outlined text-sm">arrow_forward</span>
         </RouterLink>
       </div>
@@ -278,7 +278,7 @@ const proceedToCheckout = () => {
                 target="_blank"
                 class="w-full bg-surface text-primary font-label text-xs uppercase tracking-widest py-3.5 rounded-full border border-outline hover:bg-surface-container transition-all flex items-center justify-center gap-2 text-center shadow-2xs"
               >
-                <span>Finalizar por WhatsApp con Sommelier</span>
+                <span>Finalizar pedido por WhatsApp</span>
               </a>
             </div>
 

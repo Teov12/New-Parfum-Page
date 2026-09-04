@@ -304,7 +304,7 @@ const handleFinalOrder = async () => {
             Gracias por tu pedido, {{ orderResult.customer.firstName }}
           </h1>
           <p class="font-sans text-secondary text-sm max-w-md mx-auto leading-relaxed">
-            Hemos preparado tu orden <strong>#{{ orderResult.orderNumber }}</strong> y abierto WhatsApp para coordinar el pago y despacho inmediato con un asesor sommelier.
+            Hemos preparado tu orden <strong>#{{ orderResult.orderNumber }}</strong> y abierto WhatsApp para coordinar el pago y despacho inmediato de tu pedido.
           </p>
         </div>
 
@@ -633,7 +633,7 @@ const handleFinalOrder = async () => {
                 <span>Atención Personalizada 1 a 1</span>
               </div>
               <p class="text-xs leading-relaxed text-emerald-800">
-                Al hacer click en el botón, se abrirá WhatsApp con el <strong>mensaje listo</strong> con todos tus productos y datos de envío para que un sommelier de Gicca confirme tu orden y te provea el link de pago o datos bancarios.
+                Al hacer click en el botón, se abrirá WhatsApp con el <strong>mensaje listo</strong> con todos tus productos y datos de envío para confirmar tu orden y brindarte el link de pago o datos para transferencia.
               </p>
             </div>
 

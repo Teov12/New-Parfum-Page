@@ -11,10 +11,10 @@ const productStore = useProductStore()
 const heroSlides = [
   {
     id: 1,
-    tag: 'Alta Perfumería de Autor',
+    tag: '100% Originales & Sellados',
     title: 'Encontrá tu nueva',
     highlight: 'fragancia favorita.',
-    description: 'Una curaduría exclusiva de elixires, esencias de autor y clásicos atemporales seleccionados para acompañar tus momentos más memorables.',
+    description: 'Perfumes importados de diseñador y las últimas tendencias árabes. Encontrá tu fragancia favorita con envíos seguros a todo el país.',
     image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=2000&q=85',
     primaryCtaText: 'Explorar Catálogo',
     primaryCtaLink: '/catalogo',
@@ -24,10 +24,10 @@ const heroSlides = [
   },
   {
     id: 2,
-    tag: 'Colección de Oriente Medio',
-    title: 'Lujo Árabe &',
+    tag: 'Tendencia Mundial',
+    title: 'Perfumes Árabes &',
     highlight: 'estelas infinitas.',
-    description: 'Composiciones opulentas de Dubai: acordes de oud real, canela tostada, praliné y azafrán con duración excepcional en piel.',
+    description: 'Las fragancias más virales de Dubai: notas especiadas, maderas y vainillas con fijación y duración increíble en piel.',
     image: 'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=2000&q=85',
     primaryCtaText: 'Ver Perfumería Árabe',
     primaryCtaLink: '/catalogo?category=arabes',
@@ -36,10 +36,10 @@ const heroSlides = [
   },
   {
     id: 3,
-    tag: 'Sommelier Olfativo Virtual',
-    title: 'Descubrí tu firma',
-    highlight: 'sensorial única.',
-    description: 'Respondé 4 preguntas clave sobre tus gustos y estilo para que nuestro algoritmo sommelier te recomiende la esencia perfecta.',
+    tag: 'Test Rápido de Perfumes',
+    title: 'Descubrí tu aroma',
+    highlight: 'para todos los días.',
+    description: 'Respondé 4 preguntas simples sobre tus gustos y te recomendamos las mejores fragancias según tu estilo y ocasión.',
     image: 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=2000&q=85',
     primaryCtaText: 'Hacer el Quiz Olfativo',
     primaryCtaLink: '/quiz',
@@ -105,10 +105,10 @@ const scrollCarousel = (direction) => {
 }
 
 const trustBadges = [
-  { icon: 'verified_user', title: '100% Originales', desc: 'Garantía de procedencia directa de casas oficiales.' },
+  { icon: 'verified_user', title: '100% Originales', desc: 'Garantía de autenticidad en caja cerrada y sellada.' },
   { icon: 'local_shipping', title: 'Envíos Asegurados', desc: 'Entregas a todo el país con seguimiento en tiempo real.' },
   { icon: 'credit_card', title: 'Cuotas Sin Interés', desc: '3 y 6 cuotas con todas las tarjetas bancarias.' },
-  { icon: 'support_agent', title: 'Asesoría Sommelier', desc: 'Orientación personalizada para elegir tu fragancia.' }
+  { icon: 'support_agent', title: 'Atención por WhatsApp', desc: 'Te asesoramos para que elijas tu perfume ideal.' }
 ]
 </script>
 
@@ -231,7 +231,7 @@ const trustBadges = [
         <div 
           v-for="badge in trustBadges" 
           :key="badge.title"
-          class="flex items-start gap-4 p-4 rounded-md bg-surface-container/60 hover:bg-surface-container border border-outline-variant/60 hover:border-outline-variant hover:shadow-[0_4px_16px_rgba(38,17,11,0.04)] transition-all duration-300"
+          class="flex items-start gap-4 p-4 rounded-md bg-surface-container/60 hover:bg-surface-container border border-outline-variant/60 hover:border-outline-variant hover:shadow-xs transition-all duration-300"
         >
           <div class="w-11 h-11 bg-surface rounded-md flex items-center justify-center flex-shrink-0 text-primary shadow-xs border border-outline-variant/60">
             <span class="material-symbols-outlined text-xl">{{ badge.icon }}</span>
@@ -248,7 +248,7 @@ const trustBadges = [
     <section v-if="featuredProducts.length > 0" class="py-16 md:py-20 max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-8">
         <div>
-          <p class="font-label text-xs font-semibold text-secondary uppercase tracking-widest mb-1.5">Curaduría Exclusiva</p>
+          <p class="font-label text-xs font-semibold text-secondary uppercase tracking-widest mb-1.5">Los Más Vendidos</p>
           <h2 class="font-serif text-3xl md:text-4xl font-normal text-primary">Fragancias Destacadas</h2>
         </div>
 
@@ -280,14 +280,16 @@ const trustBadges = [
       <!-- Horizontal Scrollable Cards List -->
       <div 
         ref="carouselRef"
-        class="flex gap-6 overflow-x-auto pb-4 scrollbar-none snap-x snap-mandatory scroll-smooth"
+        class="flex gap-6 overflow-x-auto pt-4 pb-8 px-4 -mx-4 no-scrollbar scrollbar-none snap-x snap-mandatory scroll-smooth"
       >
         <div 
           v-for="prod in featuredProducts" 
           :key="prod.id"
-          class="w-72 sm:w-80 flex-shrink-0 snap-start"
+          class="w-72 sm:w-80 flex-shrink-0 snap-start h-auto flex flex-col relative group/wrap isolate"
         >
           <ProductCard :product="prod" />
+          <!-- Sombra difusa redonda/ovalada centrada debajo de la card -->
+          <div class="absolute -bottom-2 inset-x-8 h-10 bg-primary/20 rounded-full blur-xl opacity-25 group-hover/wrap:opacity-80 group-hover/wrap:scale-105 group-hover/wrap:h-12 group-hover/wrap:-bottom-3 transition-all duration-300 pointer-events-none -z-10"></div>
         </div>
       </div>
     </section>
@@ -295,8 +297,8 @@ const trustBadges = [
     <!-- BENTO GRID CATEGORIES -->
     <section class="py-16 md:py-24 max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop border-t border-outline-variant">
       <div class="text-center max-w-xl mx-auto mb-14">
-        <p class="font-label text-xs font-semibold text-secondary uppercase tracking-widest mb-2">Explorá por Universo</p>
-        <h2 class="font-serif text-3xl md:text-4xl font-normal text-primary">Colecciones Curadas</h2>
+        <p class="font-label text-xs font-semibold text-secondary uppercase tracking-widest mb-2">Explorá por Categoría</p>
+        <h2 class="font-serif text-3xl md:text-4xl font-normal text-primary">Categorías Principales</h2>
         <div class="w-12 h-0.5 bg-primary rounded-full mx-auto mt-3"></div>
       </div>
 
@@ -305,23 +307,23 @@ const trustBadges = [
         <!-- Category 1: Mujer (Span 6 cols) -->
         <RouterLink 
           to="/catalogo?gender=woman"
-          class="group relative md:col-span-6 aspect-[4/3] md:aspect-[16/11] overflow-hidden bg-primary rounded-md border border-outline-variant hover:border-primary transition-all duration-500 flex flex-col justify-end p-8 shadow-[0_4px_16px_rgba(38,17,11,0.06)] hover:shadow-[0_16px_35px_rgba(38,17,11,0.14)] hover:-translate-y-1"
+          class="group relative md:col-span-6 aspect-[4/3] md:aspect-[16/11] overflow-hidden bg-primary rounded-md border border-outline-variant hover:border-primary transition-all duration-500 flex flex-col justify-end p-8 shadow-md hover:shadow-xl hover:-translate-y-1"
         >
           <img 
             src="https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1200&q=85" 
             alt="Colección Mujer"
-            class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-108 opacity-85"
+            class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 opacity-85"
           />
           <div class="absolute inset-0 bg-gradient-to-t from-primary via-primary/40 to-transparent"></div>
           
           <div class="relative z-10 text-white">
-            <span class="font-label text-[11px] font-semibold uppercase tracking-widest text-white/70 mb-1.5 block">Alta Costura Femenina</span>
-            <h3 class="font-serif text-2xl sm:text-3xl font-normal mb-2 text-white">Colección Mujer</h3>
+            <span class="font-label text-[11px] font-semibold uppercase tracking-widest text-white/70 mb-1.5 block">Para Ella</span>
+            <h3 class="font-serif text-2xl sm:text-3xl font-normal mb-2 text-white">Perfumes de Mujer</h3>
             <p class="font-sans text-xs sm:text-sm text-white/80 max-w-sm mb-4 leading-relaxed">
-              Bouquets florales radiantes, notas envolventes de vainilla y composiciones de elegancia absoluta.
+              Fragancias florales, dulces y frescas de primeras marcas para todos los días o salidas de noche.
             </p>
             <span class="font-label text-xs font-bold uppercase tracking-wider text-white inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 group-hover:bg-white group-hover:text-primary transition-all">
-              <span>Explorar Fragancias</span>
+              <span>Ver Perfumes de Mujer</span>
               <span class="material-symbols-outlined text-sm">arrow_forward</span>
             </span>
           </div>
@@ -330,23 +332,23 @@ const trustBadges = [
         <!-- Category 2: Hombre (Span 6 cols) -->
         <RouterLink 
           to="/catalogo?gender=man"
-          class="group relative md:col-span-6 aspect-[4/3] md:aspect-[16/11] overflow-hidden bg-primary rounded-md border border-outline-variant hover:border-primary transition-all duration-500 flex flex-col justify-end p-8 shadow-[0_4px_16px_rgba(38,17,11,0.06)] hover:shadow-[0_16px_35px_rgba(38,17,11,0.14)] hover:-translate-y-1"
+          class="group relative md:col-span-6 aspect-[4/3] md:aspect-[16/11] overflow-hidden bg-primary rounded-md border border-outline-variant hover:border-primary transition-all duration-500 flex flex-col justify-end p-8 shadow-md hover:shadow-xl hover:-translate-y-1"
         >
           <img 
             src="https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85" 
             alt="Colección Hombre"
-            class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-108 opacity-85"
+            class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 opacity-85"
           />
           <div class="absolute inset-0 bg-gradient-to-t from-primary via-primary/40 to-transparent"></div>
           
           <div class="relative z-10 text-white">
-            <span class="font-label text-[11px] font-semibold uppercase tracking-widest text-white/70 mb-1.5 block">Carácter & Distinción</span>
-            <h3 class="font-serif text-2xl sm:text-3xl font-normal mb-2 text-white">Colección Hombre</h3>
+            <span class="font-label text-[11px] font-semibold uppercase tracking-widest text-white/70 mb-1.5 block">Para Él</span>
+            <h3 class="font-serif text-2xl sm:text-3xl font-normal mb-2 text-white">Perfumes de Hombre</h3>
             <p class="font-sans text-xs sm:text-sm text-white/80 max-w-sm mb-4 leading-relaxed">
-              Maderas profundas de cedro y sándalo, cítricos italianos y resinas ambarinas de presencia imponente.
+              Maderas, cítricos y aromas con presencia y alta duración para el trabajo o el fin de semana.
             </p>
             <span class="font-label text-xs font-bold uppercase tracking-wider text-white inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 group-hover:bg-white group-hover:text-primary transition-all">
-              <span>Explorar Fragancias</span>
+              <span>Ver Perfumes de Hombre</span>
               <span class="material-symbols-outlined text-sm">arrow_forward</span>
             </span>
           </div>
@@ -355,22 +357,22 @@ const trustBadges = [
         <!-- Category 3: Unisex (Span 6 cols) -->
         <RouterLink 
           to="/catalogo?gender=unisex"
-          class="group relative md:col-span-6 bg-surface rounded-md border border-outline-variant hover:border-primary p-8 md:p-10 flex flex-col justify-between hover:shadow-[0_16px_35px_rgba(38,17,11,0.12)] hover:-translate-y-1 transition-all duration-300 shadow-[0_4px_16px_rgba(38,17,11,0.05)]"
+          class="group relative md:col-span-6 bg-surface rounded-md border border-outline-variant hover:border-primary p-8 md:p-10 flex flex-col justify-between hover:shadow-lg hover:-translate-y-1 transition-all duration-300 shadow-2xs"
         >
           <div class="flex justify-between items-start">
             <div>
               <div class="w-12 h-12 rounded-md bg-surface-container flex items-center justify-center text-primary mb-4 shadow-xs border border-outline-variant/60">
                 <span class="material-symbols-outlined text-2xl">all_inclusive</span>
               </div>
-              <span class="font-label text-[11px] font-semibold uppercase tracking-widest text-secondary block">Sin Género • Pura Expresión</span>
-              <h3 class="font-serif text-2xl md:text-3xl font-normal text-primary mb-2">Colección Unisex</h3>
+              <span class="font-label text-[11px] font-semibold uppercase tracking-widest text-secondary block">Para Todos • Versátiles</span>
+              <h3 class="font-serif text-2xl md:text-3xl font-normal text-primary mb-2">Perfumes Unisex</h3>
             </div>
             <span class="font-label text-xs font-bold bg-surface-container px-3.5 py-1.5 rounded-full text-primary uppercase border border-outline-variant/60">
-              Variedad
+              Versátiles
             </span>
           </div>
           <p class="font-sans text-sm text-secondary max-w-md my-4 leading-relaxed">
-            Aromas versátiles y vanguardistas donde las maderas, cítricos y resinas componen esencias envolventes para todos.
+            Aromas modernos y equilibrados que combinan notas frescas y amaderadas ideales para compartir.
           </p>
           <span class="font-label text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5 group-hover:translate-x-1.5 transition-transform">
             <span>Ver Selección Unisex</span>
@@ -381,25 +383,25 @@ const trustBadges = [
         <!-- Category 4: Perfumería Árabe (Span 6 cols) -->
         <RouterLink 
           to="/catalogo?category=arabes"
-          class="group relative md:col-span-6 bg-surface rounded-md border border-outline-variant hover:border-primary p-8 md:p-10 flex flex-col justify-between hover:shadow-[0_16px_35px_rgba(38,17,11,0.12)] hover:-translate-y-1 transition-all duration-300 shadow-[0_4px_16px_rgba(38,17,11,0.05)]"
+          class="group relative md:col-span-6 bg-surface rounded-md border border-outline-variant hover:border-primary p-8 md:p-10 flex flex-col justify-between hover:shadow-lg hover:-translate-y-1 transition-all duration-300 shadow-2xs"
         >
           <div class="flex justify-between items-start">
             <div>
               <div class="w-12 h-12 rounded-md bg-surface-container text-primary flex items-center justify-center mb-4 shadow-xs border border-outline-variant/60">
                 <span class="material-symbols-outlined text-2xl">diamond</span>
               </div>
-              <span class="font-label text-[11px] font-semibold uppercase tracking-widest text-secondary block">Lujo de Oriente Medio</span>
+              <span class="font-label text-[11px] font-semibold uppercase tracking-widest text-secondary block">Tendencia Viral</span>
               <h3 class="font-serif text-2xl md:text-3xl font-normal text-primary mb-2">Perfumería Árabe</h3>
             </div>
             <span class="font-label text-xs font-bold bg-primary-container text-on-primary px-3.5 py-1.5 rounded-full uppercase shadow-xs">
-              Exclusivos
+              Más Pedidos
             </span>
           </div>
           <p class="font-sans text-sm text-secondary max-w-md my-4 leading-relaxed">
-            Creaciones opulentas de Dubai, maderas de agar, azafrán, praliné y estelas magnéticas de altísima duración.
+            Las fragancias orientales de Dubái con estela infinita y frascos de diseño.
           </p>
           <span class="font-label text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5 group-hover:translate-x-1.5 transition-transform">
-            <span>Explorar Colección Árabe</span>
+            <span>Explorar Perfumes Árabes</span>
             <span class="material-symbols-outlined text-sm">arrow_forward</span>
           </span>
         </RouterLink>
@@ -411,10 +413,10 @@ const trustBadges = [
     <section class="py-16 md:py-24 bg-surface-container-low border-t border-outline-variant">
       <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
         <div class="text-center max-w-xl mx-auto mb-14">
-          <p class="font-label text-label-sm text-secondary uppercase tracking-widest mb-2">Guía Olfativa</p>
-          <h2 class="font-serif text-3xl md:text-headline-lg text-primary font-normal">Familias Aromáticas</h2>
+          <p class="font-label text-label-sm text-secondary uppercase tracking-widest mb-2">Guía de Aromas</p>
+          <h2 class="font-serif text-3xl md:text-headline-lg text-primary font-normal">Familias Olfativas</h2>
           <p class="font-sans text-sm text-secondary mt-2">
-            Comprender las notas es el primer paso para descubrir la firma olfativa que resuena con tu esencia.
+            Conocé las notas principales para encontrar el perfume que mejor va con lo que buscás.
           </p>
         </div>
 
@@ -423,7 +425,7 @@ const trustBadges = [
             v-for="family in olfactiveFamilies" 
             :key="family.name"
             :to="`/catalogo?family=${family.name}`"
-            class="group bg-surface border border-outline-variant hover:border-primary rounded-md p-6 transition-all duration-300 flex flex-col justify-between shadow-[0_4px_16px_rgba(38,17,11,0.04)] hover:shadow-[0_12px_28px_rgba(38,17,11,0.10)] hover:-translate-y-1"
+            class="group bg-surface border border-outline-variant hover:border-primary rounded-md p-6 transition-all duration-300 flex flex-col justify-between shadow-2xs hover:shadow-md hover:-translate-y-1"
           >
             <div>
               <div class="aspect-square bg-surface-container rounded-md mb-4 overflow-hidden border border-outline-variant">
@@ -456,18 +458,18 @@ const trustBadges = [
     <section class="py-16 md:py-20 max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
       <div class="bg-primary-container text-on-primary rounded-md p-10 md:p-16 text-center shadow-xl border border-primary">
         <span class="material-symbols-outlined text-4xl text-on-primary-container mb-3">auto_awesome</span>
-        <p class="font-label text-xs uppercase tracking-[0.25em] text-on-primary-container mb-2">¿Indeciso sobre qué fragancia elegir?</p>
+        <p class="font-label text-xs uppercase tracking-[0.25em] text-on-primary-container mb-2">¿No sabés cuál elegir?</p>
         <h2 class="font-serif text-3xl sm:text-4xl md:text-5xl font-normal max-w-2xl mx-auto mb-6 leading-tight">
-          Hacé nuestro Quiz Olfativo en 60 segundos
+          Hacé nuestro test rápido en 60 segundos
         </h2>
         <p class="font-sans text-sm sm:text-base text-surface/85 max-w-xl mx-auto mb-8 leading-relaxed">
-          Respondé 4 breves preguntas sobre tus notas predilectas, ocasiones de uso y personalidad para recibir una recomendación personalizada con 100% de afinidad.
+          Respondé 4 preguntas simples sobre tus gustos, ocasiones de uso y presupuesto para ver las opciones que mejor van con vos.
         </p>
         <RouterLink 
           to="/quiz"
           class="inline-flex items-center gap-2 bg-surface text-primary font-label text-xs uppercase tracking-widest px-9 py-4 rounded-full hover:bg-surface-container transition-all shadow-md"
         >
-          <span>Comenzar el Test Ahora</span>
+          <span>Hacer el Test Ahora</span>
           <span class="material-symbols-outlined text-sm">arrow_forward</span>
         </RouterLink>
       </div>

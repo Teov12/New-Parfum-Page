@@ -115,8 +115,8 @@ export const useCartStore = defineStore('cart', {
         this.coupon = { code: clean, type: 'percentage', value: 10, label: '10% OFF en tu orden' }
         this.persist()
         return { success: true, message: 'Cupón del 10% OFF aplicado con éxito' }
-      } else if (clean === 'LUJO15') {
-        this.coupon = { code: clean, type: 'percentage', value: 15, label: '15% OFF Exclusivo' }
+      } else if (clean === 'PROMO15' || clean === 'LUJO15') {
+        this.coupon = { code: clean, type: 'percentage', value: 15, label: '15% OFF Especial' }
         this.persist()
         return { success: true, message: 'Cupón del 15% OFF aplicado con éxito' }
       } else if (clean === 'BIENVENIDO') {

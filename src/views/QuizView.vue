@@ -32,39 +32,39 @@ const questions = [
       { label: 'Para Mujer', value: 'woman', icon: 'female' },
       { label: 'Para Hombre', value: 'man', icon: 'male' },
       { label: 'Unisex / Sin Género', value: 'unisex', icon: 'all_inclusive' },
-      { label: 'Para un Regalo Especial', value: 'unisex', icon: 'card_giftcard' }
+      { label: 'Para un Regalo', value: 'unisex', icon: 'card_giftcard' }
     ]
   },
   {
     key: 'family',
-    title: '¿Qué familias de aromas te cautivan más?',
-    subtitle: 'Identificá las notas sensoriales que mejor te representan.',
+    title: '¿Qué tipo de aromas te gustan más?',
+    subtitle: 'Elegí el estilo de aroma con el que más te identificás.',
     options: [
-      { label: 'Florales Luminosas (Jazmín, Azahar, Rosa)', value: 'Floral', icon: 'spa' },
-      { label: 'Maderas Nobles (Cedro, Sándalo, Vetiver)', value: 'Amaderada', icon: 'forest' },
-      { label: 'Orientales & Especiadas (Vainilla, Ámbar, Azafrán)', value: 'Oriental', icon: 'local_fire_department' },
-      { label: 'Cítricas Frescas (Bergamota, Mandarina)', value: 'Cítrica', icon: 'wb_sunny' }
+      { label: 'Florales & Dulces (Jazmín, Azahar, Rosa)', value: 'Floral', icon: 'spa' },
+      { label: 'Maderas (Cedro, Sándalo, Vetiver)', value: 'Amaderada', icon: 'forest' },
+      { label: 'Orientales & Cálidos (Vainilla, Ámbar, Canela)', value: 'Oriental', icon: 'local_fire_department' },
+      { label: 'Cítricos & Frescos (Bergamota, Mandarina)', value: 'Cítrica', icon: 'wb_sunny' }
     ]
   },
   {
     key: 'intensity',
-    title: '¿Qué nivel de presencia y proyección preferís?',
-    subtitle: 'La huella que querés dejar al entrar a un espacio.',
+    title: '¿Qué intensidad preferís?',
+    subtitle: '¿Buscás algo sutil para trabajar o que se note bastante?',
     options: [
-      { label: 'Sutil & Íntima (A ras de piel)', value: 'Discreta', icon: 'bubble_chart' },
-      { label: 'Moderada & Elegante (Perfecta para todo el día)', value: 'Moderada', icon: 'auto_awesome' },
-      { label: 'Intensa & Envolvente (Alta estela de autor)', value: 'Enorme', icon: 'offline_bolt' }
+      { label: 'Suave & Discreta (A ras de piel)', value: 'Discreta', icon: 'bubble_chart' },
+      { label: 'Moderada (Perfecta para todo el día)', value: 'Moderada', icon: 'auto_awesome' },
+      { label: 'Intensa & Marcada (Para que se sienta todo el día)', value: 'Enorme', icon: 'offline_bolt' }
     ]
   },
   {
     key: 'occasion',
-    title: '¿En qué momentos vas a vestir este aroma?',
-    subtitle: 'El escenario ideal de tu experiencia olfativa.',
+    title: '¿En qué momento lo vas a usar más?',
+    subtitle: 'Así te recomendamos una opción que se adapte a tu rutina.',
     options: [
-      { label: 'Uso Diario & Oficina', value: 'Diario', icon: 'work' },
-      { label: 'Citas & Veladas Nocturnas', value: 'Noche', icon: 'nightlife' },
-      { label: 'Gala & Eventos Especiales', value: 'Eventos', icon: 'diamond' },
-      { label: 'Aroma Firma Versátil', value: 'Versatil', icon: 'star' }
+      { label: 'Uso Diario & Trabajo', value: 'Diario', icon: 'work' },
+      { label: 'Citas & Salidas de Noche', value: 'Noche', icon: 'nightlife' },
+      { label: 'Fiestas & Eventos', value: 'Eventos', icon: 'diamond' },
+      { label: 'Versátil (Para todo momento)', value: 'Versatil', icon: 'star' }
     ]
   }
 ]
@@ -169,7 +169,7 @@ const handleAddRecommended = () => {
       >
         <div class="inline-flex items-center gap-1.5 bg-surface-container px-4 py-1.5 rounded-full border border-outline-variant text-tertiary font-label text-xs uppercase tracking-widest font-bold">
           <span class="material-symbols-outlined text-sm">auto_awesome</span>
-          <span>99% de Afinidad Olfativa</span>
+          <span>Recomendación Especial para Vos</span>
         </div>
 
         <div>

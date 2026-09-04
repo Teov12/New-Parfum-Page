@@ -13,7 +13,7 @@ const handleSubscribe = () => {
     return
   }
   isSubscribed.value = true
-  toastStore.show('¡Gracias por unirte al Club Gicca! Te mantendremos al tanto de las novedades exclusivas.', 'success')
+  toastStore.show('¡Gracias por suscribirte! Te avisaremos de nuevas ofertas y promociones.', 'success')
   emailInput.value = ''
 }
 </script>
@@ -30,12 +30,12 @@ const handleSubscribe = () => {
             Gicca Perfumes
           </h3>
           <p class="font-sans text-sm text-secondary leading-relaxed mb-6 max-w-sm">
-            Elevando la experiencia sensorial a través de una curaduría inquebrantable de fragancias excepcionales y fórmulas de autor importadas de los principales orígenes del mundo.
+            Tu tienda de confianza en perfumes 100% originales. Las mejores marcas importadas de diseñador y perfumería árabe con envíos seguros a todo el país.
           </p>
           <div class="space-y-1.5 text-xs font-label uppercase tracking-widest text-secondary">
             <p>Buenos Aires, Argentina</p>
-            <p>concierge@giccaperfumes.com</p>
-            <p>Asesoría VIP WhatsApp: +54 9 3564 62-2055</p>
+            <p>contacto@giccaperfumes.com</p>
+            <p>Atención por WhatsApp: +54 9 3564 62-2055</p>
           </div>
         </div>
 
@@ -95,12 +95,12 @@ const handleSubscribe = () => {
       <!-- Customer Service (2 cols) -->
       <div class="lg:col-span-2">
         <h4 class="font-label text-label-sm text-primary uppercase tracking-widest mb-6 font-bold border-b border-outline-variant pb-2 inline-block">
-          Atención VIP
+          Ayuda & Contacto
         </h4>
         <ul class="space-y-3 font-sans text-sm text-secondary">
           <li>
             <RouterLink to="/contacto" class="hover:text-primary transition-colors">
-              Asesoría & Contacto
+              Contacto
             </RouterLink>
           </li>
           <li>
@@ -129,10 +129,10 @@ const handleSubscribe = () => {
       <!-- Newsletter Column (4 cols) -->
       <div class="lg:col-span-4">
         <h4 class="font-label text-label-sm text-primary uppercase tracking-widest mb-6 font-bold border-b border-outline-variant pb-2 inline-block">
-          El Círculo Olfativo
+          Novedades & Ofertas
         </h4>
         <p class="font-sans text-sm text-secondary mb-4 leading-relaxed">
-          Unite a nuestra comunidad exclusiva. Recibí invitaciones a lanzamientos privados, notas de cata y novedades selectas.
+          Dejanos tu email para enterarte de nuevos ingresos, promociones y ofertas especiales antes que nadie.
         </p>
 
         <form @submit.prevent="handleSubscribe" class="space-y-3">

@@ -91,7 +91,7 @@ const goToCartPage = () => {
           <span class="material-symbols-outlined text-5xl text-outline mb-4">shopping_bag</span>
           <h3 class="font-sans text-xl text-primary mb-2">Tu bolsa está vacía</h3>
           <p class="font-sans text-sm text-secondary max-w-xs mb-8">
-            Descubrí nuestra exclusiva selección de fragancias de lujo y perfumería de autor.
+            Explorá nuestro catálogo y encontrá tus perfumes favoritos al mejor precio.
           </p>
           <button 
             @click="goToCartPage; cartStore.closeDrawer(); router.push('/catalogo')"

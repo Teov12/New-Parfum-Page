@@ -10,8 +10,8 @@
   }
 
   body {
-    background-color: #fff8f3;
-    color: #201b13;
+    background-color: #fffdfa;
+    color: #241f18;
     font-family: 'Open Sans', sans-serif;
   }
 
@@ -49,23 +49,25 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #f7ecdf;
+  background: #fcf7f1;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d4c3bf;
+  background: #e8ded8;
   border-radius: 0px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #827470;
+  background: #9c8e89;
 }
 
 /* Utility to hide scrollbars */
-.no-scrollbar::-webkit-scrollbar {
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
   display: none;
 }
-.no-scrollbar {
+.no-scrollbar,
+.scrollbar-none {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
