@@ -187,14 +187,21 @@ const goToCartPage = () => {
         </div>
 
         <!-- Total -->
-        <div class="flex justify-between items-baseline pt-1">
-          <span class="font-sans text-lg text-primary">Total Estimado</span>
-          <div class="text-right">
-            <span class="font-sans text-2xl font-bold text-primary">
-              ${{ cartStore.total.toLocaleString('es-AR') }}
-            </span>
-            <p class="text-[11px] text-secondary">Hasta 3 cuotas sin interés de ${{ Math.round(cartStore.total / 3).toLocaleString('es-AR') }}</p>
+        <div class="space-y-1.5 pt-1">
+          <div class="flex justify-between items-baseline">
+            <div>
+              <span class="font-sans text-base text-primary font-medium">Total con Transferencia</span>
+              <p class="text-[10px] font-bold text-emerald-800 uppercase">20% OFF Transferencia</p>
+            </div>
+            <div class="text-right">
+              <span class="font-sans text-xl font-bold text-primary">
+                ${{ (Math.round(cartStore.subtotal * 0.8) + cartStore.shippingCost).toLocaleString('es-AR') }}
+              </span>
+            </div>
           </div>
+          <p class="text-[11px] text-secondary text-right">
+            O ${{ cartStore.total.toLocaleString('es-AR') }} en hasta <strong>3 cuotas sin interés</strong>
+          </p>
         </div>
 
         <!-- Action CTAs: Píldoras -->

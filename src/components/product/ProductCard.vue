@@ -143,13 +143,16 @@ const handleWishlist = () => {
       <!-- Price & Actions Row -->
       <div class="pt-3 border-t border-outline-variant/70 flex justify-between items-end">
         <div>
-          <div class="flex items-baseline gap-2">
+          <div class="flex items-baseline gap-1.5 flex-wrap">
             <span class="font-sans font-bold text-lg sm:text-xl text-primary">
-              ${{ selectedSize.price.toLocaleString('es-AR') }}
+              ${{ Math.round(selectedSize.price * 0.8).toLocaleString('es-AR') }}
+            </span>
+            <span class="text-[9px] font-bold text-emerald-800 bg-emerald-100/90 px-1.5 py-0.5 rounded-xs uppercase tracking-wide">
+              20% OFF Transferencia
             </span>
           </div>
-          <p class="text-[10px] text-primary-container font-label font-semibold uppercase tracking-wider mt-0.5">
-            3 cuotas de ${{ Math.round(selectedSize.price / 3).toLocaleString('es-AR') }}
+          <p class="text-[11px] text-secondary font-sans mt-0.5">
+            <span class="line-through text-secondary/70">${{ selectedSize.price.toLocaleString('es-AR') }}</span> en <strong>3 cuotas sin interés</strong> de ${{ Math.round(selectedSize.price / 3).toLocaleString('es-AR') }}
           </p>
         </div>
 

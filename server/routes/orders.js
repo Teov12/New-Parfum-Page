@@ -5,11 +5,12 @@ import {
   updateOrder,
   deleteOrder
 } from '../db.js'
+import { requireAuth } from '../middleware/auth.js'
 
 const router = express.Router()
 
-// GET /api/orders - List all orders with filters
-router.get('/', (req, res) => {
+// GET /api/orders - List all orders with filters (Admin only)
+router.get('/', requireAuth, (req, res) => {
   try {
     let orders = getOrders()
     const { paymentStatus, fulfillmentStatus, source, q } = req.query
@@ -44,8 +45,8 @@ router.get('/', (req, res) => {
   }
 })
 
-// GET /api/orders/stats - Comprehensive financial and sales stats (Tienda Nube style)
-router.get('/stats', (req, res) => {
+// GET /api/orders/stats - Comprehensive financial and sales stats (Admin only)
+router.get('/stats', requireAuth, (req, res) => {
   try {
     const orders = getOrders()
     const paidOrders = orders.filter(o => o.paymentStatus === 'paid')
@@ -78,8 +79,8 @@ router.get('/stats', (req, res) => {
   }
 })
 
-// GET /api/orders/:id - Get single order
-router.get('/:id', (req, res) => {
+// GET /api/orders/:id - Get single order (Admin only)
+router.get('/:id', requireAuth, (req, res) => {
   try {
     const orders = getOrders()
     const order = orders.find(o => o.id === req.params.id || o.orderNumber === req.params.id)
@@ -108,8 +109,8 @@ router.post('/', (req, res) => {
   }
 })
 
-// PUT /api/orders/:id - Update order status, tracking, fulfillment, etc.
-router.put('/:id', (req, res) => {
+// PUT /api/orders/:id - Update order status, tracking, fulfillment, etc. (Admin only)
+router.put('/:id', requireAuth, (req, res) => {
   try {
     const updated = updateOrder(req.params.id, req.body)
     if (!updated) {
@@ -122,8 +123,8 @@ router.put('/:id', (req, res) => {
   }
 })
 
-// DELETE /api/orders/:id - Delete order
-router.delete('/:id', (req, res) => {
+// DELETE /api/orders/:id - Delete order (Admin only)
+router.delete('/:id', requireAuth, (req, res) => {
   try {
     const deleted = deleteOrder(req.params.id)
     if (!deleted) {

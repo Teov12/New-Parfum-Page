@@ -37,8 +37,7 @@ const validationSchema = yup.object({
     .string()
     .trim()
     .required('El código postal es obligatorio')
-    .min(4, 'Ingresá un código postal válido (4 a 8 caracteres)'),
-  notes: yup.string().trim().nullable()
+    .min(4, 'Ingresá un código postal válido (4 a 8 caracteres)')
 })
 
 const { handleSubmit, errors, values, setFieldValue, validate } = useForm({
@@ -51,10 +50,9 @@ const { handleSubmit, errors, values, setFieldValue, validate } = useForm({
     dni: '',
     address: '',
     apartment: '',
-    city: shippingStore.destination?.zone?.split(' ')[0] || 'Buenos Aires',
-    province: shippingStore.destination?.province || 'CABA',
-    postalCode: shippingStore.postalCode || '1414',
-    notes: '',
+    province: '',
+    city: '',
+    postalCode: '',
     paymentMethod: 'transfer',
     shippingOptionId: shippingStore.selectedOptionId || 'andreani_domicilio'
   }
@@ -68,41 +66,87 @@ const { value: email, errorMessage: emailError } = useField('email')
 const { value: dni } = useField('dni')
 const { value: address, errorMessage: addressError } = useField('address')
 const { value: apartment } = useField('apartment')
-const { value: city, errorMessage: cityError } = useField('city')
 const { value: province, errorMessage: provinceError } = useField('province')
+const { value: city, errorMessage: cityError } = useField('city')
 const { value: postalCode, errorMessage: postalCodeError } = useField('postalCode')
-const { value: notes } = useField('notes')
 const { value: paymentMethod } = useField('paymentMethod')
 const { value: shippingOptionId } = useField('shippingOptionId')
 
+let quoteTimeout = null
+
 const fetchAndreaniQuotes = async () => {
-  if (!postalCode.value || postalCode.value.length < 4) return
+  const cleanCp = (postalCode.value || '').toString().trim().replace(/\D/g, '')
+  if (cleanCp.length < 4) return
+
   isFetchingAndreani.value = true
-  const res = await shippingStore.calculateShipping(postalCode.value, cartStore.subtotal)
+  const res = await shippingStore.calculateShipping(cleanCp, cartStore.subtotal)
   isFetchingAndreani.value = false
+
   if (res && res.options) {
     if (!res.options.some(o => o.id === shippingOptionId.value)) {
       shippingOptionId.value = res.options[0]?.id || 'andreani_domicilio'
     }
     shippingStore.selectOption(shippingOptionId.value)
   }
+
+  // Auto-completar provincia y ciudad si aún no las completó el usuario
+  if (res && res.destination) {
+    if (res.destination.province && !province.value) {
+      province.value = res.destination.province
+    }
+    if (cleanCp.startsWith('5000') || cleanCp.startsWith('50')) {
+      if (!city.value) {
+        city.value = 'Córdoba Capital'
+      }
+    } else if (res.destination.zone && !city.value) {
+      city.value = res.destination.zone.split('(')[0].trim()
+    }
+  }
+}
+
+// Recalcular automáticamente en tiempo real al escribir el código postal
+const onPostalCodeInput = () => {
+  clearTimeout(quoteTimeout)
+  const cleanCp = (postalCode.value || '').toString().trim().replace(/\D/g, '')
+  if (cleanCp.length >= 4) {
+    quoteTimeout = setTimeout(() => {
+      fetchAndreaniQuotes()
+    }, 350)
+  }
 }
 
 onMounted(() => {
-  fetchAndreaniQuotes()
+  // El código postal siempre inicia vacío al montar el checkout
+  postalCode.value = ''
+  if (postalCode.value && postalCode.value.length >= 4) {
+    fetchAndreaniQuotes()
+  }
 })
 
 const shippingCost = computed(() => {
-  return cartStore.shippingCost
+  if (cartStore.subtotal === 0) return 0
+  if (cartStore.subtotal >= cartStore.freeShippingThreshold) return 0
+  if (!postalCode.value || postalCode.value.toString().trim().length < 4) return 0
+  return shippingStore.selectedOption ? shippingStore.selectedOption.price : 0
+})
+
+const transferDiscount = computed(() => {
+  return paymentMethod.value === 'transfer' ? Math.round(cartStore.subtotal * 0.20) : 0
 })
 
 const finalTotal = computed(() => {
-  return cartStore.total
+  const sub = cartStore.subtotal
+  const couponDisc = cartStore.discountAmount || 0
+  const payDisc = transferDiscount.value
+  return Math.max(0, sub - couponDisc - payDisc) + shippingCost.value
 })
 
-const selectShippingOption = (optionId) => {
+const selectShippingOption = async (optionId) => {
   shippingOptionId.value = optionId
   shippingStore.selectOption(optionId)
+  if (optionId === 'andreani_sucursal' && shippingStore.branches.length === 0) {
+    await shippingStore.fetchBranches(postalCode.value)
+  }
 }
 
 const handleStep1Submit = handleSubmit(async (formValues) => {
@@ -117,16 +161,15 @@ const buildWhatsAppMessage = (orderNumber) => {
   const customerName = `${firstName.value} ${lastName.value}`.trim()
   const shippingOpt = shippingStore.selectedOption
   const shippingText = shippingOpt 
-    ? `${shippingOpt.name} (${shippingOpt.estimatedDays}) - ${shippingOpt.price === 0 ? 'GRATIS' : `$${shippingOpt.price.toLocaleString('es-AR')}`}`
-    : 'Andreani Estándar'
+    ? `${shippingOpt.name} (${shippingOpt.estimatedDays}) - ${shippingOpt.price === 0 ? 'GRATIS' : `$${shippingOpt.price.toLocaleString('es-AR')} (Aprox.)`}`
+    : 'Andreani Estándar (Aprox.)'
 
   let itemsText = cartStore.items.map((item, idx) => {
     return `   ${idx + 1}. *${item.name}* (${item.brand})\n      • Medida: ${item.size}\n      • Cantidad: ${item.quantity} un.\n      • Subtotal: $${(item.price * item.quantity).toLocaleString('es-AR')}`
   }).join('\n\n')
 
-  let paymentMethodLabel = 'Transferencia Bancaria'
-  if (paymentMethod.value === 'credit_card') paymentMethodLabel = 'Tarjeta de Crédito / Débito (hasta 6 cuotas)'
-  if (paymentMethod.value === 'mercado_pago') paymentMethodLabel = 'Mercado Pago'
+  let paymentMethodLabel = 'Transferencia Bancaria (20% OFF)'
+  if (paymentMethod.value === 'credit_card') paymentMethodLabel = 'Tarjeta de Crédito (3 y 6 Cuotas Sin Interés)'
 
   let msg = `✨ *NUEVO PEDIDO - GICCA PERFUMES* ✨\n`
   msg += `━━━━━━━━━━━━━━━━━━━━━\n`
@@ -140,26 +183,36 @@ const buildWhatsAppMessage = (orderNumber) => {
   if (dni.value) msg += `• *DNI / CUIT:* ${dni.value}\n`
   msg += `\n`
 
-  msg += `📍 *DIRECCIÓN DE ENTREGA:*\n`
-  msg += `• *Dirección:* ${address.value}${apartment.value ? `, ${apartment.value}` : ''}\n`
-  msg += `• *Localidad:* ${city.value}, ${province.value} (CP ${postalCode.value})\n`
-  msg += `• *Logística:* ${shippingText}\n\n`
+  msg += `📍 *LOGÍSTICA Y ENTREGA (ANDREANI):*\n`
+  if (shippingOpt?.type === 'sucursal' && shippingStore.selectedBranch) {
+    msg += `• *Modalidad:* Retiro en Sucursal / Punto Andreani\n`
+    msg += `• *Sucursal:* ${shippingStore.selectedBranch.name}\n`
+    msg += `• *Dirección Punto:* ${shippingStore.selectedBranch.address} (${shippingStore.selectedBranch.city}, ${shippingStore.selectedBranch.province})\n`
+    msg += `• *Horarios:* ${shippingStore.selectedBranch.schedule}\n`
+  } else {
+    msg += `• *Modalidad:* Entrega a Domicilio\n`
+    msg += `• *Dirección:* ${address.value}${apartment.value ? `, ${apartment.value}` : ''}\n`
+    msg += `• *Localidad:* ${city.value}, ${province.value} (CP ${postalCode.value})\n`
+  }
+  msg += `• *Servicio:* ${shippingText}\n\n`
 
   msg += `🛍️ *PRODUCTOS:*\n`
   msg += `${itemsText}\n\n`
 
   msg += `💰 *RESUMEN DE PAGO:*\n`
-  msg += `• *Subtotal:* $${cartStore.subtotal.toLocaleString('es-AR')}\n`
+  msg += `• *Subtotal Lista:* $${cartStore.subtotal.toLocaleString('es-AR')}\n`
   if (cartStore.discountAmount > 0) {
     msg += `• *Descuento Cupón:* -$${cartStore.discountAmount.toLocaleString('es-AR')}\n`
   }
-  msg += `• *Envío (Andreani):* ${shippingCost.value === 0 ? '¡GRATIS!' : `$${shippingCost.value.toLocaleString('es-AR')}`}\n`
-  msg += `• *TOTAL FINAL A ABONAR:* *$${finalTotal.value.toLocaleString('es-AR')}*\n`
-  msg += `• *Preferencia de Pago:* ${paymentMethodLabel}\n\n`
-
-  if (notes.value && notes.value.trim()) {
-    msg += `📝 *NOTAS / DEDICATORIA:*\n"${notes.value.trim()}"\n\n`
+  if (transferDiscount.value > 0) {
+    msg += `• *Descuento Transferencia (20% OFF):* -$${transferDiscount.value.toLocaleString('es-AR')}\n`
   }
+  msg += `• *Envío (Andreani - Precio aprox.):* ${shippingCost.value === 0 ? '¡GRATIS!' : `$${shippingCost.value.toLocaleString('es-AR')}`}\n`
+  msg += `• *TOTAL FINAL A ABONAR:* *$${finalTotal.value.toLocaleString('es-AR')}*\n`
+  if (shippingCost.value > 0) {
+    msg += `  _(El valor del envío es aproximado y se confirmará antes del despacho)_\n`
+  }
+  msg += `• *Forma de Pago:* ${paymentMethodLabel}\n\n`
 
   msg += `━━━━━━━━━━━━━━━━━━━━━\n`
   msg += `Hola! Acabo de armar mi pedido en la web. Me gustaría coordinar el pago y envío. ¡Muchas gracias!`
@@ -201,14 +254,15 @@ const handleFinalOrder = async () => {
     })),
     subtotal: cartStore.subtotal,
     shippingCost: shippingCost.value,
-    discountAmount: cartStore.discountAmount,
+    discountAmount: (cartStore.discountAmount || 0) + transferDiscount.value,
     total: finalTotal.value,
     totalCost: cartStore.items.reduce((acc, i) => acc + (Math.round(i.price * 0.45) * i.quantity), 0),
     shippingMethod: shippingStore.selectedOption?.name || 'Andreani Estándar a Domicilio',
+    pickupBranch: shippingStore.isBranchPickup ? shippingStore.selectedBranch : null,
     paymentMethod: paymentMethod.value,
     paymentStatus: 'pending',
     fulfillmentStatus: 'unfulfilled',
-    notes: notes.value || '',
+    notes: '',
     source: 'web'
   }
 
@@ -479,30 +533,18 @@ const handleFinalOrder = async () => {
                 </div>
               </div>
 
-              <!-- City, Province, Zip -->
+              <!-- Province, City, Zip -->
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">Ciudad *</label>
-                  <input 
-                    v-model="city"
-                    type="text" 
-                    placeholder="Ciudad"
-                    class="w-full bg-surface-container border rounded-xs p-3 text-sm font-sans focus:outline-none transition-colors"
-                    :class="cityError ? 'border-red-500 bg-red-50/20' : 'border-outline-variant focus:border-primary'"
-                  />
-                  <p v-if="cityError" class="text-[11px] text-red-600 font-sans mt-1 flex items-center gap-1">
-                    <span class="material-symbols-outlined text-xs">error</span>
-                    {{ cityError }}
-                  </p>
-                </div>
-
+                <!-- 1. Provincia -->
                 <div>
                   <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">Provincia *</label>
                   <select 
                     v-model="province"
-                    class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-sm font-sans focus:border-primary focus:outline-none"
+                    class="w-full bg-surface-container border rounded-xs p-3 text-sm font-sans focus:outline-none transition-colors"
+                    :class="provinceError ? 'border-red-500 bg-red-50/20' : 'border-outline-variant focus:border-primary'"
                   >
-                    <option value="CABA">CABA</option>
+                    <option value="" disabled>Seleccioná tu provincia</option>
+                    <option value="CABA">CABA (Ciudad Autónoma de Bs As)</option>
                     <option value="Buenos Aires">Buenos Aires (GBA / Interior)</option>
                     <option value="Córdoba">Córdoba</option>
                     <option value="Santa Fe">Santa Fe</option>
@@ -512,10 +554,44 @@ const handleFinalOrder = async () => {
                     <option value="Salta">Salta</option>
                     <option value="Neuquén">Neuquén</option>
                     <option value="Río Negro">Río Negro</option>
-                    <option value="Otra">Otra Provincia</option>
+                    <option value="Chaco">Chaco</option>
+                    <option value="Corrientes">Corrientes</option>
+                    <option value="Misiones">Misiones</option>
+                    <option value="San Juan">San Juan</option>
+                    <option value="San Luis">San Luis</option>
+                    <option value="Santiago del Estero">Santiago del Estero</option>
+                    <option value="Jujuy">Jujuy</option>
+                    <option value="Formosa">Formosa</option>
+                    <option value="Catamarca">Catamarca</option>
+                    <option value="La Rioja">La Rioja</option>
+                    <option value="La Pampa">La Pampa</option>
+                    <option value="Chubut">Chubut</option>
+                    <option value="Santa Cruz">Santa Cruz</option>
+                    <option value="Tierra del Fuego">Tierra del Fuego</option>
                   </select>
+                  <p v-if="provinceError" class="text-[11px] text-red-600 font-sans mt-1 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-xs">error</span>
+                    {{ provinceError }}
+                  </p>
                 </div>
 
+                <!-- 2. Ciudad -->
+                <div>
+                  <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">Ciudad / Localidad *</label>
+                  <input 
+                    v-model="city"
+                    type="text" 
+                    placeholder="Ej. Córdoba Capital o San Francisco"
+                    class="w-full bg-surface-container border rounded-xs p-3 text-sm font-sans focus:outline-none transition-colors"
+                    :class="cityError ? 'border-red-500 bg-red-50/20' : 'border-outline-variant focus:border-primary'"
+                  />
+                  <p v-if="cityError" class="text-[11px] text-red-600 font-sans mt-1 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-xs">error</span>
+                    {{ cityError }}
+                  </p>
+                </div>
+
+                <!-- 3. Código Postal -->
                 <div>
                   <div class="flex justify-between items-center mb-1.5">
                     <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold">Código Postal *</label>
@@ -528,17 +604,18 @@ const handleFinalOrder = async () => {
                     <input 
                       v-model="postalCode"
                       type="text" 
-                      placeholder="Ej. 1414"
+                      placeholder="Ej. 5000 o 2400"
                       maxlength="8"
                       class="w-full bg-surface-container border rounded-xs p-3 text-sm font-sans focus:outline-none transition-colors"
                       :class="postalCodeError ? 'border-red-500 bg-red-50/20' : 'border-outline-variant focus:border-primary'"
+                      @input="onPostalCodeInput"
                       @blur="fetchAndreaniQuotes"
                       @keyup.enter="fetchAndreaniQuotes"
                     />
                     <button 
                       type="button" 
                       @click="fetchAndreaniQuotes"
-                      class="bg-surface text-primary border border-outline font-label text-xs uppercase px-4 rounded-xs hover:bg-surface-container flex-shrink-0"
+                      class="bg-surface text-primary border border-outline font-label text-xs uppercase px-4 rounded-xs hover:bg-surface-container flex-shrink-0 transition-colors"
                     >
                       Calcular
                     </button>
@@ -552,16 +629,29 @@ const handleFinalOrder = async () => {
 
               <!-- Shipping Method Selector (Andreani Integration) -->
               <div class="pt-4 border-t border-outline-variant space-y-3">
-                <div class="flex justify-between items-center">
-                  <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold">
-                    Opciones de Entrega Andreani
-                  </label>
-                  <span v-if="shippingStore.destination" class="text-xs text-secondary font-medium">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                  <div class="flex items-center gap-2">
+                    <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold">
+                      Opciones de Entrega Andreani
+                    </label>
+                    <span class="text-[10px] font-sans font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200/80">
+                      Tarifas aproximadas
+                    </span>
+                  </div>
+                  <span v-if="shippingStore.destination && postalCode && postalCode.length >= 4" class="text-xs text-secondary font-medium">
                     Destino: {{ shippingStore.destination.zone }}
                   </span>
                 </div>
 
-                <div v-if="shippingStore.options.length > 0" class="space-y-3">
+                <!-- Banner explicativo de precio de envío aproximado -->
+                <div class="p-3 bg-surface-container rounded-xs border border-outline-variant flex items-start gap-2.5 text-xs text-secondary">
+                  <span class="material-symbols-outlined text-base text-amber-700 flex-shrink-0 mt-0.5">info</span>
+                  <p class="leading-relaxed">
+                    <strong class="text-primary font-medium">El precio del envío es aproximado:</strong> Las tarifas calculadas corresponden a paquetería según el código postal ingresado. El costo final se confirmará al preparar y despachar tu paquete.
+                  </p>
+                </div>
+
+                <div v-if="shippingStore.options.length > 0 && postalCode && postalCode.length >= 4" class="space-y-3">
                   <div 
                     v-for="opt in shippingStore.options" 
                     :key="opt.id"
@@ -585,16 +675,68 @@ const handleFinalOrder = async () => {
                         <p class="text-xs text-secondary">{{ opt.description }} • <strong>{{ opt.estimatedDays }}</strong></p>
                       </div>
                     </div>
-                    <div class="text-right">
+                    <div class="text-right flex flex-col items-end">
                       <span class="font-sans font-bold text-sm" :class="opt.isFree ? 'text-emerald-700' : 'text-primary'">
                         {{ opt.price === 0 ? '¡GRATIS!' : `$${opt.price.toLocaleString('es-AR')}` }}
                       </span>
+                      <span v-if="opt.price > 0" class="text-[10px] text-secondary font-sans">
+                        Precio aprox.
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Selector de Sucursal Andreani (Si se elige Retiro en Sucursal) -->
+                  <div 
+                    v-if="shippingStore.isBranchPickup" 
+                    class="mt-3 p-4 bg-surface-container-low border border-primary/30 rounded-xs space-y-3 transition-all animate-fadeIn"
+                  >
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-base text-primary">store</span>
+                        <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold">
+                          Elegí tu Sucursal / Punto Andreani:
+                        </label>
+                      </div>
+                      <span v-if="shippingStore.isBranchesLoading" class="text-[10px] text-primary flex items-center gap-1 animate-pulse font-bold">
+                        <span class="material-symbols-outlined text-xs animate-spin">progress_activity</span>
+                        Cargando sucursales...
+                      </span>
+                    </div>
+
+                    <div v-if="shippingStore.branches.length > 0" class="space-y-2">
+                      <select 
+                        v-model="shippingStore.selectedBranchId" 
+                        @change="shippingStore.selectBranch(shippingStore.selectedBranchId)"
+                        class="w-full bg-surface border border-outline-variant rounded-xs p-3 text-xs font-sans text-primary focus:border-primary focus:outline-none"
+                      >
+                        <option v-for="branch in shippingStore.branches" :key="branch.id" :value="branch.id">
+                          {{ branch.name }} — {{ branch.address }} ({{ branch.city }})
+                        </option>
+                      </select>
+
+                      <div v-if="shippingStore.selectedBranch" class="p-3 bg-surface rounded-xs border border-outline-variant/60 text-xs text-secondary space-y-1">
+                        <div class="flex items-center gap-1.5 font-medium text-primary">
+                          <span class="material-symbols-outlined text-sm">location_on</span>
+                          <span>{{ shippingStore.selectedBranch.address }}, {{ shippingStore.selectedBranch.city }} (CP {{ shippingStore.selectedBranch.postalCode }})</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 text-[11px]">
+                          <span class="material-symbols-outlined text-sm">schedule</span>
+                          <span>{{ shippingStore.selectedBranch.schedule }}</span>
+                        </div>
+                        <div v-if="shippingStore.selectedBranch.phone" class="flex items-center gap-1.5 text-[11px]">
+                          <span class="material-symbols-outlined text-sm">call</span>
+                          <span>Atención: {{ shippingStore.selectedBranch.phone }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div v-else-if="!shippingStore.isBranchesLoading" class="text-xs text-secondary italic">
+                      No se encontraron sucursales para este código postal. Seleccioná entrega a domicilio o verificá tu CP.
                     </div>
                   </div>
                 </div>
 
                 <div v-else class="p-4 bg-surface-container rounded-xs border border-outline-variant text-center text-xs text-secondary">
-                  Ingresá tu código postal para calcular las tarifas de Andreani.
+                  Ingresá tu código postal arriba para calcular las tarifas aproximadas de Andreani.
                 </div>
               </div>
 
@@ -659,53 +801,49 @@ const handleFinalOrder = async () => {
                 ¿Cómo preferís abonar? (Se coordinará por WhatsApp)
               </label>
 
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <!-- Transfer -->
                 <div 
                   @click="paymentMethod = 'transfer'"
-                  class="p-3.5 rounded-xs border cursor-pointer transition-all text-center space-y-1 shadow-2xs"
+                  class="p-4 rounded-xs border cursor-pointer transition-all text-left space-y-1.5 shadow-2xs"
                   :class="paymentMethod === 'transfer' ? 'bg-surface-container border-primary ring-1 ring-primary' : 'bg-surface border-outline-variant hover:border-outline'"
                 >
-                  <span class="material-symbols-outlined text-xl text-primary">account_balance</span>
-                  <p class="font-sans text-xs text-primary font-medium">Transferencia</p>
-                  <p class="text-[10px] text-secondary">CBU / Alias inmediato</p>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span class="material-symbols-outlined text-xl text-primary">account_balance</span>
+                      <span class="font-sans text-xs text-primary font-bold">Transferencia Bancaria</span>
+                    </div>
+                    <span class="text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                      20% OFF
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-secondary">Abonás con 20% de descuento directo por CBU o Alias bancario.</p>
+                  <div class="pt-1 text-[11px] text-emerald-800 font-medium">
+                    Ahorrás ${{ Math.round(cartStore.subtotal * 0.2).toLocaleString('es-AR') }} en este pedido
+                  </div>
                 </div>
 
                 <!-- Credit Card -->
                 <div 
                   @click="paymentMethod = 'credit_card'"
-                  class="p-3.5 rounded-xs border cursor-pointer transition-all text-center space-y-1 shadow-2xs"
+                  class="p-4 rounded-xs border cursor-pointer transition-all text-left space-y-1.5 shadow-2xs"
                   :class="paymentMethod === 'credit_card' ? 'bg-surface-container border-primary ring-1 ring-primary' : 'bg-surface border-outline-variant hover:border-outline'"
                 >
-                  <span class="material-symbols-outlined text-xl text-primary">credit_card</span>
-                  <p class="font-sans text-xs text-primary font-medium">Tarjeta en Cuotas</p>
-                  <p class="text-[10px] text-secondary">Hasta 3 y 6 cuotas</p>
-                </div>
-
-                <!-- Mercado Pago -->
-                <div 
-                  @click="paymentMethod = 'mercado_pago'"
-                  class="p-3.5 rounded-xs border cursor-pointer transition-all text-center space-y-1 shadow-2xs"
-                  :class="paymentMethod === 'mercado_pago' ? 'bg-surface-container border-primary ring-1 ring-primary' : 'bg-surface border-outline-variant hover:border-outline'"
-                >
-                  <span class="material-symbols-outlined text-xl text-primary">payments</span>
-                  <p class="font-sans text-xs text-primary font-medium">Mercado Pago</p>
-                  <p class="text-[10px] text-secondary">Dinero en cuenta o QR</p>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span class="material-symbols-outlined text-xl text-primary">credit_card</span>
+                      <span class="font-sans text-xs text-primary font-bold">Tarjeta de Crédito</span>
+                    </div>
+                    <span class="text-[10px] font-bold uppercase bg-surface-container-high text-primary px-2 py-0.5 rounded-full border border-outline-variant">
+                      Sin Interés
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-secondary">Abonás el precio de lista en 3 y 6 cuotas fijas sin interés.</p>
+                  <div class="pt-1 text-[11px] text-primary font-medium">
+                    3 cuotas de ${{ Math.round(cartStore.subtotal / 3).toLocaleString('es-AR') }} o 6 de ${{ Math.round(cartStore.subtotal / 6).toLocaleString('es-AR') }}
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <!-- Notes -->
-            <div>
-              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">
-                Notas especiales o dedicatoria para regalo (Opcional):
-              </label>
-              <textarea 
-                v-model="notes"
-                rows="2" 
-                placeholder="Ej. Por favor incluir tarjeta con dedicatoria: 'Para Sofía con mucho cariño'"
-                class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none"
-              ></textarea>
             </div>
 
             <!-- Send WhatsApp Order Button: Botón Verde WhatsApp & Píldora -->
@@ -758,8 +896,12 @@ const handleFinalOrder = async () => {
           <!-- Price Math -->
           <div class="space-y-2 text-xs font-sans border-t border-b border-outline-variant py-4">
             <div class="flex justify-between text-secondary">
-              <span>Subtotal</span>
+              <span>Subtotal Lista</span>
               <span>${{ cartStore.subtotal.toLocaleString('es-AR') }}</span>
+            </div>
+            <div v-if="transferDiscount > 0" class="flex justify-between text-emerald-800 font-medium">
+              <span>Descuento Transferencia (20% OFF)</span>
+              <span>-${{ transferDiscount.toLocaleString('es-AR') }}</span>
             </div>
             <div v-if="cartStore.discountAmount > 0" class="flex justify-between text-tertiary font-medium">
               <span>Descuento cupón</span>
@@ -767,18 +909,33 @@ const handleFinalOrder = async () => {
             </div>
             <div class="flex justify-between text-secondary">
               <span>Envío ({{ shippingStore.selectedOption?.carrier || 'Andreani' }})</span>
-              <span class="font-medium" :class="shippingCost === 0 ? 'text-emerald-700' : 'text-primary'">
-                {{ shippingCost === 0 ? '¡GRATIS!' : `$${shippingCost.toLocaleString('es-AR')}` }}
+              <span class="font-medium" :class="shippingCost === 0 && cartStore.subtotal >= cartStore.freeShippingThreshold ? 'text-emerald-700' : 'text-primary'">
+                <template v-if="cartStore.subtotal >= cartStore.freeShippingThreshold">¡GRATIS!</template>
+                <template v-else-if="shippingStore.selectedOption && postalCode && postalCode.length >= 4">
+                  ${{ shippingCost.toLocaleString('es-AR') }} <span class="text-[10px] text-secondary font-normal">(Aprox.)</span>
+                </template>
+                <template v-else>A calcular con CP</template>
               </span>
             </div>
           </div>
 
           <!-- Total Final -->
-          <div class="flex justify-between items-baseline">
-            <span class="font-sans text-lg text-primary">Total a Pagar</span>
-            <span class="font-sans text-2xl font-bold text-primary">
-              ${{ finalTotal.toLocaleString('es-AR') }}
-            </span>
+          <div class="space-y-1">
+            <div class="flex justify-between items-baseline">
+              <span class="font-sans text-lg text-primary">Total a Pagar</span>
+              <span class="font-sans text-2xl font-bold text-primary">
+                ${{ finalTotal.toLocaleString('es-AR') }}
+              </span>
+            </div>
+            <div v-if="paymentMethod === 'credit_card'" class="text-right text-[11px] text-secondary">
+              3 cuotas de ${{ Math.round(finalTotal / 3).toLocaleString('es-AR') }} sin interés
+            </div>
+            <div v-else-if="transferDiscount > 0" class="text-right text-[11px] text-emerald-800 font-medium">
+              🎉 ¡Ahorrás ${{ transferDiscount.toLocaleString('es-AR') }} pagando por Transferencia!
+            </div>
+            <p v-if="shippingCost > 0" class="text-right text-[10px] text-secondary/80 italic">
+              * Incluye costo de envío aproximado de Andreani
+            </p>
           </div>
         </div>
 

@@ -24,6 +24,10 @@ export const useOrdersStore = defineStore('orders', {
       this.isLoading = true
       this.error = null
       try {
+        const token = localStorage.getItem('gicca_admin_token')
+        const headers = {}
+        if (token) headers['Authorization'] = `Bearer ${token}`
+
         const queryParams = new URLSearchParams()
         if (filters.paymentStatus) queryParams.append('paymentStatus', filters.paymentStatus)
         if (filters.fulfillmentStatus) queryParams.append('fulfillmentStatus', filters.fulfillmentStatus)
@@ -31,7 +35,7 @@ export const useOrdersStore = defineStore('orders', {
         if (filters.q) queryParams.append('q', filters.q)
 
         const url = `/api/orders${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
-        const res = await fetch(url)
+        const res = await fetch(url, { headers })
         if (!res.ok) throw new Error('Error al cargar ventas')
         const data = await res.json()
         this.items = data
@@ -47,7 +51,11 @@ export const useOrdersStore = defineStore('orders', {
 
     async fetchStats() {
       try {
-        const res = await fetch('/api/orders/stats')
+        const token = localStorage.getItem('gicca_admin_token')
+        const headers = {}
+        if (token) headers['Authorization'] = `Bearer ${token}`
+
+        const res = await fetch('/api/orders/stats', { headers })
         if (!res.ok) throw new Error('Error al cargar estadísticas')
         const data = await res.json()
         this.stats = data
@@ -80,9 +88,13 @@ export const useOrdersStore = defineStore('orders', {
 
     async updateOrder(id, updateData) {
       try {
+        const token = localStorage.getItem('gicca_admin_token')
+        const headers = { 'Content-Type': 'application/json' }
+        if (token) headers['Authorization'] = `Bearer ${token}`
+
         const res = await fetch(`/api/orders/${id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify(updateData)
         })
         const data = await res.json()
@@ -101,8 +113,13 @@ export const useOrdersStore = defineStore('orders', {
 
     async deleteOrder(id) {
       try {
+        const token = localStorage.getItem('gicca_admin_token')
+        const headers = {}
+        if (token) headers['Authorization'] = `Bearer ${token}`
+
         const res = await fetch(`/api/orders/${id}`, {
-          method: 'DELETE'
+          method: 'DELETE',
+          headers
         })
         if (!res.ok) throw new Error('Error al eliminar pedido')
         this.items = this.items.filter(o => o.id !== id && o.orderNumber !== id)

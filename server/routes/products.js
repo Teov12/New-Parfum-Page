@@ -7,10 +7,11 @@ import {
   deleteProduct,
   saveProducts
 } from '../db.js'
+import { requireAuth } from '../middleware/auth.js'
 
 const router = express.Router()
 
-// GET /api/products - List all products with optional filters
+// GET /api/products - List all products with optional filters (público)
 router.get('/', (req, res) => {
   try {
     let list = getProducts()
@@ -47,7 +48,7 @@ router.get('/', (req, res) => {
   }
 })
 
-// GET /api/products/stats - Dashboard summary metrics
+// GET /api/products/stats - Dashboard summary metrics (público)
 router.get('/stats', (req, res) => {
   try {
     const list = getProducts()
@@ -66,7 +67,7 @@ router.get('/stats', (req, res) => {
   }
 })
 
-// GET /api/products/:idOrSlug - Get single product
+// GET /api/products/:idOrSlug - Get single product (público)
 router.get('/:idOrSlug', (req, res) => {
   try {
     const product = getProductByIdOrSlug(req.params.idOrSlug)
@@ -79,8 +80,8 @@ router.get('/:idOrSlug', (req, res) => {
   }
 })
 
-// POST /api/products - Create new product
-router.post('/', (req, res) => {
+// POST /api/products - Create new product (protegido con requireAuth)
+router.post('/', requireAuth, (req, res) => {
   try {
     const { name, brand, price } = req.body
     if (!name || !brand || price === undefined) {
@@ -95,8 +96,8 @@ router.post('/', (req, res) => {
   }
 })
 
-// PUT /api/products/:id - Update product
-router.put('/:id', (req, res) => {
+// PUT /api/products/:id - Update product (protegido con requireAuth)
+router.put('/:id', requireAuth, (req, res) => {
   try {
     const updated = updateProduct(req.params.id, req.body)
     if (!updated) {
@@ -109,8 +110,8 @@ router.put('/:id', (req, res) => {
   }
 })
 
-// DELETE /api/products/:id - Delete product
-router.delete('/:id', (req, res) => {
+// DELETE /api/products/:id - Delete product (protegido con requireAuth)
+router.delete('/:id', requireAuth, (req, res) => {
   try {
     const deleted = deleteProduct(req.params.id)
     if (!deleted) {

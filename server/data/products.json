@@ -24,6 +24,9 @@
       {
         "size": "100 ml",
         "price": 48000,
+        "costPrice": 21600,
+        "profit": 26400,
+        "profitMargin": 55,
         "default": true
       }
     ],
@@ -54,7 +57,11 @@
     },
     "usageTips": "Pulverizar en puntos de pulso (cuello y muñecas).",
     "createdAt": "2026-08-28T01:26:25.005Z",
-    "updatedAt": "2026-08-28T01:26:25.005Z"
+    "updatedAt": "2026-08-28T01:26:25.005Z",
+    "stock": 8,
+    "costPrice": 21600,
+    "profit": 26400,
+    "profitMargin": 55
   },
   {
     "id": "prod_1787879815888_az3922",
@@ -81,6 +88,9 @@
       {
         "size": "100 ml",
         "price": 215000,
+        "costPrice": 96750,
+        "profit": 118250,
+        "profitMargin": 55,
         "default": true
       }
     ],
@@ -106,6 +116,10 @@
     },
     "usageTips": "Para una estela envolvente, pulverizá sobre los puntos de pulso: cuello y muñecas.",
     "createdAt": "2026-08-28T01:16:55.888Z",
-    "updatedAt": "2026-08-28T01:16:55.888Z"
+    "updatedAt": "2026-08-28T01:16:55.888Z",
+    "stock": 10,
+    "costPrice": 96750,
+    "profit": 118250,
+    "profitMargin": 55
   }
 ]

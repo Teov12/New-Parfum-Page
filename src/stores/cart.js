@@ -28,16 +28,11 @@ export const useCartStore = defineStore('cart', {
       return 0
     },
 
-    shippingCost: (state) => {
-      const subtotal = state.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
-      if (subtotal === 0) return 0
-      
+    shippingCost() {
+      if (this.subtotal === 0) return 0
+      if (this.subtotal >= this.freeShippingThreshold) return 0
       const shippingStore = useShippingStore()
-      if (shippingStore.selectedOption) {
-        return shippingStore.selectedOption.price
-      }
-      
-      return subtotal >= state.freeShippingThreshold ? 0 : 4800
+      return shippingStore.currentShippingCost
     },
 
     total() {

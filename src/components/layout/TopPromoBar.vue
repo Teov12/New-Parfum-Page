@@ -12,9 +12,9 @@ import { RouterLink } from 'vue-router'
     <div class="w-full lg:w-auto flex justify-center items-center gap-3">
       <span>Envíos a todo el país</span>
       <span class="text-on-primary-container">•</span>
+      <span class="font-bold text-amber-300">20% OFF Transferencia</span>
+      <span class="text-on-primary-container">•</span>
       <span class="font-medium">3 y 6 Cuotas Sin Interés</span>
-      <span class="hidden sm:inline text-on-primary-container">•</span>
-      <span class="hidden sm:inline">100% Fragancias Originales</span>
     </div>
 
     <div class="hidden lg:flex items-center gap-4">

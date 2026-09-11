@@ -76,9 +76,13 @@ export const useProductStore = defineStore('products', {
     async addProduct(productData) {
       this.loading = true
       try {
+        const token = localStorage.getItem('gicca_admin_token')
+        const headers = { 'Content-Type': 'application/json' }
+        if (token) headers['Authorization'] = `Bearer ${token}`
+
         const res = await fetch('/api/products', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify(productData)
         })
         if (!res.ok) {
@@ -103,9 +107,13 @@ export const useProductStore = defineStore('products', {
     async updateProduct(id, productData) {
       this.loading = true
       try {
+        const token = localStorage.getItem('gicca_admin_token')
+        const headers = { 'Content-Type': 'application/json' }
+        if (token) headers['Authorization'] = `Bearer ${token}`
+
         const res = await fetch(`/api/products/${encodeURIComponent(id)}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify(productData)
         })
         if (!res.ok) {
@@ -129,8 +137,13 @@ export const useProductStore = defineStore('products', {
     async deleteProduct(id) {
       this.loading = true
       try {
+        const token = localStorage.getItem('gicca_admin_token')
+        const headers = {}
+        if (token) headers['Authorization'] = `Bearer ${token}`
+
         const res = await fetch(`/api/products/${encodeURIComponent(id)}`, {
-          method: 'DELETE'
+          method: 'DELETE',
+          headers
         })
         if (!res.ok) throw new Error('Error al eliminar el perfume')
         this.items = this.items.filter(p => p.id !== id && p.slug !== id)
@@ -145,11 +158,16 @@ export const useProductStore = defineStore('products', {
 
     async uploadImage(file) {
       try {
+        const token = localStorage.getItem('gicca_admin_token')
         const formData = new FormData()
         formData.append('image', file)
 
+        const headers = {}
+        if (token) headers['Authorization'] = `Bearer ${token}`
+
         const res = await fetch('/api/upload', {
           method: 'POST',
+          headers,
           body: formData
         })
         if (!res.ok) throw new Error('Error al subir la imagen')

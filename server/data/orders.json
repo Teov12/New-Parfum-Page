@@ -1,1 +1,96 @@
-[]
+[
+  {
+    "id": "ord_1788887160245_mby9g9",
+    "orderNumber": "GIC-416615",
+    "date": "2026-09-08T17:06:00.245Z",
+    "customer": {
+      "firstName": "Juan",
+      "lastName": "Pérez",
+      "phone": "3511234567",
+      "email": "juan@example.com",
+      "dni": "",
+      "address": "",
+      "apartment": "",
+      "city": "Córdoba",
+      "province": "Córdoba",
+      "postalCode": ""
+    },
+    "items": [
+      {
+        "id": "prod_1787880385005_odb29z",
+        "name": "asdasd",
+        "brand": "asdasdasd",
+        "size": "100 ml",
+        "quantity": 2,
+        "price": 48000,
+        "costPrice": 21600
+      }
+    ],
+    "subtotal": 96000,
+    "shippingCost": 0,
+    "discountAmount": 19200,
+    "transferDiscount": 19200,
+    "couponDiscount": 0,
+    "total": 76800,
+    "totalCost": 43200,
+    "profit": 33600,
+    "profitMargin": 44,
+    "shippingMethod": "delivery",
+    "pickupBranch": null,
+    "paymentMethod": "transfer",
+    "paymentStatus": "pending",
+    "fulfillmentStatus": "unfulfilled",
+    "trackingCode": "",
+    "notes": "",
+    "source": "web",
+    "createdAt": "2026-09-08T17:06:00.246Z",
+    "updatedAt": "2026-09-08T17:06:00.246Z"
+  },
+  {
+    "id": "ord_1788887124925_tmrhf1",
+    "orderNumber": "GIC-707593",
+    "date": "2026-09-08T17:05:24.925Z",
+    "customer": {
+      "firstName": "Test",
+      "lastName": "User",
+      "phone": "11223344",
+      "email": "test@example.com",
+      "dni": "",
+      "address": "",
+      "apartment": "",
+      "city": "Córdoba",
+      "province": "Córdoba",
+      "postalCode": ""
+    },
+    "items": [
+      {
+        "id": "prod_1787880385005_odb29z",
+        "name": "asdasd",
+        "brand": "asdasdasd",
+        "size": "100 ml",
+        "quantity": 1,
+        "price": 48000,
+        "costPrice": 21600
+      }
+    ],
+    "subtotal": 48000,
+    "shippingCost": 0,
+    "discountAmount": 9600,
+    "transferDiscount": 9600,
+    "couponDiscount": 0,
+    "total": 38400,
+    "totalCost": 21600,
+    "profit": 16800,
+    "profitMargin": 44,
+    "shippingMethod": "delivery",
+    "pickupBranch": null,
+    "paymentMethod": "transfer",
+    "paymentStatus": "pending",
+    "fulfillmentStatus": "unfulfilled",
+    "trackingCode": "",
+    "notes": "",
+    "source": "web",
+    "createdAt": "2026-09-08T17:05:24.925Z",
+    "updatedAt": "2026-09-08T17:05:24.925Z"
+  }
+]
