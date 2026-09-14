@@ -71,3 +71,341 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ============================================================
+   FLUID LUXURY ANIMATION KEYFRAMES & UTILITIES
+   ============================================================ */
+
+/* Ken Burns slow cinematic image zooming */
+@keyframes kenBurnsZoom {
+  0% {
+    transform: scale(1.02) translate(0, 0);
+  }
+  50% {
+    transform: scale(1.10) translate(-1%, -0.5%);
+  }
+  100% {
+    transform: scale(1.05) translate(0.5%, 0.5%);
+  }
+}
+
+@keyframes kenBurnsZoomAlt {
+  0% {
+    transform: scale(1.08) translate(0, 0);
+  }
+  50% {
+    transform: scale(1.02) translate(1%, 0.5%);
+  }
+  100% {
+    transform: scale(1.09) translate(-0.5%, -0.5%);
+  }
+}
+
+/* Hero Staggered Content Animations */
+@keyframes heroFadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroTagSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Floating Elements (Perfume bottles, badges, icons) */
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-9px) rotate(0.5deg);
+  }
+}
+
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Luxury Shimmer Glow across buttons or highlights */
+@keyframes shimmerGlow {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Heart Burst / Wishlist Pop */
+@keyframes heartBurst {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.38);
+  }
+  65% {
+    transform: scale(0.92);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Badge Counter Pop */
+@keyframes badgePop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Soft Ambient Light Pulse */
+@keyframes ambientPulse {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.08);
+  }
+}
+
+/* Progress bar fill for autoplay carousel */
+@keyframes autoplayProgress {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+/* Animation Helper Classes */
+.animate-ken-burns {
+  animation: kenBurnsZoom 18s cubic-bezier(0.25, 1, 0.5, 1) infinite alternate;
+  will-change: transform;
+}
+
+.animate-ken-burns-alt {
+  animation: kenBurnsZoomAlt 20s cubic-bezier(0.25, 1, 0.5, 1) infinite alternate;
+  will-change: transform;
+}
+
+.animate-float-slow {
+  animation: floatSlow 5.5s ease-in-out infinite;
+}
+
+.animate-float-gentle {
+  animation: floatGentle 4s ease-in-out infinite;
+}
+
+.animate-heart-burst {
+  animation: heartBurst 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-badge-pop {
+  animation: badgePop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-ambient-pulse {
+  animation: ambientPulse 4s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+  background-size: 200% 100%;
+  animation: shimmerGlow 2.5s infinite;
+}
+
+/* Slide Entrance Animations */
+.hero-tag-enter {
+  animation: heroTagSlide 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.hero-title-enter {
+  animation: heroFadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+}
+
+.hero-desc-enter {
+  animation: heroFadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.24s both;
+}
+
+.hero-cta-enter {
+  animation: heroFadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.36s both;
+}
+
+.hero-stats-enter {
+  animation: heroFadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.48s both;
+}
+
+/* ============================================================
+   VUE TRANSITIONS
+   ============================================================ */
+
+/* Page View Transition */
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1), transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* Image Crossfade (Product Detail Gallery) */
+.image-crossfade-enter-active,
+.image-crossfade-leave-active {
+  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.image-crossfade-enter-from {
+  opacity: 0;
+  transform: scale(0.98);
+}
+
+.image-crossfade-leave-to {
+  opacity: 0;
+  transform: scale(1.02);
+}
+
+/* Product Cards Grid FLIP Animation (Catalog Filter / Sort) */
+.product-grid-move,
+.product-grid-enter-active,
+.product-grid-leave-active {
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.product-grid-enter-from,
+.product-grid-leave-to {
+  opacity: 0;
+  transform: translateY(20px) scale(0.96);
+}
+
+.product-grid-leave-active {
+  position: absolute;
+}
+
+/* Cart Items TransitionGroup (Remove item animation) */
+.cart-item-move,
+.cart-item-enter-active,
+.cart-item-leave-active {
+  transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.cart-item-enter-from {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.cart-item-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+/* Slide Drawer (CartDrawer) */
+.slide-drawer-enter-active,
+.slide-drawer-leave-active {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-drawer-enter-from,
+.slide-drawer-leave-to {
+  transform: translateX(100%);
+}
+
+.fade-backdrop-enter-active,
+.fade-backdrop-leave-active {
+  transition: opacity 0.3s ease-out;
+}
+
+.fade-backdrop-enter-from,
+.fade-backdrop-leave-to {
+  opacity: 0;
+}
+
+/* Search Modal Zoom Transition */
+.modal-zoom-enter-active {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-zoom-leave-active {
+  transition: all 0.2s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.modal-zoom-enter-from {
+  opacity: 0;
+  transform: scale(0.94) translateY(-14px);
+}
+
+.modal-zoom-leave-to {
+  opacity: 0;
+  transform: scale(0.96) translateY(-8px);
+}
+
+/* Mobile Menu Slide Down */
+.slide-down-enter-active {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-down-leave-active {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-16px);
+}
+
+/* Quiz Step Transition */
+.quiz-step-enter-active,
+.quiz-step-leave-active {
+  transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.quiz-step-enter-from {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.quiz-step-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+

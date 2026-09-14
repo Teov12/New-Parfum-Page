@@ -122,51 +122,54 @@ const handleAddRecommended = () => {
         </div>
       </div>
 
-      <!-- QUESTION STEP -->
-      <div 
-        v-if="currentStep < questions.length"
-        class="bg-surface border border-outline-variant rounded-xs p-8 sm:p-12 shadow-md space-y-8 animate-in fade-in"
-      >
-        <div class="text-center">
-          <h1 class="font-sans text-3xl sm:text-4xl text-primary font-normal mb-2">
-            {{ questions[currentStep].title }}
-          </h1>
-          <p class="font-sans text-sm text-secondary">
-            {{ questions[currentStep].subtitle }}
-          </p>
+      <!-- QUESTION STEPS WITH FLUID TRANSITION -->
+      <Transition name="quiz-step" mode="out-in">
+        <div 
+          v-if="currentStep < questions.length"
+          :key="currentStep"
+          class="bg-surface border border-outline-variant rounded-2xl p-8 sm:p-12 shadow-md space-y-8"
+        >
+          <div class="text-center">
+            <h1 class="font-sans text-3xl sm:text-4xl text-primary font-normal mb-2">
+              {{ questions[currentStep].title }}
+            </h1>
+            <p class="font-sans text-sm text-secondary">
+              {{ questions[currentStep].subtitle }}
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button
+              v-for="opt in questions[currentStep].options"
+              :key="opt.label"
+              @click="selectOption(questions[currentStep].key, opt.value)"
+              class="p-6 bg-surface-container-low hover:bg-surface-container border border-outline-variant hover:border-primary rounded-xl flex flex-col items-center text-center gap-3 transition-all duration-300 group shadow-2xs hover:shadow-md hover:-translate-y-1 active:scale-98"
+            >
+              <span class="material-symbols-outlined text-3xl text-primary group-hover:scale-110 transition-transform duration-300">
+                {{ opt.icon }}
+              </span>
+              <span class="font-sans text-base text-primary font-medium">
+                {{ opt.label }}
+              </span>
+            </button>
+          </div>
+
+          <div v-if="currentStep > 0" class="text-center pt-2">
+            <button 
+              @click="currentStep--"
+              class="font-label text-xs uppercase tracking-widest text-secondary hover:text-primary underline transition-colors"
+            >
+              ← Volver a la pregunta anterior
+            </button>
+          </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <button
-            v-for="opt in questions[currentStep].options"
-            :key="opt.label"
-            @click="selectOption(questions[currentStep].key, opt.value)"
-            class="p-6 bg-surface-container-low hover:bg-surface-container border border-outline-variant hover:border-primary rounded-xs flex flex-col items-center text-center gap-3 transition-all duration-200 group shadow-2xs hover:shadow-xs"
-          >
-            <span class="material-symbols-outlined text-3xl text-primary group-hover:scale-110 transition-transform">
-              {{ opt.icon }}
-            </span>
-            <span class="font-sans text-base text-primary font-medium">
-              {{ opt.label }}
-            </span>
-          </button>
-        </div>
-
-        <div v-if="currentStep > 0" class="text-center pt-2">
-          <button 
-            @click="currentStep--"
-            class="font-label text-xs uppercase tracking-widest text-secondary hover:text-primary underline"
-          >
-            ← Volver a la pregunta anterior
-          </button>
-        </div>
-      </div>
-
-      <!-- FINAL RESULT SCREEN -->
-      <div 
-        v-else-if="matchResult" 
-        class="bg-surface border border-outline-variant rounded-xs p-8 sm:p-12 shadow-lg space-y-8 animate-in zoom-in-95 text-center"
-      >
+        <!-- FINAL RESULT SCREEN -->
+        <div 
+          v-else-if="matchResult" 
+          key="result"
+          class="bg-surface border border-outline-variant rounded-2xl p-8 sm:p-12 shadow-lg space-y-8 text-center"
+        >
         <div class="inline-flex items-center gap-1.5 bg-surface-container px-4 py-1.5 rounded-full border border-outline-variant text-tertiary font-label text-xs uppercase tracking-widest font-bold">
           <span class="material-symbols-outlined text-sm">auto_awesome</span>
           <span>Recomendación Especial para Vos</span>
@@ -241,9 +244,10 @@ const handleAddRecommended = () => {
       <!-- EMPTY PRODUCTS QUIZ RESULT FALLBACK -->
       <div 
         v-else 
-        class="bg-surface border border-outline-variant rounded-xs p-8 sm:p-12 shadow-lg space-y-6 animate-in zoom-in-95 text-center"
+        key="fallback"
+        class="bg-surface border border-outline-variant rounded-2xl p-8 sm:p-12 shadow-lg space-y-6 text-center"
       >
-        <span class="material-symbols-outlined text-6xl text-neutral-300">auto_awesome</span>
+        <span class="material-symbols-outlined text-6xl text-neutral-300 animate-float-gentle">auto_awesome</span>
         <h2 class="font-sans text-3xl text-primary font-normal">¡Test completado con éxito!</h2>
         <p class="font-sans text-sm text-secondary max-w-md mx-auto leading-relaxed">
           Hemos registrado tus preferencias olfativas. Próximamente se sincronizarán nuevas fragancias personalizadas para vos en nuestro catálogo.
@@ -251,18 +255,19 @@ const handleAddRecommended = () => {
         <div class="flex flex-col sm:flex-row gap-4 justify-center pt-4">
           <RouterLink 
             to="/catalogo"
-            class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 rounded-full hover:bg-inverse-surface transition-all shadow-xs"
+            class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 rounded-full hover:bg-inverse-surface transition-all shadow-xs hover:shadow-md active:scale-95"
           >
             Ir al Catálogo
           </RouterLink>
           <button 
             @click="restart"
-            class="bg-surface text-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 rounded-full border border-outline hover:bg-surface-container transition-all shadow-2xs"
+            class="bg-surface text-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 rounded-full border border-outline hover:bg-surface-container transition-all shadow-2xs hover:shadow-sm active:scale-95"
           >
             Reiniciar Test
           </button>
         </div>
       </div>
+      </Transition>
 
     </div>
   </div>

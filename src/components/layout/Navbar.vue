@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useWishlistStore } from '@/stores/wishlist'
@@ -11,6 +11,22 @@ const route = useRoute()
 
 const isSearchOpen = ref(false)
 const isMobileMenuOpen = ref(false)
+const isCartPopping = ref(false)
+const isWishlistPopping = ref(false)
+
+watch(() => cartStore.totalItems, (newVal, oldVal) => {
+  if (newVal !== oldVal) {
+    isCartPopping.value = true
+    setTimeout(() => { isCartPopping.value = false }, 350)
+  }
+})
+
+watch(() => wishlistStore.totalItems, (newVal, oldVal) => {
+  if (newVal !== oldVal) {
+    isWishlistPopping.value = true
+    setTimeout(() => { isWishlistPopping.value = false }, 350)
+  }
+})
 
 const navLinks = [
   { name: 'Masculino', path: '/catalogo?gender=man' },
@@ -58,7 +74,7 @@ const isActive = (path) => {
         <!-- Search Trigger -->
         <button 
           @click="isSearchOpen = true"
-          class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center transition-colors duration-200"
+          class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
           aria-label="Buscar fragancias"
           title="Buscar fragancias"
         >
@@ -68,7 +84,7 @@ const isActive = (path) => {
         <!-- Wishlist Link -->
         <RouterLink 
           to="/catalogo?wishlist=true" 
-          class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center transition-colors duration-200 relative hidden sm:flex"
+          class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center transition-all duration-200 relative hidden sm:flex hover:scale-110 active:scale-95"
           aria-label="Lista de Deseos"
           title="Favoritos"
         >
@@ -76,6 +92,7 @@ const isActive = (path) => {
           <span 
             v-if="wishlistStore.totalItems > 0"
             class="absolute top-1 right-1 bg-secondary text-surface text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-label font-bold shadow-xs"
+            :class="{ 'animate-badge-pop': isWishlistPopping }"
           >
             {{ wishlistStore.totalItems }}
           </span>
@@ -84,14 +101,15 @@ const isActive = (path) => {
         <!-- Cart Trigger Drawer -->
         <button 
           @click="cartStore.openDrawer"
-          class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center transition-colors duration-200 relative"
+          class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center transition-all duration-200 relative hover:scale-110 active:scale-95"
           aria-label="Bolsa de Compras"
           title="Tu Bolsa"
         >
           <span class="material-symbols-outlined text-2xl">shopping_cart</span>
           <span 
             v-if="cartStore.totalItems > 0"
-            class="absolute top-1 right-1 bg-primary-container text-on-primary text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-label font-bold animate-pulse shadow-xs"
+            class="absolute top-1 right-1 bg-primary-container text-on-primary text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-label font-bold shadow-xs"
+            :class="{ 'animate-badge-pop': isCartPopping }"
           >
             {{ cartStore.totalItems }}
           </span>
@@ -100,7 +118,7 @@ const isActive = (path) => {
         <!-- Mobile Menu Toggle -->
         <button 
           @click="isMobileMenuOpen = !isMobileMenuOpen"
-          class="lg:hidden w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center transition-colors"
+          class="lg:hidden w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
           aria-label="Menú de navegación"
         >
           <span class="material-symbols-outlined text-2xl">{{ isMobileMenuOpen ? 'close' : 'menu' }}</span>
@@ -108,32 +126,34 @@ const isActive = (path) => {
       </div>
     </div>
 
-    <!-- Mobile Dropdown Menu -->
-    <div 
-      v-if="isMobileMenuOpen" 
-      class="lg:hidden bg-surface border-t border-outline-variant px-margin-mobile py-6 space-y-4 shadow-lg rounded-b-3xl animate-in slide-in-from-top-2 duration-200"
-    >
-      <div class="flex flex-col space-y-2">
-        <RouterLink
-          v-for="link in navLinks"
-          :key="link.name"
-          :to="link.path"
-          @click="isMobileMenuOpen = false"
-          class="font-label text-sm uppercase tracking-widest py-2.5 px-3 rounded-xl flex justify-between items-center transition-colors"
-          :class="isActive(link.path) ? 'text-primary font-bold bg-surface-container' : 'text-secondary hover:bg-surface-container-low'"
-        >
-          <span>{{ link.name }}</span>
-          <span class="material-symbols-outlined text-sm">chevron_right</span>
-        </RouterLink>
-      </div>
+    <!-- Mobile Dropdown Menu with Transition -->
+    <Transition name="slide-down">
+      <div 
+        v-if="isMobileMenuOpen" 
+        class="lg:hidden bg-surface border-t border-outline-variant px-margin-mobile py-6 space-y-4 shadow-xl rounded-b-3xl"
+      >
+        <div class="flex flex-col space-y-2">
+          <RouterLink
+            v-for="link in navLinks"
+            :key="link.name"
+            :to="link.path"
+            @click="isMobileMenuOpen = false"
+            class="font-label text-sm uppercase tracking-widest py-2.5 px-3 rounded-xl flex justify-between items-center transition-all hover:translate-x-1"
+            :class="isActive(link.path) ? 'text-primary font-bold bg-surface-container' : 'text-secondary hover:bg-surface-container-low'"
+          >
+            <span>{{ link.name }}</span>
+            <span class="material-symbols-outlined text-sm">chevron_right</span>
+          </RouterLink>
+        </div>
 
-      <div class="pt-4 border-t border-outline-variant flex justify-between items-center text-xs font-label text-secondary uppercase tracking-widest">
-        <span>Gicca Perfumes Boutique</span>
-        <RouterLink to="/quiz" @click="isMobileMenuOpen = false" class="text-primary underline font-bold">
-          Quiz Olfativo
-        </RouterLink>
+        <div class="pt-4 border-t border-outline-variant flex justify-between items-center text-xs font-label text-secondary uppercase tracking-widest">
+          <span>Gicca Perfumes Boutique</span>
+          <RouterLink to="/quiz" @click="isMobileMenuOpen = false" class="text-primary underline font-bold hover:text-primary-container transition-colors">
+            Quiz Olfativo
+          </RouterLink>
+        </div>
       </div>
-    </div>
+    </Transition>
 
     <!-- Search Modal Component -->
     <SearchModal :is-open="isSearchOpen" @close="isSearchOpen = false" />

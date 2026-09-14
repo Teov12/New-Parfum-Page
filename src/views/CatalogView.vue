@@ -437,25 +437,30 @@ const activeFiltersCount = computed(() => {
             </button>
           </div>
 
-          <!-- Product Grid -->
-          <div v-if="filteredProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Product Grid with Fluid FLIP Reorganization Animation -->
+          <TransitionGroup 
+            v-if="filteredProducts.length > 0" 
+            name="product-grid" 
+            tag="div" 
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
             <ProductCard 
               v-for="product in filteredProducts" 
               :key="product.id" 
               :product="product" 
             />
-          </div>
+          </TransitionGroup>
 
           <!-- Empty State -->
-          <div v-else class="bg-white border border-neutral-200/80 rounded-2xl p-16 text-center shadow-xs">
-            <span class="material-symbols-outlined text-6xl text-neutral-300 mb-4">search_off</span>
-            <h3 class="font-sans text-2xl font-bold text-neutral-900 mb-2">No encontramos fragancias con esos filtros</h3>
-            <p class="font-sans text-sm text-neutral-500 max-w-md mx-auto mb-8 leading-relaxed">
+          <div v-else class="bg-surface border border-outline-variant rounded-2xl p-16 text-center shadow-xs">
+            <span class="material-symbols-outlined text-6xl text-outline mb-4">search_off</span>
+            <h3 class="font-serif text-2xl text-primary mb-2">No encontramos fragancias con esos filtros</h3>
+            <p class="font-sans text-sm text-secondary max-w-md mx-auto mb-8 leading-relaxed">
               Intentá seleccionando otra familia olfativa, ampliando el rango de precio o eliminando los filtros activos.
             </p>
             <button 
               @click="clearAllFilters"
-              class="bg-neutral-900 text-white font-sans text-xs font-semibold uppercase tracking-wider px-8 py-3.5 rounded-xl hover:bg-black transition-all shadow-sm hover:shadow-md"
+              class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-8 py-3.5 rounded-full hover:bg-inverse-surface transition-all shadow-xs hover:shadow-md"
             >
               Restablecer Filtros
             </button>
@@ -464,69 +469,78 @@ const activeFiltersCount = computed(() => {
         </main>
 
       </div>
-
     </div>
 
-    <!-- MOBILE FILTERS MODAL -->
-    <div 
-      v-if="isMobileFiltersOpen"
-      class="fixed inset-0 z-50 bg-primary/60 backdrop-blur-xs flex justify-end"
-    >
-      <div class="w-full max-w-xs bg-surface h-full p-6 overflow-y-auto flex flex-col justify-between border-l border-outline-variant shadow-2xl">
-        <div>
-          <div class="flex justify-between items-center border-b border-outline-variant pb-4 mb-6">
-            <h3 class="font-sans text-xl text-primary font-medium">Filtrar Colección</h3>
-            <button @click="isMobileFiltersOpen = false" class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-primary">
-              <span class="material-symbols-outlined text-2xl">close</span>
-            </button>
-          </div>
+    <!-- MOBILE FILTERS MODAL WITH SMOOTH TRANSITIONS -->
+    <Teleport to="body">
+      <Transition name="fade-backdrop">
+        <div 
+          v-if="isMobileFiltersOpen"
+          class="fixed inset-0 z-50 bg-primary/50 backdrop-blur-xs flex justify-end"
+          @click.self="isMobileFiltersOpen = false"
+        >
+          <Transition name="slide-drawer">
+            <div 
+              v-if="isMobileFiltersOpen"
+              class="w-full max-w-xs bg-surface h-full p-6 overflow-y-auto flex flex-col justify-between border-l border-outline-variant shadow-2xl"
+            >
+              <div>
+                <div class="flex justify-between items-center border-b border-outline-variant pb-4 mb-6">
+                  <h3 class="font-sans text-xl text-primary font-medium">Filtrar Colección</h3>
+                  <button @click="isMobileFiltersOpen = false" class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-2xl">close</span>
+                  </button>
+                </div>
 
-          <!-- Quick Filters in Mobile -->
-          <div class="space-y-6">
-            <div>
-              <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-3">Género</h4>
-              <div class="space-y-2 font-sans text-sm text-secondary">
-                <label class="flex items-center gap-2"><input type="checkbox" value="woman" v-model="selectedGenders" class="accent-primary rounded-xs" /> Mujer</label>
-                <label class="flex items-center gap-2"><input type="checkbox" value="man" v-model="selectedGenders" class="accent-primary rounded-xs" /> Hombre</label>
-                <label class="flex items-center gap-2"><input type="checkbox" value="unisex" v-model="selectedGenders" class="accent-primary rounded-xs" /> Unisex</label>
+                <!-- Quick Filters in Mobile -->
+                <div class="space-y-6">
+                  <div>
+                    <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-3">Género</h4>
+                    <div class="space-y-2 font-sans text-sm text-secondary">
+                      <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="woman" v-model="selectedGenders" class="accent-primary rounded-xs" /> Mujer</label>
+                      <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="man" v-model="selectedGenders" class="accent-primary rounded-xs" /> Hombre</label>
+                      <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="unisex" v-model="selectedGenders" class="accent-primary rounded-xs" /> Unisex</label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-3">Categoría</h4>
+                    <div class="space-y-2 font-sans text-sm text-secondary">
+                      <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="disenador" v-model="selectedCategories" class="accent-primary rounded-xs" /> Diseñador</label>
+                      <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="arabes" v-model="selectedCategories" class="accent-primary rounded-xs" /> Perfumes Árabes</label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-3">Familia Olfativa</h4>
+                    <div class="space-y-2 font-sans text-sm text-secondary">
+                      <label v-for="f in olfactiveFamilies" :key="f.name" class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" :value="f.name" v-model="selectedFamilies" class="accent-primary rounded-xs" /> {{ f.name }}
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pt-6 border-t border-outline-variant space-y-3">
+                <button 
+                  @click="isMobileFiltersOpen = false"
+                  class="w-full bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-3.5 rounded-full text-center shadow-xs hover:shadow-md transition-all active:scale-95"
+                >
+                  Aplicar Filtros ({{ filteredProducts.length }})
+                </button>
+                <button 
+                  @click="clearAllFilters(); isMobileFiltersOpen = false"
+                  class="w-full bg-transparent text-secondary font-label text-xs uppercase tracking-widest py-2 text-center underline hover:text-primary transition-colors"
+                >
+                  Limpiar todo
+                </button>
               </div>
             </div>
-
-            <div>
-              <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-3">Categoría</h4>
-              <div class="space-y-2 font-sans text-sm text-secondary">
-                <label class="flex items-center gap-2"><input type="checkbox" value="disenador" v-model="selectedCategories" class="accent-primary rounded-xs" /> Diseñador</label>
-                <label class="flex items-center gap-2"><input type="checkbox" value="arabes" v-model="selectedCategories" class="accent-primary rounded-xs" /> Perfumes Árabes</label>
-              </div>
-            </div>
-
-            <div>
-              <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-3">Familia Olfativa</h4>
-              <div class="space-y-2 font-sans text-sm text-secondary">
-                <label v-for="f in olfactiveFamilies" :key="f.name" class="flex items-center gap-2">
-                  <input type="checkbox" :value="f.name" v-model="selectedFamilies" class="accent-primary rounded-xs" /> {{ f.name }}
-                </label>
-              </div>
-            </div>
-          </div>
+          </Transition>
         </div>
-
-        <div class="pt-6 border-t border-outline-variant space-y-3">
-          <button 
-            @click="isMobileFiltersOpen = false"
-            class="w-full bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-3.5 rounded-full text-center shadow-xs"
-          >
-            Aplicar Filtros ({{ filteredProducts.length }})
-          </button>
-          <button 
-            @click="clearAllFilters(); isMobileFiltersOpen = false"
-            class="w-full bg-transparent text-secondary font-label text-xs uppercase tracking-widest py-2 text-center underline"
-          >
-            Limpiar todo
-          </button>
-        </div>
-      </div>
-    </div>
+      </Transition>
+    </Teleport>
 
   </div>
 </template>

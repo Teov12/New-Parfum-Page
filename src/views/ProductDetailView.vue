@@ -81,8 +81,14 @@ const handleBuyNow = () => {
   router.push('/checkout')
 }
 
+const isBursting = ref(false)
+
 const handleToggleWishlist = () => {
   if (!product.value) return
+  isBursting.value = true
+  setTimeout(() => {
+    isBursting.value = false
+  }, 450)
   wishlistStore.toggleWishlist(product.value.id)
   const isNowIn = wishlistStore.isInWishlist(product.value.id)
   toastStore.show(
@@ -129,13 +135,17 @@ const calculateShipping = async () => {
         
         <!-- IMAGE GALLERY (7 cols - Encuadre Editorial Recto) -->
         <div class="lg:col-span-7 space-y-4">
-          <!-- Main Selected Image (High-Res Container) -->
-          <div class="relative aspect-[4/5] bg-surface-container overflow-hidden rounded-xs border border-outline-variant shadow-sm group">
-            <img 
-              :src="product.images[selectedImageIndex] || product.images[0]" 
-              :alt="product.name"
-              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
+          <!-- Main Selected Image with Smooth Crossfade Transition -->
+          <div class="relative aspect-[4/5] bg-surface-container overflow-hidden rounded-xl border border-outline-variant shadow-sm group">
+            <Transition name="image-crossfade" mode="out-in">
+              <img 
+                :key="selectedImageIndex"
+                :src="product.images[selectedImageIndex] || product.images[0]" 
+                :alt="product.name"
+                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+            </Transition>
+            
             <div class="absolute top-4 left-4 z-10 flex gap-2">
               <span v-if="product.badge" class="bg-primary-container text-on-primary font-label text-[10px] px-3.5 py-1 uppercase tracking-widest rounded-full shadow-xs">
                 {{ product.badge }}
@@ -145,29 +155,32 @@ const calculateShipping = async () => {
               </span>
             </div>
 
-            <!-- Wishlist Floating Button (Círculo) -->
+            <!-- Wishlist Floating Button with Burst Animation -->
             <button 
               @click="handleToggleWishlist"
-              class="absolute top-4 right-4 z-10 w-11 h-11 bg-surface/90 backdrop-blur-xs border border-outline-variant hover:border-primary rounded-full flex items-center justify-center text-primary shadow-xs transition-colors"
+              class="absolute top-4 right-4 z-10 w-11 h-11 bg-surface/90 backdrop-blur-xs border border-outline-variant hover:border-primary rounded-full flex items-center justify-center text-primary shadow-xs transition-all duration-200 hover:scale-110 active:scale-95"
               :aria-label="wishlistStore.isInWishlist(product.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'"
             >
               <span 
                 class="material-symbols-outlined text-xl transition-colors"
-                :class="wishlistStore.isInWishlist(product.id) ? 'fill-icon text-primary' : 'text-secondary hover:text-primary'"
+                :class="[
+                  wishlistStore.isInWishlist(product.id) ? 'fill-icon text-rose-700' : 'text-secondary hover:text-primary',
+                  { 'animate-heart-burst': isBursting }
+                ]"
               >
                 favorite
               </span>
             </button>
           </div>
 
-          <!-- Thumbnails Row (Encuadre Recto de 2px) -->
+          <!-- Thumbnails Row with Hover & Active Scale -->
           <div class="flex gap-3 overflow-x-auto pb-2">
             <button
               v-for="(img, idx) in product.images"
               :key="idx"
               @click="selectedImageIndex = idx"
-              class="w-20 h-24 flex-shrink-0 bg-surface-container rounded-xs border overflow-hidden transition-all shadow-2xs"
-              :class="selectedImageIndex === idx ? 'border-primary ring-1 ring-primary' : 'border-outline-variant opacity-70 hover:opacity-100'"
+              class="w-20 h-24 flex-shrink-0 bg-surface-container rounded-lg border overflow-hidden transition-all duration-300 shadow-2xs hover:scale-105 active:scale-95"
+              :class="selectedImageIndex === idx ? 'border-primary ring-2 ring-primary scale-102' : 'border-outline-variant opacity-70 hover:opacity-100'"
             >
               <img :src="img" :alt="`${product.name} vista ${idx + 1}`" class="w-full h-full object-cover" />
             </button>
@@ -391,60 +404,63 @@ const calculateShipping = async () => {
           </button>
         </div>
 
-        <!-- Tab 1: Olfactive Pyramid Component -->
-        <div v-if="activeTab === 'pyramid'" class="animate-in fade-in duration-300">
-          <OlfactivePyramid :pyramid="product.olfactoryPyramid" />
-        </div>
-
-        <!-- Tab 2: Storytelling & Usage Ritual -->
-        <div v-if="activeTab === 'description'" class="bg-surface-container border border-outline-variant rounded-xs p-8 space-y-6 animate-in fade-in duration-300 shadow-xs">
-          <div>
-            <h3 class="font-sans text-2xl text-primary font-normal mb-3">La Historia Olfativa</h3>
-            <p class="font-sans text-secondary text-base leading-relaxed">
-              {{ product.description }}
-            </p>
+        <!-- Dynamic Tab Content with Smooth Transition -->
+        <Transition name="page-fade" mode="out-in">
+          <!-- Tab 1: Olfactive Pyramid Component -->
+          <div v-if="activeTab === 'pyramid'" key="pyramid" class="transition-all duration-300">
+            <OlfactivePyramid :pyramid="product.olfactoryPyramid" />
           </div>
 
-          <div class="border-t border-outline-variant pt-6">
-            <h4 class="font-sans text-xl text-primary font-medium mb-2">Consejos de Aplicación</h4>
-            <p class="font-sans text-secondary text-sm leading-relaxed mb-4">
-              {{ product.usageTips }}
-            </p>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 font-label text-xs uppercase tracking-wider text-secondary">
-              <div class="p-4 bg-surface rounded-xs border border-outline-variant shadow-2xs">
-                <strong>1. Puntos de Pulso:</strong> Muñecas, clavículas y cuello.
-              </div>
-              <div class="p-4 bg-surface rounded-xs border border-outline-variant shadow-2xs">
-                <strong>2. No Frotar:</strong> Deja secar al aire para no romper las notas.
-              </div>
-              <div class="p-4 bg-surface rounded-xs border border-outline-variant shadow-2xs">
-                <strong>3. Hidratación:</strong> Aplica sobre piel hidratada para mayor fijación.
-              </div>
+          <!-- Tab 2: Storytelling & Usage Ritual -->
+          <div v-else-if="activeTab === 'description'" key="description" class="bg-surface-container border border-outline-variant rounded-2xl p-8 space-y-6 shadow-xs transition-all duration-300">
+            <div>
+              <h3 class="font-sans text-2xl text-primary font-normal mb-3">La Historia Olfativa</h3>
+              <p class="font-sans text-secondary text-base leading-relaxed">
+                {{ product.description }}
+              </p>
             </div>
-          </div>
-        </div>
 
-        <!-- Tab 3: Technical Specifications -->
-        <div v-if="activeTab === 'characteristics'" class="bg-surface-container border border-outline-variant rounded-xs p-8 animate-in fade-in duration-300 shadow-xs">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs">
-              <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Duración en Piel</span>
-              <p class="font-sans text-lg text-primary font-medium">{{ product.characteristics.longevity }}</p>
-            </div>
-            <div class="p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs">
-              <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Estela / Proyección</span>
-              <p class="font-sans text-lg text-primary font-medium">{{ product.characteristics.sillage }}</p>
-            </div>
-            <div class="p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs">
-              <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Estación Ideal</span>
-              <p class="font-sans text-lg text-primary font-medium">{{ product.characteristics.season }}</p>
-            </div>
-            <div class="p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs">
-              <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Ocasión Sugerida</span>
-              <p class="font-sans text-lg text-primary font-medium">{{ product.characteristics.occasion }}</p>
+            <div class="border-t border-outline-variant pt-6">
+              <h4 class="font-sans text-xl text-primary font-medium mb-2">Consejos de Aplicación</h4>
+              <p class="font-sans text-secondary text-sm leading-relaxed mb-4">
+                {{ product.usageTips }}
+              </p>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 font-label text-xs uppercase tracking-wider text-secondary">
+                <div class="p-4 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:border-primary transition-colors">
+                  <strong>1. Puntos de Pulso:</strong> Muñecas, clavículas y cuello.
+                </div>
+                <div class="p-4 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:border-primary transition-colors">
+                  <strong>2. No Frotar:</strong> Deja secar al aire para no romper las notas.
+                </div>
+                <div class="p-4 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:border-primary transition-colors">
+                  <strong>3. Hidratación:</strong> Aplica sobre piel hidratada para mayor fijación.
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+
+          <!-- Tab 3: Technical Specifications -->
+          <div v-else-if="activeTab === 'characteristics'" key="characteristics" class="bg-surface-container border border-outline-variant rounded-2xl p-8 shadow-xs transition-all duration-300">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div class="p-5 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:border-primary transition-all hover:-translate-y-0.5">
+                <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Duración en Piel</span>
+                <p class="font-sans text-lg text-primary font-medium">{{ product.characteristics.longevity }}</p>
+              </div>
+              <div class="p-5 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:border-primary transition-all hover:-translate-y-0.5">
+                <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Estela / Proyección</span>
+                <p class="font-sans text-lg text-primary font-medium">{{ product.characteristics.sillage }}</p>
+              </div>
+              <div class="p-5 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:border-primary transition-all hover:-translate-y-0.5">
+                <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Estación Ideal</span>
+                <p class="font-sans text-lg text-primary font-medium">{{ product.characteristics.season }}</p>
+              </div>
+              <div class="p-5 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:border-primary transition-all hover:-translate-y-0.5">
+                <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Ocasión Sugerida</span>
+                <p class="font-sans text-lg text-primary font-medium">{{ product.characteristics.occasion }}</p>
+              </div>
+            </div>
+          </div>
+        </Transition>
       </div>
 
       <!-- RELATED FRAGRANCES SECTION -->

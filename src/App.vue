@@ -22,9 +22,13 @@ onMounted(() => {
     <!-- Sticky Main Navigation (Only for public store) -->
     <Navbar v-if="!isAdminRoute" />
 
-    <!-- Main Dynamic Route View -->
+    <!-- Main Dynamic Route View with Fluid Page Transition -->
     <main class="flex-grow">
-      <RouterView />
+      <RouterView v-slot="{ Component }">
+        <Transition name="page-fade" mode="out-in">
+          <component :is="Component" />
+        </Transition>
+      </RouterView>
     </main>
 
     <!-- Editorial Footer (Only for public store) -->
