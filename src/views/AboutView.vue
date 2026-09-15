@@ -1,5 +1,8 @@
 <script setup>
 import { RouterLink } from 'vue-router'
+import { useSiteContentStore } from '@/stores/siteContent'
+
+const siteContentStore = useSiteContentStore()
 </script>
 
 <template>
@@ -7,7 +10,7 @@ import { RouterLink } from 'vue-router'
     
     <!-- Hero Banner -->
     <section class="relative bg-surface-container py-20 lg:py-28 border-b border-outline-variant">
-      <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop text-center max-w-3xl">
+      <div v-reveal class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop text-center max-w-3xl">
         <span class="font-label text-xs uppercase tracking-[0.25em] text-secondary mb-3 block">Sobre Nosotros</span>
         <h1 class="font-sans text-4xl sm:text-5xl lg:text-6xl text-primary font-normal leading-tight mb-6">
           Perfumes Originales <br /><span class="italic">al Mejor Precio</span>
@@ -21,7 +24,7 @@ import { RouterLink } from 'vue-router'
     <!-- Main Story Grid -->
     <section class="py-20 max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-24">
-        <div class="lg:col-span-6 space-y-6">
+        <div v-reveal="{ direction: 'right' }" class="lg:col-span-6 space-y-6">
           <span class="font-label text-xs uppercase tracking-widest text-secondary block">Quiénes Somos</span>
           <h2 class="font-sans text-3xl sm:text-4xl text-primary font-normal leading-tight">
             Pasión por los perfumes y atención directa, de persona a persona.
@@ -39,12 +42,12 @@ import { RouterLink } from 'vue-router'
           </div>
         </div>
 
-        <div class="lg:col-span-6">
+        <div v-reveal="{ direction: 'left', delay: 150 }" class="lg:col-span-6">
           <div class="aspect-[4/5] bg-surface-container border border-outline-variant rounded-xs overflow-hidden shadow-md">
             <img 
-              src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85" 
+              :src="siteContentStore.editorial?.aboutImage || 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85'" 
               alt="Fragancias originales en Gicca Perfumes"
-              class="w-full h-full object-cover"
+              class="w-full h-full object-cover hover:scale-105 transition-transform duration-700 ease-out"
             />
           </div>
         </div>
@@ -52,13 +55,13 @@ import { RouterLink } from 'vue-router'
 
       <!-- Pillars Section -->
       <div class="border-t border-b border-outline-variant py-16">
-        <div class="text-center max-w-xl mx-auto mb-14">
+        <div v-reveal class="text-center max-w-xl mx-auto mb-14">
           <p class="font-label text-xs uppercase tracking-widest text-secondary mb-2">Nuestras Garantías</p>
           <h3 class="font-sans text-3xl text-primary font-normal">Por Qué Comprar con Nosotros</h3>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div class="bg-surface-container p-8 border border-outline-variant rounded-xs space-y-4 shadow-xs">
+          <div v-reveal="{ delay: 100 }" class="bg-surface-container p-8 border border-outline-variant rounded-xs space-y-4 shadow-xs hover:border-primary transition-all duration-300">
             <div class="w-12 h-12 bg-surface rounded-full flex items-center justify-center border border-outline-variant text-primary font-sans text-xl font-bold shadow-2xs">
               ✓
             </div>
@@ -68,7 +71,7 @@ import { RouterLink } from 'vue-router'
             </p>
           </div>
 
-          <div class="bg-surface-container p-8 border border-outline-variant rounded-xs space-y-4 shadow-xs">
+          <div v-reveal="{ delay: 200 }" class="bg-surface-container p-8 border border-outline-variant rounded-xs space-y-4 shadow-xs hover:border-primary transition-all duration-300">
             <div class="w-12 h-12 bg-surface rounded-full flex items-center justify-center border border-outline-variant text-primary font-sans text-xl font-bold shadow-2xs">
               💬
             </div>
@@ -78,7 +81,7 @@ import { RouterLink } from 'vue-router'
             </p>
           </div>
 
-          <div class="bg-surface-container p-8 border border-outline-variant rounded-xs space-y-4 shadow-xs">
+          <div v-reveal="{ delay: 300 }" class="bg-surface-container p-8 border border-outline-variant rounded-xs space-y-4 shadow-xs hover:border-primary transition-all duration-300">
             <div class="w-12 h-12 bg-surface rounded-full flex items-center justify-center border border-outline-variant text-primary font-sans text-xl font-bold shadow-2xs">
               📦
             </div>
@@ -91,7 +94,7 @@ import { RouterLink } from 'vue-router'
       </div>
 
       <!-- CTA Box -->
-      <div class="mt-20 bg-surface-container-high border border-outline-variant rounded-xs p-10 md:p-16 text-center max-w-3xl mx-auto space-y-6 shadow-md">
+      <div v-reveal="{ direction: 'zoom' }" class="mt-20 bg-surface-container-high border border-outline-variant rounded-xs p-10 md:p-16 text-center max-w-3xl mx-auto space-y-6 shadow-md">
         <h3 class="font-sans text-3xl sm:text-4xl text-primary font-normal">
           ¿Buscás tu próximo perfume?
         </h3>

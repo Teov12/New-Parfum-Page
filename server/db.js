@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename)
 const DATA_DIR = path.join(__dirname, 'data')
 const DB_FILE = path.join(DATA_DIR, 'products.json')
 const ORDERS_FILE = path.join(DATA_DIR, 'orders.json')
+const SITE_CONTENT_FILE = path.join(DATA_DIR, 'site-content.json')
 
 // Ensure directory exists
 if (!fs.existsSync(DATA_DIR)) {
@@ -22,6 +23,16 @@ if (!fs.existsSync(DB_FILE)) {
 // Ensure orders database file exists
 if (!fs.existsSync(ORDERS_FILE)) {
   fs.writeFileSync(ORDERS_FILE, JSON.stringify([], null, 2), 'utf-8')
+}
+
+// Ensure site content file exists
+if (!fs.existsSync(SITE_CONTENT_FILE)) {
+  fs.writeFileSync(SITE_CONTENT_FILE, JSON.stringify({
+    heroSlides: [],
+    mainCategories: [],
+    olfactiveFamilies: [],
+    editorial: {}
+  }, null, 2), 'utf-8')
 }
 
 // ==========================================
@@ -376,3 +387,133 @@ export const deleteOrder = (id) => {
   saveOrders(orders)
   return true
 }
+
+// ==========================================
+// SITE CONTENT & STATIC IMAGES MANAGEMENT
+// ==========================================
+
+export const getSiteContent = () => {
+  try {
+    const content = fs.readFileSync(SITE_CONTENT_FILE, 'utf-8')
+    const parsed = JSON.parse(content || '{}')
+    return {
+      heroSlides: Array.isArray(parsed.heroSlides) ? parsed.heroSlides : [],
+      mainCategories: Array.isArray(parsed.mainCategories) ? parsed.mainCategories : [],
+      olfactiveFamilies: Array.isArray(parsed.olfactiveFamilies) ? parsed.olfactiveFamilies : [],
+      editorial: parsed.editorial || {}
+    }
+  } catch (err) {
+    console.error('Error reading site content database:', err)
+    return {
+      heroSlides: [],
+      mainCategories: [],
+      olfactiveFamilies: [],
+      editorial: {}
+    }
+  }
+}
+
+export const saveSiteContent = (content) => {
+  try {
+    const current = getSiteContent()
+    const merged = {
+      ...current,
+      ...content,
+      heroSlides: Array.isArray(content.heroSlides) ? content.heroSlides : current.heroSlides,
+      mainCategories: Array.isArray(content.mainCategories) ? content.mainCategories : current.mainCategories,
+      olfactiveFamilies: Array.isArray(content.olfactiveFamilies) ? content.olfactiveFamilies : current.olfactiveFamilies,
+      editorial: content.editorial ? { ...current.editorial, ...content.editorial } : current.editorial,
+      updatedAt: new Date().toISOString()
+    }
+    fs.writeFileSync(SITE_CONTENT_FILE, JSON.stringify(merged, null, 2), 'utf-8')
+    return merged
+  } catch (err) {
+    console.error('Error saving site content database:', err)
+    return null
+  }
+}
+
+export const addCategory = (categoryData) => {
+  const content = getSiteContent()
+  const newCat = {
+    id: categoryData.id || `cat_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+    title: categoryData.title || 'Nueva Categoría',
+    subtitle: categoryData.subtitle || '',
+    description: categoryData.description || '',
+    link: categoryData.link || '/catalogo',
+    image: categoryData.image || 'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1200&q=85',
+    badge: categoryData.badge || '',
+    buttonText: categoryData.buttonText || 'Ver Colección',
+    span: Number(categoryData.span) || 6,
+    active: categoryData.active !== undefined ? Boolean(categoryData.active) : true,
+    createdAt: new Date().toISOString()
+  }
+  content.mainCategories.push(newCat)
+  saveSiteContent(content)
+  return newCat
+}
+
+export const updateCategory = (id, categoryData) => {
+  const content = getSiteContent()
+  const index = content.mainCategories.findIndex(c => c.id === id)
+  if (index === -1) return null
+
+  content.mainCategories[index] = {
+    ...content.mainCategories[index],
+    ...categoryData,
+    id: content.mainCategories[index].id,
+    updatedAt: new Date().toISOString()
+  }
+  saveSiteContent(content)
+  return content.mainCategories[index]
+}
+
+export const deleteCategory = (id) => {
+  const content = getSiteContent()
+  const index = content.mainCategories.findIndex(c => c.id === id)
+  if (index === -1) return false
+
+  content.mainCategories.splice(index, 1)
+  saveSiteContent(content)
+  return true
+}
+
+export const addOlfactiveFamily = (familyData) => {
+  const content = getSiteContent()
+  const newFam = {
+    id: familyData.id || `fam_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+    name: familyData.name || 'Nueva Familia',
+    description: familyData.description || '',
+    image: familyData.image || 'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=600&q=80',
+    createdAt: new Date().toISOString()
+  }
+  content.olfactiveFamilies.push(newFam)
+  saveSiteContent(content)
+  return newFam
+}
+
+export const updateOlfactiveFamily = (id, familyData) => {
+  const content = getSiteContent()
+  const index = content.olfactiveFamilies.findIndex(f => f.id === id || f.name?.toLowerCase() === id?.toLowerCase())
+  if (index === -1) return null
+
+  content.olfactiveFamilies[index] = {
+    ...content.olfactiveFamilies[index],
+    ...familyData,
+    id: content.olfactiveFamilies[index].id,
+    updatedAt: new Date().toISOString()
+  }
+  saveSiteContent(content)
+  return content.olfactiveFamilies[index]
+}
+
+export const deleteOlfactiveFamily = (id) => {
+  const content = getSiteContent()
+  const index = content.olfactiveFamilies.findIndex(f => f.id === id || f.name?.toLowerCase() === id?.toLowerCase())
+  if (index === -1) return false
+
+  content.olfactiveFamilies.splice(index, 1)
+  saveSiteContent(content)
+  return true
+}
+

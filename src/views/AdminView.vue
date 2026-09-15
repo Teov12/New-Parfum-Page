@@ -5,13 +5,15 @@ import * as yup from 'yup'
 import { useProductStore } from '@/stores/products'
 import { useOrdersStore } from '@/stores/orders'
 import { useToastStore } from '@/stores/toast'
+import { useSiteContentStore } from '@/stores/siteContent'
 
 const productStore = useProductStore()
 const ordersStore = useOrdersStore()
 const toastStore = useToastStore()
+const siteContentStore = useSiteContentStore()
 
 // Navigation Tabs in Admin
-const activeAdminTab = ref('ventas') // 'ventas', 'productos', 'finanzas'
+const activeAdminTab = ref('ventas') // 'ventas', 'productos', 'finanzas', 'diseno'
 
 // Authentication State
 const isAuthenticated = ref(false)
@@ -276,7 +278,8 @@ const loadData = async () => {
     productStore.fetchProducts(),
     productStore.fetchStats(),
     ordersStore.fetchOrders(),
-    ordersStore.fetchStats()
+    ordersStore.fetchStats(),
+    siteContentStore.fetchSiteContent()
   ])
 }
 
@@ -715,6 +718,262 @@ const sendWhatsAppTracking = (order) => {
   const url = `https://wa.me/${order.customer?.phone?.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`
   window.open(url, '_blank')
 }
+
+// ==========================================
+// DISEÑO & CONTENIDO STATE & METHODS
+// ==========================================
+const activeDesignSubtab = ref('categorias') // 'categorias', 'familias', 'banners', 'editorial'
+
+// Category Form
+const isCategoryModalOpen = ref(false)
+const isSubmittingCategory = ref(false)
+const categoryForm = ref({
+  id: '',
+  title: '',
+  subtitle: '',
+  description: '',
+  link: '/catalogo',
+  image: '',
+  badge: '',
+  buttonText: 'Ver Colección',
+  span: 6
+})
+const isEditingCategory = computed(() => !!categoryForm.value.id)
+
+const openCreateCategoryModal = () => {
+  categoryForm.value = {
+    id: '',
+    title: '',
+    subtitle: '',
+    description: '',
+    link: '/catalogo',
+    image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1200&q=85',
+    badge: '',
+    buttonText: 'Ver Colección',
+    span: 6
+  }
+  isCategoryModalOpen.value = true
+}
+
+const openEditCategoryModal = (cat) => {
+  categoryForm.value = { ...cat }
+  isCategoryModalOpen.value = true
+}
+
+const handleSaveCategory = async () => {
+  if (!categoryForm.value.title.trim()) {
+    toastStore.show('Por favor ingresá un título para la categoría', 'error')
+    return
+  }
+  isSubmittingCategory.value = true
+  try {
+    if (isEditingCategory.value) {
+      await siteContentStore.updateCategory(categoryForm.value.id, categoryForm.value)
+      toastStore.show('¡Categoría actualizada con éxito!', 'success')
+    } else {
+      await siteContentStore.addCategory(categoryForm.value)
+      toastStore.show('¡Nueva categoría agregada con éxito!', 'success')
+    }
+    isCategoryModalOpen.value = false
+  } catch (err) {
+    toastStore.show(err.message || 'Error al guardar categoría', 'error')
+  } finally {
+    isSubmittingCategory.value = false
+  }
+}
+
+// Olfactive Family Form
+const isFamilyModalOpen = ref(false)
+const isSubmittingFamily = ref(false)
+const familyForm = ref({
+  id: '',
+  name: '',
+  description: '',
+  image: ''
+})
+const isEditingFamily = computed(() => !!familyForm.value.id)
+
+const openCreateFamilyModal = () => {
+  familyForm.value = {
+    id: '',
+    name: '',
+    description: '',
+    image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=600&q=80'
+  }
+  isFamilyModalOpen.value = true
+}
+
+const openEditFamilyModal = (fam) => {
+  familyForm.value = { ...fam }
+  isFamilyModalOpen.value = true
+}
+
+const handleSaveFamily = async () => {
+  if (!familyForm.value.name.trim()) {
+    toastStore.show('Por favor ingresá un nombre para la familia olfativa', 'error')
+    return
+  }
+  isSubmittingFamily.value = true
+  try {
+    if (isEditingFamily.value) {
+      await siteContentStore.updateOlfactiveFamily(familyForm.value.id || familyForm.value.name, familyForm.value)
+      toastStore.show('¡Familia olfativa actualizada con éxito!', 'success')
+    } else {
+      await siteContentStore.addOlfactiveFamily(familyForm.value)
+      toastStore.show('¡Nueva familia olfativa agregada con éxito!', 'success')
+    }
+    isFamilyModalOpen.value = false
+  } catch (err) {
+    toastStore.show(err.message || 'Error al guardar familia olfativa', 'error')
+  } finally {
+    isSubmittingFamily.value = false
+  }
+}
+
+// Slide Form
+const isSlideModalOpen = ref(false)
+const isSubmittingSlide = ref(false)
+const slideForm = ref({
+  id: '',
+  tag: '',
+  title: '',
+  highlight: '',
+  description: '',
+  image: '',
+  bottleImage: '',
+  featuredTitle: '',
+  featuredSub: '',
+  featuredRating: '5.0 ★ Destacado',
+  primaryCtaText: 'Explorar Catálogo',
+  primaryCtaLink: '/catalogo',
+  secondaryCtaText: 'Test de Fragancia',
+  secondaryCtaLink: '/quiz'
+})
+const isEditingSlide = computed(() => !!slideForm.value.id)
+
+const openCreateSlideModal = () => {
+  slideForm.value = {
+    id: `slide_${Date.now()}`,
+    tag: 'NUEVA COLECCIÓN',
+    title: 'Nueva Fragancia',
+    highlight: 'exclusiva.',
+    description: 'Descripción cautivadora del perfume o promoción.',
+    image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=2000&q=85',
+    bottleImage: 'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=800&q=85',
+    featuredTitle: 'Perfume Destacado',
+    featuredSub: 'Notas de Lujo & Duración',
+    featuredRating: '5.0 ★ Exclusivo',
+    primaryCtaText: 'Explorar Catálogo',
+    primaryCtaLink: '/catalogo',
+    secondaryCtaText: 'Test de Fragancia',
+    secondaryCtaLink: '/quiz'
+  }
+  isSlideModalOpen.value = true
+}
+
+const openEditSlideModal = (slide) => {
+  slideForm.value = { ...slide }
+  isSlideModalOpen.value = true
+}
+
+const handleSaveSlide = async () => {
+  isSubmittingSlide.value = true
+  try {
+    const slides = [...siteContentStore.heroSlides]
+    const idx = slides.findIndex(s => s.id === slideForm.value.id)
+    if (idx !== -1) {
+      slides[idx] = { ...slideForm.value }
+    } else {
+      slides.push({ ...slideForm.value })
+    }
+    await siteContentStore.saveFullContent({ heroSlides: slides })
+    toastStore.show('¡Diapositiva del banner guardada!', 'success')
+    isSlideModalOpen.value = false
+  } catch (err) {
+    toastStore.show(err.message || 'Error al guardar slide', 'error')
+  } finally {
+    isSubmittingSlide.value = false
+  }
+}
+
+// Editorial Save
+const isSubmittingEditorial = ref(false)
+const handleSaveEditorial = async () => {
+  isSubmittingEditorial.value = true
+  try {
+    await siteContentStore.saveFullContent({ editorial: siteContentStore.editorial })
+    toastStore.show('¡Imágenes editoriales guardadas con éxito!', 'success')
+  } catch (err) {
+    toastStore.show(err.message || 'Error al guardar imágenes editoriales', 'error')
+  } finally {
+    isSubmittingEditorial.value = false
+  }
+}
+
+// Delete Confirmation State
+const isDeleteContentModalOpen = ref(false)
+const contentToDelete = ref(null)
+
+const confirmDeleteContentItem = (type, item, title) => {
+  contentToDelete.value = { type, item, title }
+  isDeleteContentModalOpen.value = true
+}
+
+const handleExecuteDeleteContent = async () => {
+  if (!contentToDelete.value) return
+  const { type, item } = contentToDelete.value
+  try {
+    if (type === 'category') {
+      await siteContentStore.deleteCategory(item.id)
+      toastStore.show('Categoría eliminada del catálogo', 'info')
+    } else if (type === 'family') {
+      await siteContentStore.deleteOlfactiveFamily(item.id || item.name)
+      toastStore.show('Familia olfativa eliminada', 'info')
+    } else if (type === 'slide') {
+      const slides = siteContentStore.heroSlides.filter(s => s.id !== item.id)
+      await siteContentStore.saveFullContent({ heroSlides: slides })
+      toastStore.show('Diapositiva eliminada', 'info')
+    }
+  } catch (err) {
+    toastStore.show(err.message || 'Error al eliminar', 'error')
+  } finally {
+    isDeleteContentModalOpen.value = false
+    contentToDelete.value = null
+  }
+}
+
+// Direct image upload (1-click upload from PC on cards)
+const handleDirectImageUpload = async (targetObj, fieldKey, event) => {
+  const file = event.target.files?.[0]
+  if (!file) return
+  try {
+    toastStore.show('Subiendo imagen a la web...', 'info')
+    const url = await siteContentStore.uploadImage(file)
+    targetObj[fieldKey] = url
+    await siteContentStore.saveFullContent({})
+    toastStore.show('¡Imagen actualizada con éxito!', 'success')
+  } catch (err) {
+    toastStore.show(err.message || 'Error al subir imagen', 'error')
+  } finally {
+    event.target.value = ''
+  }
+}
+
+// Modal image upload
+const handleModalImageUpload = async (targetObj, fieldKey, event) => {
+  const file = event.target.files?.[0]
+  if (!file) return
+  try {
+    toastStore.show('Subiendo imagen...', 'info')
+    const url = await siteContentStore.uploadImage(file)
+    targetObj[fieldKey] = url
+    toastStore.show('¡Imagen cargada en el formulario!', 'success')
+  } catch (err) {
+    toastStore.show(err.message || 'Error al subir imagen', 'error')
+  } finally {
+    event.target.value = ''
+  }
+}
 </script>
 
 <template>
@@ -804,6 +1063,15 @@ const sendWhatsAppTracking = (order) => {
                 <span class="material-symbols-outlined text-sm">trending_up</span>
                 <span>Rentabilidad & Ganancias</span>
               </button>
+
+              <button 
+                @click="activeAdminTab = 'diseno'"
+                class="px-4 py-1.5 rounded-full text-xs font-label uppercase tracking-wider transition-all flex items-center gap-1.5"
+                :class="activeAdminTab === 'diseno' ? 'bg-primary-container text-on-primary font-bold shadow-2xs' : 'text-secondary hover:text-primary'"
+              >
+                <span class="material-symbols-outlined text-sm">palette</span>
+                <span>Diseño & Contenido Web</span>
+              </button>
             </nav>
           </div>
 
@@ -850,6 +1118,13 @@ const sendWhatsAppTracking = (order) => {
             :class="activeAdminTab === 'finanzas' ? 'bg-primary-container text-on-primary font-bold' : 'bg-surface-container text-secondary'"
           >
             Rentabilidad
+          </button>
+          <button 
+            @click="activeAdminTab = 'diseno'"
+            class="px-3 py-1 rounded-full text-xs font-label uppercase tracking-wider flex-shrink-0"
+            :class="activeAdminTab === 'diseno' ? 'bg-primary-container text-on-primary font-bold' : 'bg-surface-container text-secondary'"
+          >
+            Diseño & Contenido
           </button>
         </div>
       </header>
@@ -1268,6 +1543,400 @@ const sendWhatsAppTracking = (order) => {
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- ==================================================== -->
+        <!-- TAB 4: DISEÑO & PERSONALIZACIÓN DE CONTENIDO Y FOTOS -->
+        <!-- ==================================================== -->
+        <div v-if="activeAdminTab === 'diseno'" class="space-y-6 animate-in fade-in">
+          
+          <!-- Sub-header & Subtabs Navigation -->
+          <div class="bg-surface border border-outline-variant rounded-xs p-6 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h2 class="font-sans text-2xl text-primary font-normal">Personalización Visual de la Tienda</h2>
+              <p class="font-sans text-xs text-secondary mt-1">
+                Modificá todas las imágenes estáticas, tarjetas del Bento Grid de portada y familias olfativas en tiempo real.
+              </p>
+            </div>
+
+            <!-- Subtabs -->
+            <div class="flex flex-wrap items-center gap-1.5 bg-surface-container p-1 rounded-full border border-outline-variant text-xs font-label uppercase">
+              <button 
+                @click="activeDesignSubtab = 'categorias'"
+                class="px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5"
+                :class="activeDesignSubtab === 'categorias' ? 'bg-primary-container text-on-primary font-bold shadow-2xs' : 'text-secondary hover:text-primary'"
+              >
+                <span>Categorías</span>
+                <span class="bg-surface text-primary px-1.5 py-0.2 text-[10px] rounded-full font-mono">{{ siteContentStore.mainCategories.length }}</span>
+              </button>
+              <button 
+                @click="activeDesignSubtab = 'familias'"
+                class="px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5"
+                :class="activeDesignSubtab === 'familias' ? 'bg-primary-container text-on-primary font-bold shadow-2xs' : 'text-secondary hover:text-primary'"
+              >
+                <span>Familias Olfativas</span>
+                <span class="bg-surface text-primary px-1.5 py-0.2 text-[10px] rounded-full font-mono">{{ siteContentStore.olfactiveFamilies.length }}</span>
+              </button>
+              <button 
+                @click="activeDesignSubtab = 'banners'"
+                class="px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5"
+                :class="activeDesignSubtab === 'banners' ? 'bg-primary-container text-on-primary font-bold shadow-2xs' : 'text-secondary hover:text-primary'"
+              >
+                <span>Banners Portada</span>
+                <span class="bg-surface text-primary px-1.5 py-0.2 text-[10px] rounded-full font-mono">{{ siteContentStore.heroSlides.length }}</span>
+              </button>
+              <button 
+                @click="activeDesignSubtab = 'editorial'"
+                class="px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5"
+                :class="activeDesignSubtab === 'editorial' ? 'bg-primary-container text-on-primary font-bold shadow-2xs' : 'text-secondary hover:text-primary'"
+              >
+                <span>Sobre Nosotros</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SUBTAB 1: CATEGORÍAS PRINCIPALES (BENTO GRID) -->
+          <div v-if="activeDesignSubtab === 'categorias'" class="space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div>
+                <h3 class="font-sans text-xl font-normal text-primary">Categorías Principales (Bento Grid Portada)</h3>
+                <p class="font-sans text-xs text-secondary mt-0.5">
+                  Estas tarjetas aparecen destacadas en la página de inicio. Podés cambiar la foto, editar textos, agregar nuevas o eliminarlas.
+                </p>
+              </div>
+
+              <button 
+                @click="openCreateCategoryModal"
+                class="bg-primary-container hover:bg-inverse-surface text-on-primary font-label text-xs uppercase tracking-widest px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-sm transition-all"
+              >
+                <span class="material-symbols-outlined text-sm">add</span>
+                <span>Nueva Categoría</span>
+              </button>
+            </div>
+
+            <!-- Categories Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div 
+                v-for="cat in siteContentStore.mainCategories" 
+                :key="cat.id"
+                class="bg-surface border border-outline-variant rounded-xs overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <!-- Image preview & quick upload -->
+                  <div class="relative aspect-[16/9] bg-surface-container overflow-hidden group">
+                    <img 
+                      :src="cat.image" 
+                      :alt="cat.title"
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <label class="bg-surface/90 hover:bg-surface text-primary font-label text-xs uppercase px-3 py-1.5 rounded-full cursor-pointer flex items-center gap-1 shadow-md">
+                        <span class="material-symbols-outlined text-sm">upload</span>
+                        <span>Cambiar Foto</span>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          class="hidden" 
+                          @change="handleDirectImageUpload(cat, 'image', $event)" 
+                        />
+                      </label>
+                    </div>
+
+                    <div class="absolute top-2 left-2 bg-surface/90 backdrop-blur-xs font-label text-[10px] font-bold px-2 py-0.5 rounded-full text-primary border border-outline-variant shadow-xs">
+                      {{ cat.subtitle || 'Categoría' }}
+                    </div>
+
+                    <div class="absolute top-2 right-2 bg-primary-container text-on-primary font-label text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs">
+                      {{ cat.span === 12 ? 'Ancho Completo (12 cols)' : 'Media Pantalla (6 cols)' }}
+                    </div>
+                  </div>
+
+                  <!-- Info -->
+                  <div class="p-5 space-y-2">
+                    <h4 class="font-sans text-xl text-primary font-normal">{{ cat.title }}</h4>
+                    <p class="font-sans text-xs text-secondary line-clamp-2 leading-relaxed">{{ cat.description }}</p>
+                    
+                    <div class="pt-2 flex flex-wrap gap-2 text-[11px] font-mono text-secondary">
+                      <span class="bg-surface-container px-2 py-0.5 rounded-xs border border-outline-variant">Enlace: {{ cat.link }}</span>
+                      <span class="bg-surface-container px-2 py-0.5 rounded-xs border border-outline-variant">Botón: {{ cat.buttonText || 'Ver Colección' }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="border-t border-outline-variant p-3 bg-surface-container flex justify-between items-center">
+                  <label class="text-xs text-primary font-label uppercase flex items-center gap-1 cursor-pointer hover:text-primary-container">
+                    <span class="material-symbols-outlined text-sm">photo_camera</span>
+                    <span>Subir Foto</span>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      class="hidden" 
+                      @change="handleDirectImageUpload(cat, 'image', $event)" 
+                    />
+                  </label>
+
+                  <div class="flex items-center gap-1">
+                    <button 
+                      @click="openEditCategoryModal(cat)"
+                      class="p-1.5 text-secondary hover:text-primary rounded-full hover:bg-surface transition-colors"
+                      title="Editar Categoría"
+                    >
+                      <span class="material-symbols-outlined text-base">edit</span>
+                    </button>
+                    <button 
+                      @click="confirmDeleteContentItem('category', cat, cat.title)"
+                      class="p-1.5 text-secondary hover:text-error rounded-full hover:bg-surface transition-colors"
+                      title="Eliminar Categoría"
+                    >
+                      <span class="material-symbols-outlined text-base">delete</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUBTAB 2: FAMILIAS OLFATIVAS -->
+          <div v-if="activeDesignSubtab === 'familias'" class="space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div>
+                <h3 class="font-sans text-xl font-normal text-primary">Familias Olfativas (Guía Aromática & Filtros)</h3>
+                <p class="font-sans text-xs text-secondary mt-0.5">
+                  Familias aromáticas exhibidas en la portada y utilizadas como filtros aromáticos en el catálogo. Podés agregar notas como Gourmand, Acuática, Cuero, etc.
+                </p>
+              </div>
+
+              <button 
+                @click="openCreateFamilyModal"
+                class="bg-primary-container hover:bg-inverse-surface text-on-primary font-label text-xs uppercase tracking-widest px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-sm transition-all"
+              >
+                <span class="material-symbols-outlined text-sm">add</span>
+                <span>Nueva Familia Olfativa</span>
+              </button>
+            </div>
+
+            <!-- Families Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div 
+                v-for="fam in siteContentStore.olfactiveFamilies" 
+                :key="fam.id || fam.name"
+                class="bg-surface border border-outline-variant rounded-xs overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div class="relative aspect-square bg-surface-container overflow-hidden group">
+                    <img 
+                      :src="fam.image" 
+                      :alt="fam.name"
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <label class="bg-surface/90 hover:bg-surface text-primary font-label text-xs uppercase px-3 py-1.5 rounded-full cursor-pointer flex items-center gap-1 shadow-md">
+                        <span class="material-symbols-outlined text-sm">upload</span>
+                        <span>Cambiar Foto</span>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          class="hidden" 
+                          @change="handleDirectImageUpload(fam, 'image', $event)" 
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="p-4 space-y-1.5">
+                    <h4 class="font-serif text-xl text-primary font-normal">{{ fam.name }}</h4>
+                    <p class="font-sans text-xs text-secondary leading-relaxed line-clamp-3">{{ fam.description }}</p>
+                  </div>
+                </div>
+
+                <div class="border-t border-outline-variant p-2.5 bg-surface-container flex justify-between items-center">
+                  <label class="text-[11px] text-primary font-label uppercase flex items-center gap-1 cursor-pointer hover:text-primary-container">
+                    <span class="material-symbols-outlined text-sm">photo_camera</span>
+                    <span>Subir Foto</span>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      class="hidden" 
+                      @change="handleDirectImageUpload(fam, 'image', $event)" 
+                    />
+                  </label>
+
+                  <div class="flex items-center gap-1">
+                    <button 
+                      @click="openEditFamilyModal(fam)"
+                      class="p-1.5 text-secondary hover:text-primary rounded-full hover:bg-surface transition-colors"
+                      title="Editar Familia"
+                    >
+                      <span class="material-symbols-outlined text-base">edit</span>
+                    </button>
+                    <button 
+                      @click="confirmDeleteContentItem('family', fam, fam.name)"
+                      class="p-1.5 text-secondary hover:text-error rounded-full hover:bg-surface transition-colors"
+                      title="Eliminar Familia"
+                    >
+                      <span class="material-symbols-outlined text-base">delete</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUBTAB 3: BANNERS DE PORTADA (HERO SLIDER) -->
+          <div v-if="activeDesignSubtab === 'banners'" class="space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div>
+                <h3 class="font-sans text-xl font-normal text-primary">Diapositivas del Banner Principal</h3>
+                <p class="font-sans text-xs text-secondary mt-0.5">
+                  Gestioná los fondos, frascos flotantes, títulos y botones del gran carrusel de inicio.
+                </p>
+              </div>
+
+              <button 
+                @click="openCreateSlideModal"
+                class="bg-primary-container hover:bg-inverse-surface text-on-primary font-label text-xs uppercase tracking-widest px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-sm transition-all"
+              >
+                <span class="material-symbols-outlined text-sm">add</span>
+                <span>Nuevo Slide</span>
+              </button>
+            </div>
+
+            <!-- Slides List -->
+            <div class="space-y-4">
+              <div 
+                v-for="(slide, idx) in siteContentStore.heroSlides" 
+                :key="slide.id"
+                class="bg-surface border border-outline-variant rounded-xs p-5 shadow-xs flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between"
+              >
+                <!-- Images previews -->
+                <div class="flex items-center gap-4 flex-shrink-0">
+                  <!-- Background preview -->
+                  <div class="relative w-36 h-24 rounded-xs overflow-hidden border border-outline-variant group bg-surface-container">
+                    <img :src="slide.image" :alt="slide.title" class="w-full h-full object-cover" />
+                    <label class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-label uppercase cursor-pointer">
+                      <span class="material-symbols-outlined text-base">upload</span>
+                      <span>Fondo</span>
+                      <input type="file" accept="image/*" class="hidden" @change="handleDirectImageUpload(slide, 'image', $event)" />
+                    </label>
+                  </div>
+
+                  <!-- Bottle preview -->
+                  <div class="relative w-20 h-24 rounded-xs overflow-hidden border border-outline-variant group bg-surface-container">
+                    <img :src="slide.bottleImage" :alt="slide.featuredTitle" class="w-full h-full object-cover" />
+                    <label class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-label uppercase cursor-pointer">
+                      <span class="material-symbols-outlined text-base">upload</span>
+                      <span>Frasco</span>
+                      <input type="file" accept="image/*" class="hidden" @change="handleDirectImageUpload(slide, 'bottleImage', $event)" />
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Text info -->
+                <div class="flex-grow space-y-1">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono text-xs font-bold text-secondary">#{{ idx + 1 }}</span>
+                    <span class="bg-surface-container px-2 py-0.5 rounded-full text-[10px] font-label uppercase font-bold text-primary border border-outline-variant">
+                      {{ slide.tag }}
+                    </span>
+                  </div>
+                  <h4 class="font-sans text-lg font-medium text-primary">{{ slide.title }} <span class="italic font-serif">{{ slide.highlight }}</span></h4>
+                  <p class="font-sans text-xs text-secondary line-clamp-1 max-w-xl">{{ slide.description }}</p>
+                  <p class="text-[11px] text-secondary">Destacado: <strong>{{ slide.featuredTitle }}</strong> ({{ slide.featuredRating }})</p>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <button 
+                    @click="openEditSlideModal(slide)"
+                    class="bg-surface border border-outline hover:border-primary text-primary font-label text-xs uppercase px-3 py-1.5 rounded-full flex items-center gap-1 transition-colors"
+                  >
+                    <span class="material-symbols-outlined text-sm">edit</span>
+                    <span>Editar Textos</span>
+                  </button>
+                  <button 
+                    @click="confirmDeleteContentItem('slide', slide, slide.title)"
+                    class="p-2 text-secondary hover:text-error rounded-full hover:bg-surface-container transition-colors"
+                    title="Eliminar Slide"
+                  >
+                    <span class="material-symbols-outlined text-lg">delete</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUBTAB 4: IMÁGENES EDITORIALES (SOBRE NOSOTROS) -->
+          <div v-if="activeDesignSubtab === 'editorial'" class="space-y-6">
+            <div class="bg-surface border border-outline-variant rounded-xs p-6 shadow-xs space-y-6 max-w-3xl">
+              <div>
+                <h3 class="font-sans text-xl font-normal text-primary">Fotografía de "Sobre Nosotros"</h3>
+                <p class="font-sans text-xs text-secondary mt-0.5">
+                  Esta foto aparece en la sección editorial de la página <RouterLink to="/nosotros" target="_blank" class="underline text-primary font-bold">/nosotros</RouterLink>.
+                </p>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+                <div class="aspect-[4/5] bg-surface-container border border-outline-variant rounded-xs overflow-hidden shadow-sm relative group">
+                  <img 
+                    :src="siteContentStore.editorial?.aboutImage || 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85'" 
+                    alt="Sobre Nosotros Preview"
+                    class="w-full h-full object-cover"
+                  />
+                  <label class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-xs font-label uppercase cursor-pointer">
+                    <span class="material-symbols-outlined text-2xl">upload</span>
+                    <span>Cambiar Foto</span>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      class="hidden" 
+                      @change="handleDirectImageUpload(siteContentStore.editorial, 'aboutImage', $event)" 
+                    />
+                  </label>
+                </div>
+
+                <div class="space-y-4">
+                  <div>
+                    <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">
+                      Subir archivo desde la PC
+                    </label>
+                    <label class="inline-flex items-center gap-2 bg-primary-container text-on-primary font-label text-xs uppercase px-4 py-2.5 rounded-full cursor-pointer hover:bg-inverse-surface transition-all shadow-xs">
+                      <span class="material-symbols-outlined text-sm">upload</span>
+                      <span>Seleccionar Archivo...</span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        class="hidden" 
+                        @change="handleDirectImageUpload(siteContentStore.editorial, 'aboutImage', $event)" 
+                      />
+                    </label>
+                  </div>
+
+                  <div>
+                    <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">
+                      O ingresar URL directa de la imagen
+                    </label>
+                    <input 
+                      v-model="siteContentStore.editorial.aboutImage" 
+                      type="text" 
+                      placeholder="https://..."
+                      class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none"
+                    />
+                  </div>
+
+                  <button 
+                    @click="handleSaveEditorial"
+                    :disabled="isSubmittingEditorial"
+                    class="bg-surface border border-outline hover:border-primary text-primary font-label text-xs uppercase px-5 py-2.5 rounded-full flex items-center gap-1.5 transition-all shadow-xs disabled:opacity-50"
+                  >
+                    <span class="material-symbols-outlined text-sm">save</span>
+                    <span>{{ isSubmittingEditorial ? 'Guardando...' : 'Guardar Cambios' }}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
       </div>
@@ -1940,6 +2609,265 @@ const sendWhatsAppTracking = (order) => {
           <button @click="isDeleteConfirmOpen = false" class="px-5 py-2 text-xs font-label uppercase border rounded-full">Cancelar</button>
           <button @click="handleDeleteProduct" :disabled="isSubmitting" class="bg-red-600 text-white font-label text-xs uppercase px-5 py-2 rounded-full font-bold">
             {{ isSubmitting ? 'Eliminando...' : 'Eliminar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- MODAL: CREAR / EDITAR CATEGORÍA -->
+    <!-- ==================================================== -->
+    <div v-if="isCategoryModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+      <div class="bg-surface border border-outline-variant rounded-xs max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 sm:p-8 space-y-5">
+        <div class="flex justify-between items-center border-b border-outline-variant pb-3">
+          <h3 class="font-sans text-2xl text-primary font-normal">
+            {{ isEditingCategory ? 'Editar Categoría' : 'Nueva Categoría' }}
+          </h3>
+          <button @click="isCategoryModalOpen = false" class="p-1.5 text-secondary hover:text-primary rounded-full">
+            <span class="material-symbols-outlined text-xl">close</span>
+          </button>
+        </div>
+
+        <form @submit.prevent="handleSaveCategory" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Título de la Categoría *</label>
+              <input v-model="categoryForm.title" type="text" required placeholder="Ej. Perfumes de Mujer" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none" />
+            </div>
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Subtítulo / Bajada</label>
+              <input v-model="categoryForm.subtitle" type="text" placeholder="Ej. Para Ella / Tendencia Viral" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Descripción Breve</label>
+            <textarea v-model="categoryForm.description" rows="2" placeholder="Fragancias florales, dulces y frescas..." class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none"></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Enlace / Destino</label>
+              <input v-model="categoryForm.link" type="text" required placeholder="/catalogo?gender=woman" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none font-mono" />
+            </div>
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Texto del Botón</label>
+              <input v-model="categoryForm.buttonText" type="text" placeholder="Ver Perfumes de Mujer" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Ancho en el Bento Grid</label>
+              <select v-model.number="categoryForm.span" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans">
+                <option :value="6">Media pantalla (6 columnas - Estándar)</option>
+                <option :value="12">Ancho completo (12 columnas - Destacado grande)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Etiqueta / Badge Opcional</label>
+              <input v-model="categoryForm.badge" type="text" placeholder="Ej. Más Pedidos / Tendencia" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans" />
+            </div>
+          </div>
+
+          <!-- Imagen -->
+          <div class="bg-surface-container p-4 rounded-xs border border-outline-variant space-y-3">
+            <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold">Imagen de la Categoría</label>
+            <div class="flex items-center gap-4">
+              <div class="w-20 h-20 rounded-xs overflow-hidden border border-outline-variant bg-surface flex-shrink-0">
+                <img v-if="categoryForm.image" :src="categoryForm.image" class="w-full h-full object-cover" />
+                <div v-else class="w-full h-full flex items-center justify-center text-secondary text-xs">Sin foto</div>
+              </div>
+              <div class="space-y-2 flex-grow">
+                <label class="inline-flex items-center gap-1.5 bg-primary-container text-on-primary font-label text-[11px] uppercase px-3.5 py-2 rounded-full cursor-pointer hover:bg-inverse-surface shadow-xs">
+                  <span class="material-symbols-outlined text-sm">upload</span>
+                  <span>Subir desde mi PC</span>
+                  <input type="file" accept="image/*" class="hidden" @change="handleModalImageUpload(categoryForm, 'image', $event)" />
+                </label>
+                <input v-model="categoryForm.image" type="text" placeholder="O pegar URL: https://..." class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans" />
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-2">
+            <button @click="isCategoryModalOpen = false" type="button" class="px-5 py-2.5 text-xs font-label uppercase border rounded-full">Cancelar</button>
+            <button :disabled="isSubmittingCategory" type="submit" class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-7 py-2.5 rounded-full hover:bg-inverse-surface shadow-md disabled:opacity-50">
+              {{ isSubmittingCategory ? 'Guardando...' : (isEditingCategory ? 'Guardar Cambios' : 'Crear Categoría') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- MODAL: CREAR / EDITAR FAMILIA OLFATIVA -->
+    <!-- ==================================================== -->
+    <div v-if="isFamilyModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+      <div class="bg-surface border border-outline-variant rounded-xs max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 sm:p-8 space-y-5">
+        <div class="flex justify-between items-center border-b border-outline-variant pb-3">
+          <h3 class="font-sans text-2xl text-primary font-normal">
+            {{ isEditingFamily ? 'Editar Familia Olfativa' : 'Nueva Familia Olfativa' }}
+          </h3>
+          <button @click="isFamilyModalOpen = false" class="p-1.5 text-secondary hover:text-primary rounded-full">
+            <span class="material-symbols-outlined text-xl">close</span>
+          </button>
+        </div>
+
+        <form @submit.prevent="handleSaveFamily" class="space-y-4">
+          <div>
+            <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Nombre de la Familia Olfativa *</label>
+            <input v-model="familyForm.name" type="text" required placeholder="Ej. Gourmand, Cuero, Aromática..." class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Descripción de Notas Aromáticas</label>
+            <textarea v-model="familyForm.description" rows="3" placeholder="Acordes seductores de vainilla negra, haba tonka y café tostado..." class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none"></textarea>
+          </div>
+
+          <!-- Imagen -->
+          <div class="bg-surface-container p-4 rounded-xs border border-outline-variant space-y-3">
+            <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold">Imagen Aromática</label>
+            <div class="flex items-center gap-4">
+              <div class="w-20 h-20 rounded-xs overflow-hidden border border-outline-variant bg-surface flex-shrink-0">
+                <img v-if="familyForm.image" :src="familyForm.image" class="w-full h-full object-cover" />
+                <div v-else class="w-full h-full flex items-center justify-center text-secondary text-xs">Sin foto</div>
+              </div>
+              <div class="space-y-2 flex-grow">
+                <label class="inline-flex items-center gap-1.5 bg-primary-container text-on-primary font-label text-[11px] uppercase px-3.5 py-2 rounded-full cursor-pointer hover:bg-inverse-surface shadow-xs">
+                  <span class="material-symbols-outlined text-sm">upload</span>
+                  <span>Subir desde mi PC</span>
+                  <input type="file" accept="image/*" class="hidden" @change="handleModalImageUpload(familyForm, 'image', $event)" />
+                </label>
+                <input v-model="familyForm.image" type="text" placeholder="O pegar URL: https://..." class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans" />
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-2">
+            <button @click="isFamilyModalOpen = false" type="button" class="px-5 py-2.5 text-xs font-label uppercase border rounded-full">Cancelar</button>
+            <button :disabled="isSubmittingFamily" type="submit" class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-7 py-2.5 rounded-full hover:bg-inverse-surface shadow-md disabled:opacity-50">
+              {{ isSubmittingFamily ? 'Guardando...' : (isEditingFamily ? 'Guardar Cambios' : 'Crear Familia') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- MODAL: CREAR / EDITAR SLIDE DE PORTADA -->
+    <!-- ==================================================== -->
+    <div v-if="isSlideModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+      <div class="bg-surface border border-outline-variant rounded-xs max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl p-6 sm:p-8 space-y-5">
+        <div class="flex justify-between items-center border-b border-outline-variant pb-3">
+          <h3 class="font-sans text-2xl text-primary font-normal">
+            {{ isEditingSlide ? 'Editar Diapositiva de Portada' : 'Nuevo Slide de Portada' }}
+          </h3>
+          <button @click="isSlideModalOpen = false" class="p-1.5 text-secondary hover:text-primary rounded-full">
+            <span class="material-symbols-outlined text-xl">close</span>
+          </button>
+        </div>
+
+        <form @submit.prevent="handleSaveSlide" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Etiqueta Superior (Tag)</label>
+              <input v-model="slideForm.tag" type="text" placeholder="Ej. 100% Originales & Sellados" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans" />
+            </div>
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Rating / Badge del Frasco</label>
+              <input v-model="slideForm.featuredRating" type="text" placeholder="Ej. 4.9 ★ Exclusivo" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Título Principal *</label>
+              <input v-model="slideForm.title" type="text" required placeholder="Ej. Encontrá tu nueva" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans" />
+            </div>
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Texto en Cursiva / Resalte</label>
+              <input v-model="slideForm.highlight" type="text" placeholder="Ej. fragancia favorita." class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans italic" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Bajada / Descripción</label>
+            <textarea v-model="slideForm.description" rows="2" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans"></textarea>
+          </div>
+
+          <!-- Slide Images (Background & Bottle) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Background Image -->
+            <div class="bg-surface-container p-4 rounded-xs border border-outline-variant space-y-2">
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold">Foto de Fondo Gran Formato</label>
+              <div class="aspect-[16/9] rounded-xs overflow-hidden border border-outline-variant bg-surface mb-2">
+                <img v-if="slideForm.image" :src="slideForm.image" class="w-full h-full object-cover" />
+              </div>
+              <label class="inline-flex items-center gap-1 bg-primary-container text-on-primary font-label text-[10px] uppercase px-3 py-1.5 rounded-full cursor-pointer hover:bg-inverse-surface">
+                <span class="material-symbols-outlined text-sm">upload</span>
+                <span>Subir Fondo</span>
+                <input type="file" accept="image/*" class="hidden" @change="handleModalImageUpload(slideForm, 'image', $event)" />
+              </label>
+              <input v-model="slideForm.image" type="text" placeholder="URL Fondo: https://..." class="w-full bg-surface border border-outline-variant rounded-xs p-2 text-xs font-sans" />
+            </div>
+
+            <!-- Bottle Image -->
+            <div class="bg-surface-container p-4 rounded-xs border border-outline-variant space-y-2">
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold">Foto Frasco Destacado</label>
+              <div class="aspect-[3/4] max-h-36 rounded-xs overflow-hidden border border-outline-variant bg-surface mb-2 mx-auto">
+                <img v-if="slideForm.bottleImage" :src="slideForm.bottleImage" class="w-full h-full object-cover" />
+              </div>
+              <label class="inline-flex items-center gap-1 bg-primary-container text-on-primary font-label text-[10px] uppercase px-3 py-1.5 rounded-full cursor-pointer hover:bg-inverse-surface">
+                <span class="material-symbols-outlined text-sm">upload</span>
+                <span>Subir Frasco</span>
+                <input type="file" accept="image/*" class="hidden" @change="handleModalImageUpload(slideForm, 'bottleImage', $event)" />
+              </label>
+              <input v-model="slideForm.bottleImage" type="text" placeholder="URL Frasco: https://..." class="w-full bg-surface border border-outline-variant rounded-xs p-2 text-xs font-sans" />
+            </div>
+          </div>
+
+          <!-- Buttons CTAs -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Botón Principal (Texto & Link)</label>
+              <div class="grid grid-cols-2 gap-2">
+                <input v-model="slideForm.primaryCtaText" type="text" placeholder="Texto Botón" class="bg-surface-container border border-outline-variant rounded-xs p-2.5 text-xs font-sans" />
+                <input v-model="slideForm.primaryCtaLink" type="text" placeholder="/catalogo" class="bg-surface-container border border-outline-variant rounded-xs p-2.5 text-xs font-sans font-mono" />
+              </div>
+            </div>
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Botón Secundario (Texto & Link)</label>
+              <div class="grid grid-cols-2 gap-2">
+                <input v-model="slideForm.secondaryCtaText" type="text" placeholder="Texto Secundario" class="bg-surface-container border border-outline-variant rounded-xs p-2.5 text-xs font-sans" />
+                <input v-model="slideForm.secondaryCtaLink" type="text" placeholder="/quiz" class="bg-surface-container border border-outline-variant rounded-xs p-2.5 text-xs font-sans font-mono" />
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-2">
+            <button @click="isSlideModalOpen = false" type="button" class="px-5 py-2.5 text-xs font-label uppercase border rounded-full">Cancelar</button>
+            <button :disabled="isSubmittingSlide" type="submit" class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-7 py-2.5 rounded-full hover:bg-inverse-surface shadow-md disabled:opacity-50">
+              {{ isSubmittingSlide ? 'Guardando...' : 'Guardar Diapositiva' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- MODAL: CONFIRMAR ELIMINACIÓN DE CONTENIDO / FOTOS -->
+    <!-- ==================================================== -->
+    <div v-if="isDeleteContentModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+      <div class="bg-surface border border-outline-variant rounded-xs max-w-sm w-full p-6 text-center space-y-4 shadow-xl">
+        <span class="material-symbols-outlined text-4xl text-error">delete</span>
+        <h3 class="font-sans text-xl font-normal text-primary">¿Eliminar "{{ contentToDelete?.title }}"?</h3>
+        <p class="text-xs text-secondary">
+          Este elemento dejará de mostrarse en la web inmediatamente.
+        </p>
+        <div class="flex gap-3 justify-center pt-2">
+          <button @click="isDeleteContentModalOpen = false" class="px-5 py-2 text-xs font-label uppercase border rounded-full">Cancelar</button>
+          <button @click="handleExecuteDeleteContent" class="bg-red-600 text-white font-label text-xs uppercase px-5 py-2 rounded-full font-bold">
+            Eliminar
           </button>
         </div>
       </div>

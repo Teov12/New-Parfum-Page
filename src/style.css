@@ -272,6 +272,60 @@ html {
    VUE TRANSITIONS
    ============================================================ */
 
+/* Hero Carousel Directional Slide Transitions (Left / Right) - Ultra Fluid 60FPS GPU */
+.hero-slide-next-enter-active,
+.hero-slide-next-leave-active,
+.hero-slide-prev-enter-active,
+.hero-slide-prev-leave-active {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.52s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+  contain: layout paint;
+}
+
+.hero-slide-next-enter-active,
+.hero-slide-prev-enter-active {
+  z-index: 10;
+}
+
+.hero-slide-next-leave-active,
+.hero-slide-prev-leave-active {
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Siguiente: entra desde la derecha (+100%) hacia el centro (0), la anterior sale hacia la izquierda (-100%) */
+.hero-slide-next-enter-from {
+  transform: translate3d(100%, 0, 0);
+}
+
+.hero-slide-next-enter-to,
+.hero-slide-next-leave-from,
+.hero-slide-prev-enter-to,
+.hero-slide-prev-leave-from {
+  transform: translate3d(0, 0, 0);
+}
+
+.hero-slide-next-leave-to {
+  transform: translate3d(-100%, 0, 0);
+}
+
+/* Anterior: entra desde la izquierda (-100%) hacia el centro (0), la anterior sale hacia la derecha (+100%) */
+.hero-slide-prev-enter-from {
+  transform: translate3d(-100%, 0, 0);
+}
+
+.hero-slide-prev-leave-to {
+  transform: translate3d(100%, 0, 0);
+}
+
 /* Page View Transition */
 .page-fade-enter-active,
 .page-fade-leave-active {
@@ -408,4 +462,48 @@ html {
   opacity: 0;
   transform: translateX(-30px);
 }
+
+/* ============================================================
+   SCROLL REVEAL (IntersectionObserver)
+   ============================================================ */
+
+.reveal-init {
+  opacity: 0;
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-up {
+  transform: translateY(32px);
+}
+
+.reveal-down {
+  transform: translateY(-32px);
+}
+
+.reveal-left {
+  transform: translateX(-36px);
+}
+
+.reveal-right {
+  transform: translateX(36px);
+}
+
+.reveal-zoom {
+  transform: scale(0.92);
+}
+
+.reveal-active {
+  opacity: 1 !important;
+  transform: translate(0, 0) scale(1) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-init {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
 

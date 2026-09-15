@@ -1,15 +1,19 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { olfactiveFamilies, brandsList } from '@/data/products'
+import { brandsList } from '@/data/products'
 import { useWishlistStore } from '@/stores/wishlist'
 import { useProductStore } from '@/stores/products'
+import { useSiteContentStore } from '@/stores/siteContent'
 import ProductCard from '@/components/product/ProductCard.vue'
 
 const route = useRoute()
 const router = useRouter()
 const wishlistStore = useWishlistStore()
 const productStore = useProductStore()
+const siteContentStore = useSiteContentStore()
+
+const olfactiveFamilies = computed(() => siteContentStore.olfactiveFamilies)
 
 // State filters
 const searchQuery = ref('')

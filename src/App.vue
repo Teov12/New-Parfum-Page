@@ -2,6 +2,7 @@
 import { computed, onMounted } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import { useProductStore } from '@/stores/products'
+import { useSiteContentStore } from '@/stores/siteContent'
 import Navbar from '@/components/layout/Navbar.vue'
 import Footer from '@/components/layout/Footer.vue'
 import CartDrawer from '@/components/cart/CartDrawer.vue'
@@ -9,11 +10,13 @@ import ToastContainer from '@/components/ui/ToastContainer.vue'
 
 const route = useRoute()
 const productStore = useProductStore()
+const siteContentStore = useSiteContentStore()
 
 const isAdminRoute = computed(() => route.path.startsWith('/admin'))
 
 onMounted(() => {
   productStore.fetchProducts()
+  siteContentStore.fetchSiteContent()
 })
 </script>
 
