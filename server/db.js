@@ -35,8 +35,10 @@ export const getProducts = () => {
     return list.map(p => {
       const price = Number(p.price) || 0
       const costPrice = Number(p.costPrice) || Math.round(price * 0.45) // Default 45% of sale price if not set
+      const stock = p.stock !== undefined ? Math.max(0, Number(p.stock)) : 10
       return {
         ...p,
+        stock,
         price,
         costPrice,
         profit: Math.max(0, price - costPrice),
@@ -233,26 +235,67 @@ export const saveOrders = (orders) => {
 
 export const createOrder = (orderData) => {
   const orders = getOrders()
+  const products = getProducts()
+  let productsUpdated = false
 
-  const items = Array.isArray(orderData.items) ? orderData.items : []
+  const incomingItems = Array.isArray(orderData.items) ? orderData.items : []
   
   let calculatedSubtotal = 0
   let calculatedTotalCost = 0
+  const validatedItems = []
 
-  items.forEach(item => {
-    const itemPrice = Number(item.price) || 0
-    const itemCost = Number(item.costPrice) || Math.round(itemPrice * 0.45)
-    const qty = Number(item.quantity) || 1
+  incomingItems.forEach(item => {
+    const qty = Math.max(1, Number(item.quantity) || 1)
+    
+    // Buscar precio oficial en catálogo para evitar manipulación desde cliente
+    const dbProduct = products.find(p => p.id === item.id || p.slug === item.id)
+    let officialPrice = Number(item.price) || 0
+    let officialCost = Number(item.costPrice) || Math.round(officialPrice * 0.45)
 
-    calculatedSubtotal += itemPrice * qty
-    calculatedTotalCost += itemCost * qty
+    if (dbProduct) {
+      const dbSize = dbProduct.sizes?.find(s => s.size === item.size || s.size == item.size)
+      if (dbSize && dbSize.price) {
+        officialPrice = Number(dbSize.price)
+        officialCost = Number(dbSize.costPrice) || Math.round(officialPrice * 0.45)
+      } else if (dbProduct.price) {
+        officialPrice = Number(dbProduct.price)
+        officialCost = Number(dbProduct.costPrice) || Math.round(officialPrice * 0.45)
+      }
+
+      // Descontar inventario automáticamente
+      const currentStock = dbProduct.stock !== undefined ? Math.max(0, Number(dbProduct.stock)) : 10
+      dbProduct.stock = Math.max(0, currentStock - qty)
+      productsUpdated = true
+    }
+
+    calculatedSubtotal += officialPrice * qty
+    calculatedTotalCost += officialCost * qty
+
+    validatedItems.push({
+      id: item.id,
+      name: dbProduct?.name || item.name || 'Perfume',
+      brand: dbProduct?.brand || item.brand || 'Gicca',
+      size: item.size || '100 ml',
+      quantity: qty,
+      price: officialPrice,
+      costPrice: officialCost
+    })
   })
 
-  const subtotal = Number(orderData.subtotal) || calculatedSubtotal
+  // Si se modificó stock, persistir catálogo
+  if (productsUpdated) {
+    saveProducts(products)
+  }
+
+  const isTransfer = (orderData.paymentMethod || 'transfer') === 'transfer'
+  const transferDiscount = isTransfer ? Math.round(calculatedSubtotal * 0.20) : 0
+  const couponDiscount = Number(orderData.couponDiscount) || 0
+  const discountAmount = transferDiscount + couponDiscount
+
   const shippingCost = Number(orderData.shippingCost) || 0
-  const discountAmount = Number(orderData.discountAmount) || 0
-  const total = Number(orderData.total) || Math.max(0, subtotal - discountAmount + shippingCost)
-  const totalCost = Number(orderData.totalCost) || calculatedTotalCost
+  const subtotal = calculatedSubtotal
+  const total = Math.max(0, subtotal - discountAmount + shippingCost)
+  const totalCost = calculatedTotalCost
   const profit = Math.max(0, (subtotal - discountAmount) - totalCost)
   const profitMargin = (subtotal - discountAmount) > 0 
     ? Math.round((profit / (subtotal - discountAmount)) * 100) 
@@ -272,23 +315,26 @@ export const createOrder = (orderData) => {
       apartment: orderData.customer?.apartment || '',
       city: orderData.customer?.city || 'Córdoba',
       province: orderData.customer?.province || 'Córdoba',
-      postalCode: orderData.customer?.postalCode || '2400'
+      postalCode: orderData.customer?.postalCode || ''
     },
-    items,
+    items: validatedItems,
     subtotal,
     shippingCost,
     discountAmount,
+    transferDiscount,
+    couponDiscount,
     total,
     totalCost,
     profit,
     profitMargin,
     shippingMethod: orderData.shippingMethod || 'Andreani Estándar a Domicilio',
-    paymentMethod: orderData.paymentMethod || 'transfer', // 'transfer', 'credit_card', 'mercado_pago', 'cash'
-    paymentStatus: orderData.paymentStatus || 'paid', // 'pending', 'paid', 'cancelled', 'refunded'
+    pickupBranch: orderData.pickupBranch || null,
+    paymentMethod: orderData.paymentMethod || 'transfer', // 'transfer', 'credit_card', 'cash'
+    paymentStatus: orderData.paymentStatus || 'pending', // 'pending', 'paid', 'cancelled', 'refunded'
     fulfillmentStatus: orderData.fulfillmentStatus || 'unfulfilled', // 'unfulfilled', 'packing', 'shipped', 'delivered'
     trackingCode: orderData.trackingCode || '',
-    notes: orderData.notes || '',
-    source: orderData.source || 'manual_admin', // 'web', 'manual_admin', 'whatsapp', 'instagram'
+    notes: '',
+    source: orderData.source || 'web', // 'web', 'manual_admin', 'whatsapp', 'instagram'
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   }

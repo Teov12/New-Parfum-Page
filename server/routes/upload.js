@@ -35,9 +35,11 @@ const upload = multer({
   }
 })
 
+import { requireAuth } from '../middleware/auth.js'
+
 const router = express.Router()
 
-router.post('/', upload.any(), (req, res) => {
+router.post('/', requireAuth, upload.any(), (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ error: 'No se subió ningún archivo' })
   }

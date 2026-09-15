@@ -131,6 +131,19 @@ const productProfitMargin = computed(() => {
   return Math.round(((price - cost) / price) * 100)
 })
 
+// Calculadora automática: Precio deseado en Transferencia -> Precio de Lista a Publicar
+const targetTransferPrice = ref(null)
+
+const calculateListPriceFromTransfer = () => {
+  const target = Number(targetTransferPrice.value) || 0
+  if (target > 0 && formData.value.sizes[0]) {
+    // Si precio_transfer = precio_lista * 0.8 => precio_lista = precio_transfer / 0.8
+    const calculatedListPrice = Math.round(target / 0.8)
+    formData.value.sizes[0].price = calculatedListPrice
+    if (formData.value.price !== undefined) formData.value.price = calculatedListPrice
+  }
+}
+
 // ==========================================
 // MANUAL ORDER FORM STATE (TIENDA NUBE)
 // ==========================================
@@ -201,12 +214,25 @@ watch(() => manualOrderForm.value.selectedProductId, (prodId) => {
   }
 })
 
-// Check existing login session
-onMounted(() => {
+// Check existing login session with JWT verification
+onMounted(async () => {
   const token = localStorage.getItem('gicca_admin_token')
   if (token) {
-    isAuthenticated.value = true
-    loadData()
+    try {
+      const res = await fetch('/api/auth/verify', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (res.ok) {
+        isAuthenticated.value = true
+        loadData()
+      } else {
+        localStorage.removeItem('gicca_admin_token')
+        isAuthenticated.value = false
+      }
+    } catch {
+      localStorage.removeItem('gicca_admin_token')
+      isAuthenticated.value = false
+    }
   }
 })
 
@@ -402,8 +428,15 @@ const handleFileUpload = async (event) => {
   }
 
   try {
+    const token = localStorage.getItem('gicca_admin_token')
+    const headers = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+
     const res = await fetch('/api/upload', {
       method: 'POST',
+      headers,
       body: uploadData
     })
     const data = await res.json()
@@ -644,8 +677,41 @@ const viewOrderDetail = (order) => {
   isOrderDetailModalOpen.value = true
 }
 
+const isGeneratingShipment = ref(false)
+
+const handleGenerateShipment = async (order) => {
+  if (!order) return
+  isGeneratingShipment.value = true
+  try {
+    const res = await fetch('/api/shipping/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId: order.id })
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'Error al generar despacho')
+
+    order.trackingCode = data.trackingCode
+    order.fulfillmentStatus = 'shipped'
+    order.shippingCarrier = 'Andreani'
+    toastStore.show(`¡Despacho generado en Andreani! Tracking: ${data.trackingCode}`, 'success')
+    await ordersStore.fetchOrders()
+  } catch (err) {
+    toastStore.show(err.message || 'Error al conectar con Andreani', 'error')
+  } finally {
+    isGeneratingShipment.value = false
+  }
+}
+
+const openAndreaniTracking = (trackingCode) => {
+  if (!trackingCode) return
+  // Abrir tracking oficial de Andreani
+  const url = `https://www.andreani.com/#!/informacionEnvio/${encodeURIComponent(trackingCode)}`
+  window.open(url, '_blank')
+}
+
 const sendWhatsAppTracking = (order) => {
-  const text = `Hola ${order.customer?.firstName}! ✨ Te escribimos de Gicca Perfumes sobre tu orden #${order.orderNumber}.\n\nTu pedido se encuentra: *${order.fulfillmentStatus === 'shipped' ? 'DESPACHADO EN ANDREANI' : (order.fulfillmentStatus === 'delivered' ? 'ENTREGADO' : 'EN PREPARACIÓN')}*.\n${order.trackingCode ? `Código de Seguimiento Andreani: *${order.trackingCode}*` : ''}\n\n¡Cualquier consulta estamos a tu disposición!`
+  const text = `Hola ${order.customer?.firstName}! ✨ Te escribimos de Gicca Perfumes sobre tu orden #${order.orderNumber}.\n\nTu pedido se encuentra: *${order.fulfillmentStatus === 'shipped' ? 'DESPACHADO EN ANDREANI' : (order.fulfillmentStatus === 'delivered' ? 'ENTREGADO' : 'EN PREPARACIÓN')}*.\n${order.trackingCode ? `Código de Seguimiento Andreani: *${order.trackingCode}*\nPodés seguirlo en: https://www.andreani.com/#!/informacionEnvio/${order.trackingCode}` : ''}\n\n¡Cualquier consulta estamos a tu disposición!`
   const url = `https://wa.me/${order.customer?.phone?.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`
   window.open(url, '_blank')
 }
@@ -1345,7 +1411,6 @@ const sendWhatsAppTracking = (order) => {
                 <select v-model="manualOrderForm.shippingMethod" class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans">
                   <option>Andreani Estándar a Domicilio</option>
                   <option>Retiro en Sucursal Andreani</option>
-                  <option>Andreani Urgente Prioritario</option>
                   <option>Retiro en Boutique / Local</option>
                   <option>Envío Personalizado</option>
                 </select>
@@ -1471,9 +1536,59 @@ const sendWhatsAppTracking = (order) => {
               <span>+${{ selectedOrderForDetail.profit.toLocaleString('es-AR') }} ({{ selectedOrderForDetail.profitMargin }}%)</span>
             </div>
           </div>
+          <!-- Andreani Shipping & Tracking Box -->
+          <div class="bg-surface-container p-4 rounded-xs border border-outline-variant space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="font-label text-[10px] uppercase tracking-widest text-primary font-bold flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">local_shipping</span>
+                Envío & Logística Andreani
+              </span>
+              <span 
+                class="px-2 py-0.5 rounded-full text-[10px] font-label font-bold uppercase"
+                :class="selectedOrderForDetail.fulfillmentStatus === 'shipped' ? 'bg-blue-100 text-blue-800' : (selectedOrderForDetail.fulfillmentStatus === 'delivered' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900')"
+              >
+                {{ selectedOrderForDetail.fulfillmentStatus === 'shipped' ? 'Despachado' : (selectedOrderForDetail.fulfillmentStatus === 'delivered' ? 'Entregado' : 'En Preparación') }}
+              </span>
+            </div>
+
+            <p class="text-secondary font-medium">Servicio: {{ selectedOrderForDetail.shippingMethod || 'Andreani Estándar' }}</p>
+
+            <div v-if="selectedOrderForDetail.pickupBranch" class="p-2.5 bg-surface rounded-xs border border-outline-variant/60 text-[11px] text-secondary">
+              <p class="font-bold text-primary">Punto de Retiro: {{ selectedOrderForDetail.pickupBranch.name }}</p>
+              <p>{{ selectedOrderForDetail.pickupBranch.address }} ({{ selectedOrderForDetail.pickupBranch.city }})</p>
+            </div>
+
+            <div v-if="selectedOrderForDetail.trackingCode" class="flex items-center justify-between pt-1">
+              <div>
+                <span class="text-[10px] text-secondary block">Nº de Seguimiento Andreani:</span>
+                <span class="font-mono font-bold text-primary text-sm">{{ selectedOrderForDetail.trackingCode }}</span>
+              </div>
+              <button 
+                @click="openAndreaniTracking(selectedOrderForDetail.trackingCode)" 
+                type="button"
+                class="text-xs text-primary underline hover:text-primary-container font-label uppercase"
+              >
+                Ver en Andreani →
+              </button>
+            </div>
+            <div v-else class="flex justify-between items-center pt-1 text-[11px] text-secondary">
+              <span>Aún no se ha emitido rótulo de despacho para este pedido.</span>
+            </div>
+          </div>
         </div>
 
-        <div class="flex gap-2 justify-end pt-2">
+        <div class="flex flex-wrap gap-2 justify-end pt-2">
+          <!-- Generar Despacho Andreani Button -->
+          <button 
+            v-if="!selectedOrderForDetail.trackingCode"
+            @click="handleGenerateShipment(selectedOrderForDetail)"
+            :disabled="isGeneratingShipment"
+            class="bg-primary-container hover:bg-inverse-surface text-on-primary font-label text-xs uppercase tracking-widest px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+          >
+            <span class="material-symbols-outlined text-sm">local_shipping</span>
+            <span>{{ isGeneratingShipment ? 'Conectando con Andreani...' : 'Generar Envío Andreani' }}</span>
+          </button>
+
           <button 
             @click="sendWhatsAppTracking(selectedOrderForDetail)"
             class="bg-[#25D366] hover:bg-[#20ba5a] text-white font-label text-xs uppercase tracking-widest px-4 py-2.5 rounded-full flex items-center gap-1.5"
@@ -1592,8 +1707,16 @@ const sendWhatsAppTracking = (order) => {
 
               <!-- Sale price -->
               <div class="sm:col-span-4">
-                <label class="block text-[10px] text-secondary mb-1">Precio Venta ($ ARS) *</label>
-                <input v-model.number="sizeObj.price" type="number" placeholder="185000" class="w-full bg-surface-container border border-outline-variant rounded-xs p-2 text-xs font-sans font-bold text-primary" />
+                <label class="block text-[10px] text-secondary mb-1">Precio Lista / Cuotas ($ ARS) *</label>
+                <input v-model.number="sizeObj.price" type="number" placeholder="87500" class="w-full bg-surface-container border border-outline-variant rounded-xs p-2 text-xs font-sans font-bold text-primary" />
+                <div class="mt-1 space-y-0.5 text-[10px]">
+                  <span class="text-emerald-800 font-semibold block">
+                    🏦 Transferencia (-20%): ${{ Math.round((sizeObj.price || 0) * 0.8).toLocaleString('es-AR') }}
+                  </span>
+                  <span class="text-secondary block">
+                    💳 3 cuotas s/int: ${{ Math.round((sizeObj.price || 0) / 3).toLocaleString('es-AR') }}
+                  </span>
+                </div>
               </div>
 
               <!-- Cost price -->
@@ -1606,6 +1729,36 @@ const sendWhatsAppTracking = (order) => {
               <div class="sm:col-span-1 text-right">
                 <button v-if="formData.sizes.length > 1" @click="removeSize(idx)" type="button" class="p-1 text-secondary hover:text-error">
                   <span class="material-symbols-outlined text-base">delete</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Calculadora Inversa Transferencia -> Precio Lista Cuotas -->
+            <div class="p-3.5 bg-surface-container rounded-xs border border-outline-variant space-y-2 mt-2">
+              <div class="flex items-center gap-1.5 text-xs text-primary font-bold">
+                <span class="material-symbols-outlined text-sm text-primary">calculate</span>
+                <span>Asistente de Precios: ¿Cuánto querés cobrar por Transferencia?</span>
+              </div>
+              <p class="text-[11px] text-secondary leading-relaxed">
+                Ingresá tu precio deseado en transferencia (ej: $70.000). Se calculará automáticamente el precio de lista ($87.500) para ofrecer cuotas sin interés y que en transferencia quede en tu precio objetivo.
+              </p>
+              <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center pt-1">
+                <div class="relative w-full sm:w-56">
+                  <span class="absolute left-2.5 top-2 text-xs text-secondary font-bold">$</span>
+                  <input 
+                    v-model.number="targetTransferPrice" 
+                    type="number" 
+                    placeholder="Ej. 70000" 
+                    class="w-full bg-surface border border-outline-variant rounded-xs pl-6 pr-2 py-2 text-xs font-sans text-primary font-bold focus:border-primary focus:outline-none"
+                    @keyup.enter="calculateListPriceFromTransfer"
+                  />
+                </div>
+                <button 
+                  type="button" 
+                  @click="calculateListPriceFromTransfer"
+                  class="bg-primary-container text-on-primary font-label text-[11px] uppercase tracking-wider px-4 py-2 rounded-xs hover:bg-inverse-surface transition-colors flex-shrink-0"
+                >
+                  Fijar Precio de Lista ({{ targetTransferPrice ? `$${Math.round(targetTransferPrice / 0.8).toLocaleString('es-AR')}` : '...' }})
                 </button>
               </div>
             </div>

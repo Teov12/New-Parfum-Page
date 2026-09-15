@@ -16,18 +16,31 @@ const couponMessage = ref(null)
 const postalCodeInput = ref(shippingStore.postalCode || '')
 const isCalculatingShipping = ref(false)
 
+let cartQuoteTimeout = null
+
 const handleCalculateShipping = async () => {
-  if (!postalCodeInput.value || postalCodeInput.value.length < 4) {
+  const clean = (postalCodeInput.value || '').toString().trim().replace(/\D/g, '')
+  if (clean.length < 4) {
     toastStore.show('Ingresá un código postal válido de 4 dígitos.', 'error')
     return
   }
   isCalculatingShipping.value = true
-  const res = await shippingStore.calculateShipping(postalCodeInput.value, cartStore.subtotal)
+  const res = await shippingStore.calculateShipping(clean, cartStore.subtotal)
   isCalculatingShipping.value = false
   if (res && res.success) {
-    toastStore.show(`Envíos calculados para ${res.destination.zone}`, 'success')
+    toastStore.show(`Tarifas calculadas para ${res.destination.zone}`, 'success')
   } else {
     toastStore.show(shippingStore.error || 'Error al cotizar envío con Andreani', 'error')
+  }
+}
+
+const onPostalCodeInput = () => {
+  clearTimeout(cartQuoteTimeout)
+  const clean = (postalCodeInput.value || '').toString().trim().replace(/\D/g, '')
+  if (clean.length >= 4) {
+    cartQuoteTimeout = setTimeout(() => {
+      handleCalculateShipping()
+    }, 350)
   }
 }
 
@@ -214,9 +227,10 @@ const proceedToCheckout = () => {
                 <input 
                   v-model="postalCodeInput"
                   type="text" 
-                  placeholder="Código Postal (ej. 1414)"
+                  placeholder="Código Postal (ej. 5000 o 1414)"
                   maxlength="8"
                   class="bg-surface-container border border-outline-variant rounded-xs px-3 py-2 text-xs font-sans w-full focus:outline-none focus:border-primary"
+                  @input="onPostalCodeInput"
                   @keyup.enter="handleCalculateShipping"
                 />
                 <button 
@@ -227,9 +241,33 @@ const proceedToCheckout = () => {
                   {{ isCalculatingShipping ? '...' : 'Calcular' }}
                 </button>
               </div>
-              <div v-if="shippingStore.destination" class="text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 p-2 rounded-xs flex items-center gap-1.5 mt-2">
-                <span class="material-symbols-outlined text-sm text-emerald-600">check_circle</span>
-                <span>Zona: <strong>{{ shippingStore.destination.zone }}</strong></span>
+
+              <div v-if="shippingStore.destination" class="space-y-2 pt-1">
+                <div class="text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 p-2 rounded-xs flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-sm text-emerald-600">check_circle</span>
+                  <span>Zona: <strong>{{ shippingStore.destination.zone }}</strong></span>
+                </div>
+
+                <!-- Selectable Options List in Cart View -->
+                <div v-if="shippingStore.options.length > 0" class="space-y-1.5">
+                  <div 
+                    v-for="opt in shippingStore.options" 
+                    :key="opt.id"
+                    @click="shippingStore.selectOption(opt.id)"
+                    class="p-2 rounded-xs border cursor-pointer flex justify-between items-center text-xs transition-all"
+                    :class="shippingStore.selectedOptionId === opt.id ? 'bg-surface-container border-primary font-medium ring-1 ring-primary' : 'bg-surface border-outline-variant hover:border-outline'"
+                  >
+                    <div class="flex items-center gap-2">
+                      <span class="material-symbols-outlined text-sm text-primary">
+                        {{ opt.type === 'sucursal' ? 'store' : (opt.type === 'urgente' ? 'bolt' : 'local_shipping') }}
+                      </span>
+                      <span class="text-[11px]">{{ opt.name }}</span>
+                    </div>
+                    <span class="font-bold text-xs" :class="opt.isFree ? 'text-emerald-700' : 'text-primary'">
+                      {{ opt.price === 0 ? '¡GRATIS!' : `$${opt.price.toLocaleString('es-AR')} (Aprox.)` }}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -242,23 +280,32 @@ const proceedToCheckout = () => {
               <div class="flex justify-between text-secondary">
                 <span>Envío ({{ shippingStore.selectedOption?.carrier || 'Andreani' }})</span>
                 <span class="font-medium" :class="cartStore.shippingCost === 0 ? 'text-emerald-700' : 'text-primary'">
-                  {{ cartStore.shippingCost === 0 ? '¡GRATIS!' : `$${cartStore.shippingCost.toLocaleString('es-AR')}` }}
+                  {{ cartStore.shippingCost === 0 ? '¡GRATIS!' : `$${cartStore.shippingCost.toLocaleString('es-AR')} (Aprox.)` }}
                 </span>
               </div>
             </div>
 
             <!-- Total -->
-            <div class="flex justify-between items-baseline">
-              <div>
-                <span class="font-sans text-xl text-primary font-normal">Total a Pagar</span>
-                <p class="text-xs font-sans text-secondary">IVA incluido</p>
+            <div class="space-y-2.5">
+              <div class="flex justify-between items-baseline">
+                <div>
+                  <span class="font-sans text-lg text-primary font-normal">Total con Transferencia</span>
+                  <p class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">20% OFF Transferencia</p>
+                </div>
+                <div class="text-right">
+                  <span class="font-sans text-2xl sm:text-3xl font-bold text-primary">
+                    ${{ (Math.round(cartStore.subtotal * 0.8) + cartStore.shippingCost).toLocaleString('es-AR') }}
+                  </span>
+                </div>
               </div>
-              <div class="text-right">
-                <span class="font-sans text-3xl font-bold text-primary">
-                  ${{ cartStore.total.toLocaleString('es-AR') }}
-                </span>
-                <p class="font-label text-[11px] text-secondary uppercase tracking-wider">
-                  Hasta 3 cuotas sin interés
+
+              <div class="p-3 bg-surface-container rounded-xs border border-outline-variant text-xs text-secondary space-y-1">
+                <div class="flex justify-between text-primary font-medium">
+                  <span>Precio de Lista (con Tarjeta):</span>
+                  <span>${{ cartStore.total.toLocaleString('es-AR') }}</span>
+                </div>
+                <p class="text-[11px] text-secondary">
+                  Hasta <strong>3 y 6 cuotas fijas sin interés</strong> con todas las tarjetas bancarias.
                 </p>
               </div>
             </div>

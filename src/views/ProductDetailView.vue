@@ -212,17 +212,23 @@ const calculateShipping = async () => {
           </div>
 
           <!-- Price & Installments -->
-          <div class="bg-surface-container-low border border-outline-variant rounded-md p-5 space-y-2 shadow-2xs">
-            <div class="flex items-baseline gap-3">
-              <span class="font-sans font-bold text-3xl text-primary">
-                ${{ currentPrice.toLocaleString('es-AR') }}
-              </span>
+          <div class="bg-surface-container-low border border-outline-variant rounded-md p-5 space-y-3 shadow-2xs">
+            <div>
+              <span class="text-[10px] font-label uppercase font-bold tracking-widest text-secondary block mb-1">Precio con Transferencia</span>
+              <div class="flex items-baseline gap-2.5 flex-wrap">
+                <span class="font-sans font-bold text-3xl sm:text-4xl text-primary">
+                  ${{ Math.round(currentPrice * 0.8).toLocaleString('es-AR') }}
+                </span>
+                <span class="text-xs font-bold uppercase bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-xs border border-emerald-200">
+                  20% OFF Transferencia
+                </span>
+              </div>
             </div>
 
-            <div class="space-y-1 text-xs font-label text-secondary uppercase tracking-wider">
-              <p class="text-primary font-medium flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-sm text-tertiary">credit_card</span>
-                <strong>3 y 6 cuotas fijas</strong> de ${{ Math.round(currentPrice / 3).toLocaleString('es-AR') }}
+            <div class="border-t border-outline-variant/70 pt-2.5 space-y-1">
+              <p class="text-xs text-secondary font-sans flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base text-primary">credit_card</span>
+                <span>O precio de lista <strong>${{ currentPrice.toLocaleString('es-AR') }}</strong> en <strong>3 cuotas sin interés</strong> de ${{ Math.round(currentPrice / 3).toLocaleString('es-AR') }} o <strong>6 cuotas</strong> de ${{ Math.round(currentPrice / 6).toLocaleString('es-AR') }}</span>
               </p>
             </div>
           </div>
