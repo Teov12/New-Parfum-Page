@@ -474,35 +474,53 @@ html {
 }
 
 .reveal-up {
-  transform: translateY(32px);
+  transform: translateY(28px);
 }
 
 .reveal-down {
-  transform: translateY(-32px);
+  transform: translateY(-28px);
 }
 
 .reveal-left {
-  transform: translateX(-36px);
+  transform: translateX(-28px);
 }
 
 .reveal-right {
-  transform: translateX(36px);
+  transform: translateX(28px);
 }
 
 .reveal-zoom {
-  transform: scale(0.92);
+  transform: scale(0.94);
 }
 
-.reveal-active {
-  opacity: 1 !important;
-  transform: translate(0, 0) scale(1) !important;
+.reveal-active,
+.reveal-init.reveal-active {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
 }
 
+/* Soften motion for reduced motion preference without disabling the reveal */
 @media (prefers-reduced-motion: reduce) {
   .reveal-init {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
+    transition: opacity 0.45s ease-out, transform 0.45s ease-out;
+  }
+  .reveal-up {
+    transform: translateY(8px);
+  }
+  .reveal-down {
+    transform: translateY(-8px);
+  }
+  .reveal-left,
+  .reveal-right {
+    transform: none;
+  }
+  .reveal-zoom {
+    transform: scale(0.98);
+  }
+  .reveal-active,
+  .reveal-init.reveal-active {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 

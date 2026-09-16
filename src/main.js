@@ -24,20 +24,26 @@ app.directive('reveal', {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            if (delay > 0) {
-              setTimeout(() => {
-                el.classList.add('reveal-active')
-              }, delay)
-            } else {
+            const trigger = () => {
               el.classList.add('reveal-active')
+              // Clean up reveal classes after transition ends so hover transforms (e.g. -translate-y-1) work natively
+              el._revealCleanupTimeout = setTimeout(() => {
+                el.classList.remove('reveal-init', 'reveal-active', `reveal-${direction}`)
+              }, 800)
+            }
+
+            if (delay > 0) {
+              el._revealTimeout = setTimeout(trigger, delay)
+            } else {
+              trigger()
             }
             observer.unobserve(el)
           }
         })
       },
       {
-        threshold: 0.12,
-        rootMargin: '0px 0px -40px 0px'
+        threshold: 0.05,
+        rootMargin: '0px 0px -15px 0px'
       }
     )
 
@@ -47,6 +53,12 @@ app.directive('reveal', {
   unmounted(el) {
     if (el._revealObserver) {
       el._revealObserver.disconnect()
+    }
+    if (el._revealTimeout) {
+      clearTimeout(el._revealTimeout)
+    }
+    if (el._revealCleanupTimeout) {
+      clearTimeout(el._revealCleanupTimeout)
     }
   }
 })
