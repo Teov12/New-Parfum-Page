@@ -981,30 +981,35 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-surface-container font-sans text-primary">
+  <div class="min-h-screen bg-surface-container-low font-sans text-primary">
     
     <!-- LOGIN SCREEN FOR UNAUTHENTICATED USERS -->
-    <div v-if="!isAuthenticated" class="min-h-screen flex items-center justify-center p-4">
-      <div class="bg-surface border border-outline-variant rounded-xs p-8 sm:p-12 max-w-md w-full shadow-lg space-y-6">
-        <div class="text-center space-y-2">
-          <div class="w-14 h-14 bg-surface-container rounded-full border border-outline-variant flex items-center justify-center mx-auto text-primary shadow-xs">
-            <span class="material-symbols-outlined text-2xl">admin_panel_settings</span>
+    <div v-if="!isAuthenticated" class="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-surface-container-low">
+      <div class="bg-surface border border-outline-variant rounded-xs p-8 sm:p-12 max-w-md w-full shadow-sm space-y-6">
+        <div class="text-center space-y-3">
+          <div class="w-12 h-12 bg-surface-container rounded-xs border border-outline-variant flex items-center justify-center mx-auto text-primary shadow-2xs">
+            <span class="material-symbols-outlined text-2xl text-amber-600">lock</span>
           </div>
-          <h1 class="font-sans text-3xl font-normal text-primary">Gicca Admin</h1>
-          <p class="font-sans text-xs text-secondary">Panel de gestión de ventas y catálogo</p>
+          <div>
+            <span class="font-label text-[10px] font-bold uppercase tracking-[0.25em] text-secondary block mb-1">
+              Alta Perfumería Boutique
+            </span>
+            <h1 class="font-serif text-3xl font-normal tracking-wide text-primary">GICCA</h1>
+            <p class="font-sans text-xs text-secondary mt-1">Panel de Control & Gestión de Ventas</p>
+          </div>
         </div>
 
-        <form @submit.prevent="handleLogin" class="space-y-4">
+        <form @submit.prevent="handleLogin" class="space-y-4 pt-2">
           <div>
-            <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">
+            <label class="block font-label text-[11px] uppercase tracking-wider text-primary font-bold mb-1.5">
               Contraseña de Acceso
             </label>
             <input 
               v-model="adminPassword"
               type="password" 
               required
-              placeholder="••••••••"
-              class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-sm font-sans focus:border-primary focus:outline-none"
+              placeholder="••••••••••••"
+              class="w-full bg-surface-container border border-outline-variant rounded-xs px-3.5 py-3 text-sm font-sans text-primary placeholder:text-secondary focus:border-primary focus:outline-none transition-colors"
             />
             <p v-if="loginError" class="text-xs text-red-600 font-sans mt-2 flex items-center gap-1">
               <span class="material-symbols-outlined text-xs">error</span>
@@ -1014,64 +1019,84 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
 
           <button 
             type="submit"
-            class="w-full bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-3.5 rounded-full border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-2 shadow-md"
+            class="w-full bg-primary text-on-primary hover:bg-primary-container font-label text-xs uppercase tracking-widest py-3.5 rounded-xs border border-primary transition-all flex items-center justify-center gap-2 shadow-xs"
           >
             <span>Ingresar al Panel</span>
             <span class="material-symbols-outlined text-sm">arrow_forward</span>
           </button>
         </form>
+
+        <div class="pt-3 text-center border-t border-outline-variant">
+          <RouterLink to="/" class="font-label text-[11px] uppercase tracking-widest text-secondary hover:text-primary transition-colors inline-flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">arrow_back</span>
+            <span>Volver a la Tienda Pública</span>
+          </RouterLink>
+        </div>
       </div>
     </div>
 
     <!-- MAIN ADMIN DASHBOARD -->
     <div v-else class="pb-24">
       
-      <!-- Top Sticky Admin Navbar -->
-      <header class="sticky top-0 z-40 bg-surface border-b border-outline-variant px-margin-mobile md:px-margin-desktop py-3.5 shadow-2xs">
-        <div class="max-w-container-max mx-auto flex justify-between items-center">
-          <div class="flex items-center gap-4">
-            <div class="flex items-center gap-2">
-              <span class="font-serif text-xl font-bold tracking-wider text-primary">GICCA</span>
-              <span class="bg-surface-container px-2 py-0.5 rounded-full text-[10px] font-label uppercase font-bold text-secondary border border-outline-variant">
-                Boutique Manager
+      <!-- Top Sticky Admin Navbar (Matching Ecommerce Layout & Colors) -->
+      <header class="sticky top-0 z-40 bg-surface border-b border-outline-variant shadow-xs">
+        <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-3.5 flex justify-between items-center gap-4">
+          <div class="flex items-center gap-6">
+            <!-- Brand -->
+            <RouterLink to="/" class="flex items-center gap-2.5 group">
+              <span class="font-sans text-2xl text-primary font-normal tracking-tight group-hover:text-primary-container transition-colors">
+                Gicca Perfumes
               </span>
-            </div>
+              <span class="bg-surface-container px-2 py-0.5 rounded-xs text-[10px] font-label uppercase font-bold text-secondary border border-outline-variant tracking-wider">
+                Admin
+              </span>
+            </RouterLink>
 
-            <!-- Main Admin Tabs (Tienda Nube Style) -->
-            <nav class="hidden md:flex items-center gap-1 bg-surface-container p-1 rounded-full border border-outline-variant">
+            <!-- Main Admin Tabs (Segmented Control - Max 6px Borders) -->
+            <nav class="hidden lg:flex items-center gap-1 bg-surface-container p-1 rounded-xs border border-outline-variant">
               <button 
                 @click="activeAdminTab = 'ventas'"
-                class="px-4 py-1.5 rounded-full text-xs font-label uppercase tracking-wider transition-all flex items-center gap-1.5"
-                :class="activeAdminTab === 'ventas' ? 'bg-primary-container text-on-primary font-bold shadow-2xs' : 'text-secondary hover:text-primary'"
+                class="px-4 py-2 rounded-xs text-xs font-label uppercase tracking-wider transition-all flex items-center gap-2"
+                :class="activeAdminTab === 'ventas' ? 'bg-primary text-on-primary font-bold shadow-xs' : 'text-secondary hover:text-primary hover:bg-surface/70'"
               >
                 <span class="material-symbols-outlined text-sm">shopping_cart</span>
                 <span>Ventas & Pedidos</span>
-                <span class="bg-surface text-primary px-1.5 py-0.2 text-[10px] rounded-full font-mono">{{ ordersStore.items.length }}</span>
+                <span 
+                  class="px-1.5 py-0.5 text-[10px] rounded-xs font-mono font-bold border"
+                  :class="activeAdminTab === 'ventas' ? 'bg-white/20 text-white border-white/20' : 'bg-surface text-primary border-outline-variant'"
+                >
+                  {{ ordersStore.items.length }}
+                </span>
               </button>
 
               <button 
                 @click="activeAdminTab = 'productos'"
-                class="px-4 py-1.5 rounded-full text-xs font-label uppercase tracking-wider transition-all flex items-center gap-1.5"
-                :class="activeAdminTab === 'productos' ? 'bg-primary-container text-on-primary font-bold shadow-2xs' : 'text-secondary hover:text-primary'"
+                class="px-4 py-2 rounded-xs text-xs font-label uppercase tracking-wider transition-all flex items-center gap-2"
+                :class="activeAdminTab === 'productos' ? 'bg-primary text-on-primary font-bold shadow-xs' : 'text-secondary hover:text-primary hover:bg-surface/70'"
               >
                 <span class="material-symbols-outlined text-sm">inventory_2</span>
                 <span>Perfumes & Catálogo</span>
-                <span class="bg-surface text-primary px-1.5 py-0.2 text-[10px] rounded-full font-mono">{{ productStore.items.length }}</span>
+                <span 
+                  class="px-1.5 py-0.5 text-[10px] rounded-xs font-mono font-bold border"
+                  :class="activeAdminTab === 'productos' ? 'bg-white/20 text-white border-white/20' : 'bg-surface text-primary border-outline-variant'"
+                >
+                  {{ productStore.items.length }}
+                </span>
               </button>
 
               <button 
                 @click="activeAdminTab = 'finanzas'"
-                class="px-4 py-1.5 rounded-full text-xs font-label uppercase tracking-wider transition-all flex items-center gap-1.5"
-                :class="activeAdminTab === 'finanzas' ? 'bg-primary-container text-on-primary font-bold shadow-2xs' : 'text-secondary hover:text-primary'"
+                class="px-4 py-2 rounded-xs text-xs font-label uppercase tracking-wider transition-all flex items-center gap-2"
+                :class="activeAdminTab === 'finanzas' ? 'bg-primary text-on-primary font-bold shadow-xs' : 'text-secondary hover:text-primary hover:bg-surface/70'"
               >
                 <span class="material-symbols-outlined text-sm">trending_up</span>
-                <span>Rentabilidad & Ganancias</span>
+                <span>Rentabilidad</span>
               </button>
 
               <button 
                 @click="activeAdminTab = 'diseno'"
-                class="px-4 py-1.5 rounded-full text-xs font-label uppercase tracking-wider transition-all flex items-center gap-1.5"
-                :class="activeAdminTab === 'diseno' ? 'bg-primary-container text-on-primary font-bold shadow-2xs' : 'text-secondary hover:text-primary'"
+                class="px-4 py-2 rounded-xs text-xs font-label uppercase tracking-wider transition-all flex items-center gap-2"
+                :class="activeAdminTab === 'diseno' ? 'bg-primary text-on-primary font-bold shadow-xs' : 'text-secondary hover:text-primary hover:bg-surface/70'"
               >
                 <span class="material-symbols-outlined text-sm">palette</span>
                 <span>Diseño & Contenido Web</span>
@@ -1084,7 +1109,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
             <RouterLink 
               to="/" 
               target="_blank"
-              class="hidden sm:flex items-center gap-1 text-xs font-label uppercase tracking-wider text-secondary hover:text-primary transition-colors"
+              class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xs border border-outline-variant text-xs font-label uppercase tracking-widest text-primary hover:border-primary hover:bg-surface transition-all shadow-2xs"
             >
               <span>Ver Tienda</span>
               <span class="material-symbols-outlined text-sm">open_in_new</span>
@@ -1092,43 +1117,48 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
 
             <button 
               @click="handleLogout"
-              class="p-2 text-secondary hover:text-primary hover:bg-surface-container rounded-full transition-colors"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xs border border-outline-variant/80 text-secondary hover:text-error hover:border-red-200 hover:bg-red-50 text-xs font-label uppercase tracking-wider transition-colors"
               title="Cerrar Sesión"
             >
-              <span class="material-symbols-outlined text-xl">logout</span>
+              <span class="material-symbols-outlined text-base">logout</span>
+              <span class="hidden md:inline">Salir</span>
             </button>
           </div>
         </div>
 
-        <!-- Mobile Navigation Pills -->
-        <div class="flex md:hidden items-center gap-2 mt-3 overflow-x-auto pb-1">
+        <!-- Mobile / Tablet Navigation Segmented Control -->
+        <div class="flex lg:hidden items-center gap-1.5 px-margin-mobile pb-3 overflow-x-auto no-scrollbar">
           <button 
             @click="activeAdminTab = 'ventas'"
-            class="px-3 py-1 rounded-full text-xs font-label uppercase tracking-wider flex-shrink-0"
-            :class="activeAdminTab === 'ventas' ? 'bg-primary-container text-on-primary font-bold' : 'bg-surface-container text-secondary'"
+            class="px-3.5 py-1.5 rounded-xs text-xs font-label uppercase tracking-wider flex-shrink-0 flex items-center gap-1.5 transition-all"
+            :class="activeAdminTab === 'ventas' ? 'bg-primary text-on-primary font-bold shadow-xs' : 'bg-surface-container border border-outline-variant text-secondary'"
           >
-            Ventas ({{ ordersStore.items.length }})
+            <span class="material-symbols-outlined text-sm">shopping_cart</span>
+            <span>Ventas ({{ ordersStore.items.length }})</span>
           </button>
           <button 
             @click="activeAdminTab = 'productos'"
-            class="px-3 py-1 rounded-full text-xs font-label uppercase tracking-wider flex-shrink-0"
-            :class="activeAdminTab === 'productos' ? 'bg-primary-container text-on-primary font-bold' : 'bg-surface-container text-secondary'"
+            class="px-3.5 py-1.5 rounded-xs text-xs font-label uppercase tracking-wider flex-shrink-0 flex items-center gap-1.5 transition-all"
+            :class="activeAdminTab === 'productos' ? 'bg-primary text-on-primary font-bold shadow-xs' : 'bg-surface-container border border-outline-variant text-secondary'"
           >
-            Perfumes ({{ productStore.items.length }})
+            <span class="material-symbols-outlined text-sm">inventory_2</span>
+            <span>Perfumes ({{ productStore.items.length }})</span>
           </button>
           <button 
             @click="activeAdminTab = 'finanzas'"
-            class="px-3 py-1 rounded-full text-xs font-label uppercase tracking-wider flex-shrink-0"
-            :class="activeAdminTab === 'finanzas' ? 'bg-primary-container text-on-primary font-bold' : 'bg-surface-container text-secondary'"
+            class="px-3.5 py-1.5 rounded-xs text-xs font-label uppercase tracking-wider flex-shrink-0 flex items-center gap-1.5 transition-all"
+            :class="activeAdminTab === 'finanzas' ? 'bg-primary text-on-primary font-bold shadow-xs' : 'bg-surface-container border border-outline-variant text-secondary'"
           >
-            Rentabilidad
+            <span class="material-symbols-outlined text-sm">trending_up</span>
+            <span>Rentabilidad</span>
           </button>
           <button 
             @click="activeAdminTab = 'diseno'"
-            class="px-3 py-1 rounded-full text-xs font-label uppercase tracking-wider flex-shrink-0"
-            :class="activeAdminTab === 'diseno' ? 'bg-primary-container text-on-primary font-bold' : 'bg-surface-container text-secondary'"
+            class="px-3.5 py-1.5 rounded-xs text-xs font-label uppercase tracking-wider flex-shrink-0 flex items-center gap-1.5 transition-all"
+            :class="activeAdminTab === 'diseno' ? 'bg-primary text-on-primary font-bold shadow-xs' : 'bg-surface-container border border-outline-variant text-secondary'"
           >
-            Diseño & Contenido
+            <span class="material-symbols-outlined text-sm">palette</span>
+            <span>Diseño</span>
           </button>
         </div>
       </header>
@@ -1232,10 +1262,10 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
             <!-- Main Button: Nueva Venta Manual -->
             <button 
               @click="openCreateManualOrderModal"
-              class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-5 py-3 rounded-full hover:bg-inverse-surface transition-all flex items-center justify-center gap-2 shadow-md flex-shrink-0"
+              class="bg-primary hover:bg-slate-800 text-on-primary font-label text-xs uppercase tracking-wider px-4 py-2.5 rounded-xs transition-all flex items-center justify-center gap-2 shadow-xs border border-primary/20 flex-shrink-0"
             >
               <span class="material-symbols-outlined text-base">add_circle</span>
-              <span>+ Cargar Venta Manual (Tienda Nube)</span>
+              <span>+ Cargar Venta Manual</span>
             </button>
           </div>
 
@@ -1271,7 +1301,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                     <td class="py-4 px-4 align-top">
                       <span class="font-mono font-bold text-primary block">#{{ order.orderNumber }}</span>
                       <span class="text-[11px] text-secondary">{{ new Date(order.date).toLocaleDateString('es-AR') }}</span>
-                      <span class="text-[9px] font-label uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-surface-container block w-max mt-1">
+                      <span class="text-[9px] font-label uppercase tracking-widest px-2 py-0.5 rounded-xs bg-surface-container border border-outline-variant/60 block w-max mt-1 font-medium">
                         {{ order.source === 'web' ? 'Tienda Web' : (order.source === 'whatsapp' ? 'WhatsApp' : 'Manual') }}
                       </span>
                     </td>
@@ -1315,7 +1345,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                       <span class="font-bold text-emerald-700 block text-sm">
                         +${{ order.profit.toLocaleString('es-AR') }}
                       </span>
-                      <span class="text-[10px] text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded-full font-bold">
+                      <span class="text-[10px] text-emerald-800 bg-emerald-100 border border-emerald-200 px-1.5 py-0.5 rounded-xs font-bold inline-block mt-0.5">
                         {{ order.profitMargin }}% Margen
                       </span>
                     </td>
@@ -1325,8 +1355,8 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                       <select 
                         :value="order.paymentStatus" 
                         @change="updateOrderStatus(order, 'paymentStatus', $event.target.value)"
-                        class="text-[11px] font-label uppercase font-bold px-2 py-1 rounded-full border border-outline-variant focus:outline-none"
-                        :class="order.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'"
+                        class="text-[11px] font-label uppercase font-bold px-2 py-1 rounded-xs border border-outline-variant focus:outline-none"
+                        :class="order.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-850 border-emerald-200' : 'bg-amber-50 text-amber-900 border-amber-200'"
                       >
                         <option value="paid">Pagado</option>
                         <option value="pending">Pendiente</option>
@@ -1339,8 +1369,8 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                       <select 
                         :value="order.fulfillmentStatus" 
                         @change="updateOrderStatus(order, 'fulfillmentStatus', $event.target.value)"
-                        class="text-[11px] font-label uppercase font-bold px-2 py-1 rounded-full border border-outline-variant focus:outline-none"
-                        :class="order.fulfillmentStatus === 'delivered' ? 'bg-blue-100 text-blue-900' : (order.fulfillmentStatus === 'shipped' ? 'bg-purple-100 text-purple-900' : 'bg-surface-container text-secondary')"
+                        class="text-[11px] font-label uppercase font-bold px-2 py-1 rounded-xs border border-outline-variant focus:outline-none"
+                        :class="order.fulfillmentStatus === 'delivered' ? 'bg-blue-50 text-blue-900 border-blue-200' : (order.fulfillmentStatus === 'shipped' ? 'bg-purple-50 text-purple-900 border-purple-200' : 'bg-surface-container text-secondary')"
                       >
                         <option value="unfulfilled">Sin Empaque</option>
                         <option value="packing">Preparando</option>
@@ -1353,14 +1383,14 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                     <td class="py-4 px-4 align-top text-right space-x-1">
                       <button 
                         @click="viewOrderDetail(order)"
-                        class="p-1.5 text-secondary hover:text-primary rounded-full hover:bg-surface-container transition-colors"
+                        class="p-1.5 text-secondary hover:text-primary rounded-xs border border-transparent hover:border-outline-variant hover:bg-surface-container transition-colors"
                         title="Ver Remito / Detalle"
                       >
                         <span class="material-symbols-outlined text-base">receipt_long</span>
                       </button>
                       <button 
                         @click="ordersStore.deleteOrder(order.id)"
-                        class="p-1.5 text-secondary hover:text-error rounded-full hover:bg-surface-container transition-colors"
+                        class="p-1.5 text-secondary hover:text-error rounded-xs border border-transparent hover:border-red-200 hover:bg-red-50 transition-colors"
                         title="Eliminar Pedido"
                       >
                         <span class="material-symbols-outlined text-base">delete</span>
@@ -1414,7 +1444,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
 
             <button 
               @click="openCreateModal"
-              class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-5 py-3 rounded-full hover:bg-inverse-surface transition-all flex items-center justify-center gap-2 shadow-md flex-shrink-0"
+              class="bg-primary hover:bg-slate-800 text-on-primary font-label text-xs uppercase tracking-wider px-4 py-2.5 rounded-xs transition-all flex items-center justify-center gap-2 shadow-xs border border-primary/20 flex-shrink-0"
             >
               <span class="material-symbols-outlined text-base">add</span>
               <span>+ Nuevo Perfume</span>
@@ -1477,13 +1507,13 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                       <span class="font-bold text-emerald-700 block text-sm">
                         +${{ (p.profit || Math.max(0, (p.price || 0) - (p.costPrice || Math.round((p.price || 0) * 0.45)))).toLocaleString('es-AR') }}
                       </span>
-                      <span class="text-[10px] text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded-full font-bold">
+                      <span class="text-[10px] text-emerald-800 bg-emerald-100 border border-emerald-200 px-1.5 py-0.5 rounded-xs font-bold inline-block mt-0.5">
                         {{ p.profitMargin || 55 }}% Margen
                       </span>
                     </td>
 
                     <td class="py-3.5 px-4">
-                      <span class="bg-surface-container px-2 py-1 rounded-full text-xs font-mono font-bold text-primary">
+                      <span class="bg-surface-container px-2 py-1 rounded-xs border border-outline-variant/60 text-xs font-mono font-bold text-primary">
                         {{ p.stock ?? 10 }} un.
                       </span>
                     </td>
@@ -1491,14 +1521,14 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                     <td class="py-3.5 px-4 text-right space-x-1">
                       <button 
                         @click="openEditModal(p)"
-                        class="p-1.5 text-secondary hover:text-primary rounded-full hover:bg-surface-container transition-colors"
+                        class="p-1.5 text-secondary hover:text-primary rounded-xs border border-transparent hover:border-outline-variant hover:bg-surface-container transition-colors"
                         title="Editar Perfume"
                       >
                         <span class="material-symbols-outlined text-base">edit</span>
                       </button>
                       <button 
                         @click="confirmDeleteProduct(p)"
-                        class="p-1.5 text-secondary hover:text-error rounded-full hover:bg-surface-container transition-colors"
+                        class="p-1.5 text-secondary hover:text-error rounded-xs border border-transparent hover:border-red-200 hover:bg-red-50 transition-colors"
                         title="Eliminar Perfume"
                       >
                         <span class="material-symbols-outlined text-base">delete</span>
@@ -1563,36 +1593,36 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
               </p>
             </div>
 
-            <!-- Subtabs -->
-            <div class="flex flex-wrap items-center gap-1.5 bg-surface-container p-1 rounded-full border border-outline-variant text-xs font-label uppercase">
+            <!-- Subtabs Segmented Control -->
+            <div class="flex flex-wrap items-center gap-1 bg-surface-container p-1 rounded-xs border border-outline-variant text-xs font-label uppercase">
               <button 
                 @click="activeDesignSubtab = 'categorias'"
-                class="px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5"
-                :class="activeDesignSubtab === 'categorias' ? 'bg-primary-container text-on-primary font-bold shadow-2xs' : 'text-secondary hover:text-primary'"
+                class="px-3.5 py-1.5 rounded-xs transition-all flex items-center gap-1.5"
+                :class="activeDesignSubtab === 'categorias' ? 'bg-primary text-on-primary font-bold shadow-xs' : 'text-secondary hover:text-primary hover:bg-surface/60'"
               >
                 <span>Categorías</span>
-                <span class="bg-surface text-primary px-1.5 py-0.2 text-[10px] rounded-full font-mono">{{ siteContentStore.mainCategories.length }}</span>
+                <span class="bg-surface text-primary px-1.5 py-0.2 text-[10px] rounded-xs border border-outline-variant/60 font-mono">{{ siteContentStore.mainCategories.length }}</span>
               </button>
               <button 
                 @click="activeDesignSubtab = 'familias'"
-                class="px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5"
-                :class="activeDesignSubtab === 'familias' ? 'bg-primary-container text-on-primary font-bold shadow-2xs' : 'text-secondary hover:text-primary'"
+                class="px-3.5 py-1.5 rounded-xs transition-all flex items-center gap-1.5"
+                :class="activeDesignSubtab === 'familias' ? 'bg-primary text-on-primary font-bold shadow-xs' : 'text-secondary hover:text-primary hover:bg-surface/60'"
               >
                 <span>Familias Olfativas</span>
-                <span class="bg-surface text-primary px-1.5 py-0.2 text-[10px] rounded-full font-mono">{{ siteContentStore.olfactiveFamilies.length }}</span>
+                <span class="bg-surface text-primary px-1.5 py-0.2 text-[10px] rounded-xs border border-outline-variant/60 font-mono">{{ siteContentStore.olfactiveFamilies.length }}</span>
               </button>
               <button 
                 @click="activeDesignSubtab = 'banners'"
-                class="px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5"
-                :class="activeDesignSubtab === 'banners' ? 'bg-primary-container text-on-primary font-bold shadow-2xs' : 'text-secondary hover:text-primary'"
+                class="px-3.5 py-1.5 rounded-xs transition-all flex items-center gap-1.5"
+                :class="activeDesignSubtab === 'banners' ? 'bg-primary text-on-primary font-bold shadow-xs' : 'text-secondary hover:text-primary hover:bg-surface/60'"
               >
                 <span>Banners Portada</span>
-                <span class="bg-surface text-primary px-1.5 py-0.2 text-[10px] rounded-full font-mono">{{ siteContentStore.heroSlides.length }}</span>
+                <span class="bg-surface text-primary px-1.5 py-0.2 text-[10px] rounded-xs border border-outline-variant/60 font-mono">{{ siteContentStore.heroSlides.length }}</span>
               </button>
               <button 
                 @click="activeDesignSubtab = 'editorial'"
-                class="px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5"
-                :class="activeDesignSubtab === 'editorial' ? 'bg-primary-container text-on-primary font-bold shadow-2xs' : 'text-secondary hover:text-primary'"
+                class="px-3.5 py-1.5 rounded-xs transition-all flex items-center gap-1.5"
+                :class="activeDesignSubtab === 'editorial' ? 'bg-primary text-on-primary font-bold shadow-xs' : 'text-secondary hover:text-primary hover:bg-surface/60'"
               >
                 <span>Sobre Nosotros</span>
               </button>
@@ -1611,7 +1641,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
 
               <button 
                 @click="openCreateCategoryModal"
-                class="bg-primary-container hover:bg-inverse-surface text-on-primary font-label text-xs uppercase tracking-widest px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-sm transition-all"
+                class="bg-primary hover:bg-slate-800 text-on-primary font-label text-xs uppercase tracking-wider px-4 py-2.5 rounded-xs flex items-center gap-1.5 shadow-xs border border-primary/20 transition-all flex-shrink-0"
               >
                 <span class="material-symbols-outlined text-sm">add</span>
                 <span>Nueva Categoría</span>
@@ -1634,7 +1664,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                      <label class="bg-surface/90 hover:bg-surface text-primary font-label text-xs uppercase px-3 py-1.5 rounded-full cursor-pointer flex items-center gap-1 shadow-md">
+                      <label class="bg-surface/90 hover:bg-surface text-primary font-label text-xs uppercase px-3 py-1.5 rounded-xs cursor-pointer flex items-center gap-1 shadow-md border border-outline-variant">
                         <span class="material-symbols-outlined text-sm">upload</span>
                         <span>Cambiar Foto</span>
                         <input 
@@ -1646,11 +1676,11 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                       </label>
                     </div>
 
-                    <div class="absolute top-2 left-2 bg-surface/90 backdrop-blur-xs font-label text-[10px] font-bold px-2 py-0.5 rounded-full text-primary border border-outline-variant shadow-xs">
+                    <div class="absolute top-2 left-2 bg-surface/90 backdrop-blur-xs font-label text-[10px] font-bold px-2 py-0.5 rounded-xs text-primary border border-outline-variant shadow-xs">
                       {{ cat.subtitle || 'Categoría' }}
                     </div>
 
-                    <div class="absolute top-2 right-2 bg-primary-container text-on-primary font-label text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs">
+                    <div class="absolute top-2 right-2 bg-primary text-on-primary font-label text-[10px] font-bold px-2 py-0.5 rounded-xs shadow-xs border border-primary/30">
                       {{ cat.span === 12 ? 'Ancho Completo (12 cols)' : 'Media Pantalla (6 cols)' }}
                     </div>
                   </div>
@@ -1669,7 +1699,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
 
                 <!-- Footer Actions -->
                 <div class="border-t border-outline-variant p-3 bg-surface-container flex justify-between items-center">
-                  <label class="text-xs text-primary font-label uppercase flex items-center gap-1 cursor-pointer hover:text-primary-container">
+                  <label class="text-xs text-primary font-label uppercase flex items-center gap-1 cursor-pointer hover:text-secondary transition-colors">
                     <span class="material-symbols-outlined text-sm">photo_camera</span>
                     <span>Subir Foto</span>
                     <input 
@@ -1683,14 +1713,14 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                   <div class="flex items-center gap-1">
                     <button 
                       @click="openEditCategoryModal(cat)"
-                      class="p-1.5 text-secondary hover:text-primary rounded-full hover:bg-surface transition-colors"
+                      class="p-1.5 text-secondary hover:text-primary rounded-xs border border-transparent hover:border-outline-variant hover:bg-surface transition-colors"
                       title="Editar Categoría"
                     >
                       <span class="material-symbols-outlined text-base">edit</span>
                     </button>
                     <button 
                       @click="confirmDeleteContentItem('category', cat, cat.title)"
-                      class="p-1.5 text-secondary hover:text-error rounded-full hover:bg-surface transition-colors"
+                      class="p-1.5 text-secondary hover:text-error rounded-xs border border-transparent hover:border-red-200 hover:bg-red-50 transition-colors"
                       title="Eliminar Categoría"
                     >
                       <span class="material-symbols-outlined text-base">delete</span>
@@ -1713,7 +1743,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
 
               <button 
                 @click="openCreateFamilyModal"
-                class="bg-primary-container hover:bg-inverse-surface text-on-primary font-label text-xs uppercase tracking-widest px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-sm transition-all"
+                class="bg-primary hover:bg-slate-800 text-on-primary font-label text-xs uppercase tracking-wider px-4 py-2.5 rounded-xs flex items-center gap-1.5 shadow-xs border border-primary/20 transition-all flex-shrink-0"
               >
                 <span class="material-symbols-outlined text-sm">add</span>
                 <span>Nueva Familia Olfativa</span>
@@ -1735,7 +1765,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                      <label class="bg-surface/90 hover:bg-surface text-primary font-label text-xs uppercase px-3 py-1.5 rounded-full cursor-pointer flex items-center gap-1 shadow-md">
+                      <label class="bg-surface/90 hover:bg-surface text-primary font-label text-xs uppercase px-3 py-1.5 rounded-xs cursor-pointer flex items-center gap-1 shadow-md border border-outline-variant">
                         <span class="material-symbols-outlined text-sm">upload</span>
                         <span>Cambiar Foto</span>
                         <input 
@@ -1755,7 +1785,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                 </div>
 
                 <div class="border-t border-outline-variant p-2.5 bg-surface-container flex justify-between items-center">
-                  <label class="text-[11px] text-primary font-label uppercase flex items-center gap-1 cursor-pointer hover:text-primary-container">
+                  <label class="text-[11px] text-primary font-label uppercase flex items-center gap-1 cursor-pointer hover:text-secondary transition-colors">
                     <span class="material-symbols-outlined text-sm">photo_camera</span>
                     <span>Subir Foto</span>
                     <input 
@@ -1769,14 +1799,14 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                   <div class="flex items-center gap-1">
                     <button 
                       @click="openEditFamilyModal(fam)"
-                      class="p-1.5 text-secondary hover:text-primary rounded-full hover:bg-surface transition-colors"
+                      class="p-1.5 text-secondary hover:text-primary rounded-xs border border-transparent hover:border-outline-variant hover:bg-surface transition-colors"
                       title="Editar Familia"
                     >
                       <span class="material-symbols-outlined text-base">edit</span>
                     </button>
                     <button 
                       @click="confirmDeleteContentItem('family', fam, fam.name)"
-                      class="p-1.5 text-secondary hover:text-error rounded-full hover:bg-surface transition-colors"
+                      class="p-1.5 text-secondary hover:text-error rounded-xs border border-transparent hover:border-red-200 hover:bg-red-50 transition-colors"
                       title="Eliminar Familia"
                     >
                       <span class="material-symbols-outlined text-base">delete</span>
@@ -1799,7 +1829,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
 
               <button 
                 @click="openCreateSlideModal"
-                class="bg-primary-container hover:bg-inverse-surface text-on-primary font-label text-xs uppercase tracking-widest px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-sm transition-all"
+                class="bg-primary hover:bg-slate-800 text-on-primary font-label text-xs uppercase tracking-wider px-4 py-2.5 rounded-xs flex items-center gap-1.5 shadow-xs border border-primary/20 transition-all flex-shrink-0"
               >
                 <span class="material-symbols-outlined text-sm">add</span>
                 <span>Nuevo Slide</span>
@@ -1840,7 +1870,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                 <div class="flex-grow space-y-1">
                   <div class="flex items-center gap-2">
                     <span class="font-mono text-xs font-bold text-secondary">#{{ idx + 1 }}</span>
-                    <span class="bg-surface-container px-2 py-0.5 rounded-full text-[10px] font-label uppercase font-bold text-primary border border-outline-variant">
+                    <span class="bg-surface-container px-2 py-0.5 rounded-xs text-[10px] font-label uppercase font-bold text-primary border border-outline-variant">
                       {{ slide.tag }}
                     </span>
                   </div>
@@ -1853,14 +1883,14 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                 <div class="flex items-center gap-2 flex-shrink-0">
                   <button 
                     @click="openEditSlideModal(slide)"
-                    class="bg-surface border border-outline hover:border-primary text-primary font-label text-xs uppercase px-3 py-1.5 rounded-full flex items-center gap-1 transition-colors"
+                    class="bg-surface border border-outline-variant hover:border-primary text-primary font-label text-xs uppercase px-3 py-1.5 rounded-xs flex items-center gap-1 transition-colors shadow-2xs"
                   >
                     <span class="material-symbols-outlined text-sm">edit</span>
                     <span>Editar Textos</span>
                   </button>
                   <button 
                     @click="confirmDeleteContentItem('slide', slide, slide.title)"
-                    class="p-2 text-secondary hover:text-error rounded-full hover:bg-surface-container transition-colors"
+                    class="p-2 text-secondary hover:text-error rounded-xs border border-transparent hover:border-red-200 hover:bg-red-50 transition-colors"
                     title="Eliminar Slide"
                   >
                     <span class="material-symbols-outlined text-lg">delete</span>
@@ -1904,7 +1934,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                     <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">
                       Subir archivo desde la PC
                     </label>
-                    <label class="inline-flex items-center gap-2 bg-primary-container text-on-primary font-label text-xs uppercase px-4 py-2.5 rounded-full cursor-pointer hover:bg-inverse-surface transition-all shadow-xs">
+                    <label class="inline-flex items-center gap-2 bg-primary hover:bg-slate-800 text-on-primary font-label text-xs uppercase px-4 py-2.5 rounded-xs cursor-pointer transition-all shadow-xs border border-primary/20">
                       <span class="material-symbols-outlined text-sm">upload</span>
                       <span>Seleccionar Archivo...</span>
                       <input 
@@ -1931,7 +1961,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                   <button 
                     @click="handleSaveEditorial"
                     :disabled="isSubmittingEditorial"
-                    class="bg-surface border border-outline hover:border-primary text-primary font-label text-xs uppercase px-5 py-2.5 rounded-full flex items-center gap-1.5 transition-all shadow-xs disabled:opacity-50"
+                    class="bg-surface border border-outline-variant hover:border-primary text-primary font-label text-xs uppercase px-5 py-2.5 rounded-xs flex items-center gap-1.5 transition-all shadow-xs disabled:opacity-50"
                   >
                     <span class="material-symbols-outlined text-sm">save</span>
                     <span>{{ isSubmittingEditorial ? 'Guardando...' : 'Guardar Cambios' }}</span>
@@ -1950,15 +1980,15 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
     <!-- ==================================================== -->
     <!-- MODAL: CARGAR VENTA MANUAL (TIENDA NUBE) -->
     <!-- ==================================================== -->
-    <div v-if="isManualOrderModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+    <div v-if="isManualOrderModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
       <div class="bg-surface border border-outline-variant rounded-xs max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-6 p-6 sm:p-8">
         
         <div class="flex justify-between items-center border-b border-outline-variant pb-4">
           <div>
             <h2 class="font-sans text-2xl text-primary font-normal">+ Registrar Venta Manual</h2>
-            <p class="font-sans text-xs text-secondary mt-0.5">Creá un pedido como en Tienda Nube y calculá la ganancia al instante.</p>
+            <p class="font-sans text-xs text-secondary mt-0.5">Creá un pedido con registro comercial y calculá la ganancia al instante.</p>
           </div>
-          <button @click="closeManualOrderModal" class="p-2 text-secondary hover:text-primary rounded-full">
+          <button @click="closeManualOrderModal" class="p-1.5 text-secondary hover:text-primary rounded-xs border border-transparent hover:border-outline-variant hover:bg-surface-container transition-colors">
             <span class="material-symbols-outlined text-xl">close</span>
           </button>
         </div>
@@ -2030,13 +2060,13 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                 type="text" 
                 required 
                 placeholder="Nombre *" 
-                class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans"
+                class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans focus:border-primary focus:outline-none"
               />
               <input 
                 v-model="manualOrderForm.customer.lastName" 
                 type="text" 
                 placeholder="Apellido" 
-                class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans"
+                class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans focus:border-primary focus:outline-none"
               />
             </div>
 
@@ -2046,13 +2076,13 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                 type="tel" 
                 required 
                 placeholder="WhatsApp / Teléfono *" 
-                class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans"
+                class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans focus:border-primary focus:outline-none"
               />
               <input 
                 v-model="manualOrderForm.customer.email" 
                 type="email" 
                 placeholder="Email (opcional)" 
-                class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans"
+                class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans focus:border-primary focus:outline-none"
               />
             </div>
 
@@ -2062,14 +2092,14 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                 type="text" 
                 required 
                 placeholder="Dirección y Número *" 
-                class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans sm:col-span-2"
+                class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans sm:col-span-2 focus:border-primary focus:outline-none"
               />
               <input 
                 v-model="manualOrderForm.customer.postalCode" 
                 type="text" 
                 required 
                 placeholder="Código Postal *" 
-                class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans"
+                class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans focus:border-primary focus:outline-none"
               />
             </div>
           </div>
@@ -2081,7 +2111,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label class="block text-[11px] text-secondary mb-1">Método de Envío</label>
-                <select v-model="manualOrderForm.shippingMethod" class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans">
+                <select v-model="manualOrderForm.shippingMethod" class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans focus:border-primary focus:outline-none">
                   <option>Andreani Estándar a Domicilio</option>
                   <option>Retiro en Sucursal Andreani</option>
                   <option>Retiro en Boutique / Local</option>
@@ -2091,7 +2121,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
 
               <div>
                 <label class="block text-[11px] text-secondary mb-1">Medio de Pago</label>
-                <select v-model="manualOrderForm.paymentMethod" class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans">
+                <select v-model="manualOrderForm.paymentMethod" class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans focus:border-primary focus:outline-none">
                   <option value="transfer">Transferencia Bancaria</option>
                   <option value="credit_card">Tarjeta de Crédito / Débito</option>
                   <option value="mercado_pago">Mercado Pago</option>
@@ -2103,7 +2133,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
               <div>
                 <label class="block text-[11px] text-secondary mb-1">Estado de Pago</label>
-                <select v-model="manualOrderForm.paymentStatus" class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans">
+                <select v-model="manualOrderForm.paymentStatus" class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans focus:border-primary focus:outline-none">
                   <option value="paid">Pagado (Abonado)</option>
                   <option value="pending">Pendiente de Pago</option>
                 </select>
@@ -2115,8 +2145,8 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                   v-model.number="manualOrderForm.discountAmount" 
                   type="number" 
                   min="0" 
-                  placeholder="0"
-                  class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans"
+                  placeholder="0" 
+                  class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans focus:border-primary focus:outline-none"
                 />
               </div>
             </div>
@@ -2130,7 +2160,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
             </div>
             <div class="text-right">
               <span class="font-bold text-base text-emerald-900 block">+${{ manualOrderProfit.toLocaleString('es-AR') }}</span>
-              <span class="text-[10px] bg-emerald-200 text-emerald-950 font-bold px-2 py-0.5 rounded-full">
+              <span class="text-[10px] bg-emerald-200 text-emerald-950 font-bold px-2 py-0.5 rounded-xs border border-emerald-300">
                 {{ manualOrderProfitMargin }}% Margen
               </span>
             </div>
@@ -2141,14 +2171,14 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
             <button 
               type="button" 
               @click="closeManualOrderModal"
-              class="px-5 py-2.5 text-xs font-label uppercase rounded-full border border-outline-variant hover:bg-surface-container"
+              class="px-4 py-2 text-xs font-label uppercase tracking-wider rounded-xs border border-outline-variant text-secondary hover:text-primary hover:bg-surface-container transition-colors"
             >
               Cancelar
             </button>
             <button 
               type="submit" 
               :disabled="isSubmittingOrder"
-              class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-8 py-2.5 rounded-full hover:bg-inverse-surface transition-all shadow-md disabled:opacity-50"
+              class="bg-primary hover:bg-slate-800 text-on-primary font-label text-xs uppercase tracking-wider px-6 py-2.5 rounded-xs transition-all shadow-xs border border-primary/20 disabled:opacity-50"
             >
               <span>{{ isSubmittingOrder ? 'Guardando...' : 'Crear y Registrar Venta' }}</span>
             </button>
@@ -2162,14 +2192,14 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
     <!-- ==================================================== -->
     <!-- MODAL: DETALLE / REMITO DE ORDEN -->
     <!-- ==================================================== -->
-    <div v-if="isOrderDetailModalOpen && selectedOrderForDetail" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+    <div v-if="isOrderDetailModalOpen && selectedOrderForDetail" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
       <div class="bg-surface border border-outline-variant rounded-xs max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 sm:p-8 space-y-6">
         <div class="flex justify-between items-center border-b border-outline-variant pb-3">
           <div>
             <span class="font-label text-[10px] uppercase tracking-widest text-secondary">Comprobante de Venta</span>
             <h3 class="font-sans text-2xl text-primary font-bold">#{{ selectedOrderForDetail.orderNumber }}</h3>
           </div>
-          <button @click="isOrderDetailModalOpen = false" class="p-2 text-secondary hover:text-primary rounded-full">
+          <button @click="isOrderDetailModalOpen = false" class="p-1.5 text-secondary hover:text-primary rounded-xs border border-transparent hover:border-outline-variant hover:bg-surface-container transition-colors">
             <span class="material-symbols-outlined text-xl">close</span>
           </button>
         </div>
@@ -2217,8 +2247,8 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                 Envío & Logística Andreani
               </span>
               <span 
-                class="px-2 py-0.5 rounded-full text-[10px] font-label font-bold uppercase"
-                :class="selectedOrderForDetail.fulfillmentStatus === 'shipped' ? 'bg-blue-100 text-blue-800' : (selectedOrderForDetail.fulfillmentStatus === 'delivered' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900')"
+                class="px-2 py-0.5 rounded-xs text-[10px] font-label font-bold uppercase border"
+                :class="selectedOrderForDetail.fulfillmentStatus === 'shipped' ? 'bg-blue-50 text-blue-900 border-blue-200' : (selectedOrderForDetail.fulfillmentStatus === 'delivered' ? 'bg-emerald-50 text-emerald-900 border-emerald-200' : 'bg-amber-50 text-amber-900 border-amber-200')"
               >
                 {{ selectedOrderForDetail.fulfillmentStatus === 'shipped' ? 'Despachado' : (selectedOrderForDetail.fulfillmentStatus === 'delivered' ? 'Entregado' : 'En Preparación') }}
               </span>
@@ -2256,7 +2286,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
             v-if="!selectedOrderForDetail.trackingCode"
             @click="handleGenerateShipment(selectedOrderForDetail)"
             :disabled="isGeneratingShipment"
-            class="bg-primary-container hover:bg-inverse-surface text-on-primary font-label text-xs uppercase tracking-widest px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+            class="bg-primary hover:bg-slate-800 text-on-primary font-label text-xs uppercase tracking-wider px-4 py-2.5 rounded-xs flex items-center gap-1.5 shadow-xs border border-primary/20 disabled:opacity-50 transition-all"
           >
             <span class="material-symbols-outlined text-sm">local_shipping</span>
             <span>{{ isGeneratingShipment ? 'Conectando con Andreani...' : 'Generar Envío Andreani' }}</span>
@@ -2264,14 +2294,14 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
 
           <button 
             @click="sendWhatsAppTracking(selectedOrderForDetail)"
-            class="bg-[#25D366] hover:bg-[#20ba5a] text-white font-label text-xs uppercase tracking-widest px-4 py-2.5 rounded-full flex items-center gap-1.5"
+            class="bg-[#25D366] hover:bg-[#20ba5a] text-white font-label text-xs uppercase tracking-wider px-4 py-2.5 rounded-xs flex items-center gap-1.5 shadow-xs transition-all"
           >
             <span class="material-symbols-outlined text-sm">chat</span>
             <span>WhatsApp</span>
           </button>
           <button 
-            @click="isOrderDetailModalOpen = false"
-            class="bg-surface border border-outline font-label text-xs uppercase px-5 py-2.5 rounded-full"
+            @click="isOrderDetailModalOpen = false" 
+            class="bg-surface border border-outline-variant hover:border-primary text-secondary hover:text-primary font-label text-xs uppercase tracking-wider px-5 py-2.5 rounded-xs transition-colors"
           >
             Cerrar
           </button>
@@ -2282,7 +2312,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
     <!-- ==================================================== -->
     <!-- MODAL: CREAR / EDITAR PERFUME (STEP BY STEP WIZARD) -->
     <!-- ==================================================== -->
-    <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+    <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
       <div class="bg-surface border border-outline-variant rounded-xs max-w-3xl w-full max-h-[92vh] overflow-y-auto shadow-2xl p-6 sm:p-8 space-y-6">
         
         <!-- Header -->
@@ -2293,7 +2323,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
             </h2>
             <p class="font-sans text-xs text-secondary mt-0.5">Paso {{ currentFormStep }} de {{ steps.length }}: {{ steps[currentFormStep - 1]?.subtitle }}</p>
           </div>
-          <button @click="closeModal" class="p-2 text-secondary hover:text-primary rounded-full">
+          <button @click="closeModal" class="p-1.5 text-secondary hover:text-primary rounded-xs border border-transparent hover:border-outline-variant hover:bg-surface-container transition-colors">
             <span class="material-symbols-outlined text-xl">close</span>
           </button>
         </div>
@@ -2304,7 +2334,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
             v-for="st in steps" 
             :key="st.number"
             class="p-2 rounded-xs border text-center transition-all"
-            :class="currentFormStep === st.number ? 'bg-primary-container text-on-primary border-primary-container font-bold' : (currentFormStep > st.number ? 'bg-surface-container text-primary border-outline' : 'bg-surface text-outline border-outline-variant')"
+            :class="currentFormStep === st.number ? 'bg-primary text-on-primary border-primary font-bold shadow-xs' : (currentFormStep > st.number ? 'bg-surface-container text-primary border-outline-variant' : 'bg-surface text-secondary/60 border-outline-variant/60')"
           >
             <span class="text-[10px] font-label uppercase block tracking-wider">{{ st.title }}</span>
           </div>
@@ -2428,8 +2458,8 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                 </div>
                 <button 
                   type="button" 
-                  @click="calculateListPriceFromTransfer"
-                  class="bg-primary-container text-on-primary font-label text-[11px] uppercase tracking-wider px-4 py-2 rounded-xs hover:bg-inverse-surface transition-colors flex-shrink-0"
+                  @click="calculateListPriceFromTransfer" 
+                  class="bg-primary hover:bg-slate-800 text-on-primary font-label text-[11px] uppercase tracking-wider px-4 py-2 rounded-xs transition-colors flex-shrink-0 border border-primary/20 shadow-xs"
                 >
                   Fijar Precio de Lista ({{ targetTransferPrice ? `$${Math.round(targetTransferPrice / 0.8).toLocaleString('es-AR')}` : '...' }})
                 </button>
@@ -2444,7 +2474,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
               </div>
               <div class="text-right">
                 <span class="font-bold text-lg text-emerald-900 block">+${{ productUnitProfit.toLocaleString('es-AR') }}</span>
-                <span class="text-[10px] font-bold bg-emerald-200 text-emerald-950 px-2 py-0.5 rounded-full">
+                <span class="text-[10px] font-bold bg-emerald-200 text-emerald-950 px-2 py-0.5 rounded-xs border border-emerald-300">
                   {{ productProfitMargin }}% Margen
                 </span>
               </div>
@@ -2460,7 +2490,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
               <p class="font-sans text-sm font-medium text-primary">Cargar Fotos desde tu Computadora</p>
               <p class="text-xs text-secondary mt-1">Formato JPG, PNG o WEBP (Opcional)</p>
             </div>
-            <label class="inline-block bg-surface border border-outline font-label text-xs uppercase tracking-wider px-5 py-2.5 rounded-full cursor-pointer hover:bg-surface-container transition-colors shadow-2xs">
+            <label class="inline-block bg-surface border border-outline-variant hover:border-primary text-primary font-label text-xs uppercase tracking-wider px-5 py-2.5 rounded-xs cursor-pointer hover:bg-surface-container transition-colors shadow-2xs">
               <span>Seleccionar Archivos</span>
               <input type="file" multiple accept="image/*" @change="handleFileUpload" class="hidden" />
             </label>
@@ -2470,7 +2500,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
           <div v-if="formData.images.length > 0" class="grid grid-cols-4 gap-3 pt-2">
             <div v-for="(img, idx) in formData.images" :key="idx" class="relative aspect-square rounded-xs border border-outline-variant overflow-hidden group">
               <img :src="img" class="w-full h-full object-cover" />
-              <button @click="removeImage(idx)" type="button" class="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+              <button @click="removeImage(idx)" type="button" class="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-xs opacity-0 group-hover:opacity-100 transition-opacity">
                 <span class="material-symbols-outlined text-xs">close</span>
               </button>
             </div>
@@ -2483,11 +2513,11 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
           <div class="bg-surface-container p-4 rounded-xs border border-outline-variant space-y-2">
             <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold">Notas de Salida</label>
             <div class="flex gap-2">
-              <input v-model="topNoteInput" @keyup.enter="addTopNote" type="text" placeholder="Ej. Bergamota, Azafrán..." class="w-full bg-surface border border-outline-variant rounded-xs p-2 text-xs font-sans" />
-              <button @click="addTopNote" type="button" class="bg-surface border border-outline font-label text-xs px-3 rounded-xs uppercase">Agregar</button>
+              <input v-model="topNoteInput" @keyup.enter="addTopNote" type="text" placeholder="Ej. Bergamota, Azafrán..." class="w-full bg-surface border border-outline-variant rounded-xs p-2 text-xs font-sans focus:border-primary focus:outline-none" />
+              <button @click="addTopNote" type="button" class="bg-surface border border-outline-variant hover:border-primary font-label text-xs px-3 rounded-xs uppercase">Agregar</button>
             </div>
             <div class="flex flex-wrap gap-1.5 pt-1">
-              <span v-for="(n, idx) in formData.olfactoryPyramid.topNotes" :key="idx" class="bg-surface border border-outline px-2.5 py-1 rounded-full text-xs flex items-center gap-1">
+              <span v-for="(n, idx) in formData.olfactoryPyramid.topNotes" :key="idx" class="bg-surface border border-outline-variant px-2.5 py-1 rounded-xs text-xs flex items-center gap-1 font-medium">
                 {{ n }}
                 <span @click="removeTopNote(idx)" class="material-symbols-outlined text-xs cursor-pointer hover:text-error">close</span>
               </span>
@@ -2498,11 +2528,11 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
           <div class="bg-surface-container p-4 rounded-xs border border-outline-variant space-y-2">
             <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold">Notas de Corazón</label>
             <div class="flex gap-2">
-              <input v-model="heartNoteInput" @keyup.enter="addHeartNote" type="text" placeholder="Ej. Jazmín de Grasse, Cedro..." class="w-full bg-surface border border-outline-variant rounded-xs p-2 text-xs font-sans" />
-              <button @click="addHeartNote" type="button" class="bg-surface border border-outline font-label text-xs px-3 rounded-xs uppercase">Agregar</button>
+              <input v-model="heartNoteInput" @keyup.enter="addHeartNote" type="text" placeholder="Ej. Jazmín de Grasse, Cedro..." class="w-full bg-surface border border-outline-variant rounded-xs p-2 text-xs font-sans focus:border-primary focus:outline-none" />
+              <button @click="addHeartNote" type="button" class="bg-surface border border-outline-variant hover:border-primary font-label text-xs px-3 rounded-xs uppercase">Agregar</button>
             </div>
             <div class="flex flex-wrap gap-1.5 pt-1">
-              <span v-for="(n, idx) in formData.olfactoryPyramid.heartNotes" :key="idx" class="bg-surface border border-outline px-2.5 py-1 rounded-full text-xs flex items-center gap-1">
+              <span v-for="(n, idx) in formData.olfactoryPyramid.heartNotes" :key="idx" class="bg-surface border border-outline-variant px-2.5 py-1 rounded-xs text-xs flex items-center gap-1 font-medium">
                 {{ n }}
                 <span @click="removeHeartNote(idx)" class="material-symbols-outlined text-xs cursor-pointer hover:text-error">close</span>
               </span>
@@ -2513,11 +2543,11 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
           <div class="bg-surface-container p-4 rounded-xs border border-outline-variant space-y-2">
             <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold">Notas de Fondo</label>
             <div class="flex gap-2">
-              <input v-model="baseNoteInput" @keyup.enter="addBaseNote" type="text" placeholder="Ej. Ámbar gris, Almizcle, Vainilla..." class="w-full bg-surface border border-outline-variant rounded-xs p-2 text-xs font-sans" />
-              <button @click="addBaseNote" type="button" class="bg-surface border border-outline font-label text-xs px-3 rounded-xs uppercase">Agregar</button>
+              <input v-model="baseNoteInput" @keyup.enter="addBaseNote" type="text" placeholder="Ej. Ámbar gris, Almizcle, Vainilla..." class="w-full bg-surface border border-outline-variant rounded-xs p-2 text-xs font-sans focus:border-primary focus:outline-none" />
+              <button @click="addBaseNote" type="button" class="bg-surface border border-outline-variant hover:border-primary font-label text-xs px-3 rounded-xs uppercase">Agregar</button>
             </div>
             <div class="flex flex-wrap gap-1.5 pt-1">
-              <span v-for="(n, idx) in formData.olfactoryPyramid.baseNotes" :key="idx" class="bg-surface border border-outline px-2.5 py-1 rounded-full text-xs flex items-center gap-1">
+              <span v-for="(n, idx) in formData.olfactoryPyramid.baseNotes" :key="idx" class="bg-surface border border-outline-variant px-2.5 py-1 rounded-xs text-xs flex items-center gap-1 font-medium">
                 {{ n }}
                 <span @click="removeBaseNote(idx)" class="material-symbols-outlined text-xs cursor-pointer hover:text-error">close</span>
               </span>
@@ -2530,14 +2560,14 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Duración en Piel</label>
-              <select v-model="formData.characteristics.longevity" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans">
+              <select v-model="formData.characteristics.longevity" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none">
                 <option v-for="opt in longevityOptions" :key="opt" :value="opt">{{ opt }}</option>
               </select>
             </div>
 
             <div>
               <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Estela / Proyección</label>
-              <select v-model="formData.characteristics.sillage" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans">
+              <select v-model="formData.characteristics.sillage" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none">
                 <option v-for="opt in sillageOptions" :key="opt" :value="opt">{{ opt }}</option>
               </select>
             </div>
@@ -2552,8 +2582,8 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                 :key="s"
                 type="button"
                 @click="toggleSeason(s)"
-                class="px-3.5 py-1.5 rounded-full text-xs font-sans border transition-all"
-                :class="formData.characteristics.season?.includes(s) ? 'bg-primary-container text-on-primary border-primary font-bold shadow-2xs' : 'bg-surface text-secondary border-outline-variant'"
+                class="px-3.5 py-1.5 rounded-xs text-xs font-label uppercase tracking-wider border transition-all"
+                :class="formData.characteristics.season?.includes(s) ? 'bg-primary text-on-primary border-primary font-bold shadow-xs' : 'bg-surface text-secondary border-outline-variant hover:border-primary/50'"
               >
                 {{ s }}
               </button>
@@ -2562,7 +2592,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
 
           <div>
             <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Descripción de la Fragancia</label>
-            <textarea v-model="formData.description" rows="3" placeholder="Una creación opulenta y envolvente..." class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans"></textarea>
+            <textarea v-model="formData.description" rows="3" placeholder="Una creación opulenta y envolvente..." class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none"></textarea>
           </div>
         </div>
 
@@ -2572,7 +2602,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
             v-if="currentFormStep > 1" 
             @click="goToPrevStep" 
             type="button" 
-            class="px-5 py-2.5 text-xs font-label uppercase tracking-wider rounded-full border border-outline hover:bg-surface-container"
+            class="px-5 py-2.5 text-xs font-label uppercase tracking-wider rounded-xs border border-outline-variant text-secondary hover:text-primary hover:bg-surface-container transition-colors"
           >
             ← Anterior
           </button>
@@ -2582,7 +2612,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
             v-if="currentFormStep < steps.length" 
             @click="goToNextStep" 
             type="button" 
-            class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-8 py-2.5 rounded-full hover:bg-inverse-surface transition-all shadow-md"
+            class="bg-primary hover:bg-slate-800 text-on-primary font-label text-xs uppercase tracking-wider px-8 py-2.5 rounded-xs transition-all shadow-xs border border-primary/20"
           >
             Siguiente →
           </button>
@@ -2592,7 +2622,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
             @click="handleSubmitProduct" 
             :disabled="isSubmitting"
             type="button" 
-            class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-8 py-2.5 rounded-full hover:bg-inverse-surface transition-all shadow-md disabled:opacity-50"
+            class="bg-primary hover:bg-slate-800 text-on-primary font-label text-xs uppercase tracking-wider px-8 py-2.5 rounded-xs transition-all shadow-xs border border-primary/20 disabled:opacity-50"
           >
             <span>{{ isSubmitting ? 'Publicando...' : (isEditing ? 'Guardar Cambios' : 'Publicar Perfume') }}</span>
           </button>
@@ -2604,14 +2634,14 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
     <!-- ==================================================== -->
     <!-- MODAL: CONFIRMAR ELIMINACIÓN -->
     <!-- ==================================================== -->
-    <div v-if="isDeleteConfirmOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+    <div v-if="isDeleteConfirmOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
       <div class="bg-surface border border-outline-variant rounded-xs max-w-sm w-full p-6 text-center space-y-4 shadow-xl">
         <span class="material-symbols-outlined text-4xl text-error">warning</span>
         <h3 class="font-sans text-xl font-normal text-primary">¿Eliminar este perfume?</h3>
         <p class="text-xs text-secondary">Esta acción no se puede deshacer y el perfume se borrará del catálogo público.</p>
         <div class="flex gap-3 justify-center pt-2">
-          <button @click="isDeleteConfirmOpen = false" class="px-5 py-2 text-xs font-label uppercase border rounded-full">Cancelar</button>
-          <button @click="handleDeleteProduct" :disabled="isSubmitting" class="bg-red-600 text-white font-label text-xs uppercase px-5 py-2 rounded-full font-bold">
+          <button @click="isDeleteConfirmOpen = false" class="px-5 py-2 text-xs font-label uppercase tracking-wider border border-outline-variant rounded-xs text-secondary hover:text-primary hover:bg-surface-container transition-colors">Cancelar</button>
+          <button @click="handleDeleteProduct" :disabled="isSubmitting" class="bg-red-600 hover:bg-red-700 text-white font-label text-xs uppercase tracking-wider px-5 py-2 rounded-xs font-bold transition-colors shadow-xs">
             {{ isSubmitting ? 'Eliminando...' : 'Eliminar' }}
           </button>
         </div>
@@ -2621,13 +2651,13 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
     <!-- ==================================================== -->
     <!-- MODAL: CREAR / EDITAR CATEGORÍA -->
     <!-- ==================================================== -->
-    <div v-if="isCategoryModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+    <div v-if="isCategoryModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
       <div class="bg-surface border border-outline-variant rounded-xs max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 sm:p-8 space-y-5">
         <div class="flex justify-between items-center border-b border-outline-variant pb-3">
           <h3 class="font-sans text-2xl text-primary font-normal">
             {{ isEditingCategory ? 'Editar Categoría' : 'Nueva Categoría' }}
           </h3>
-          <button @click="isCategoryModalOpen = false" class="p-1.5 text-secondary hover:text-primary rounded-full">
+          <button @click="isCategoryModalOpen = false" class="p-1.5 text-secondary hover:text-primary rounded-xs border border-transparent hover:border-outline-variant hover:bg-surface-container transition-colors">
             <span class="material-symbols-outlined text-xl">close</span>
           </button>
         </div>
@@ -2663,14 +2693,14 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Ancho en el Bento Grid</label>
-              <select v-model.number="categoryForm.span" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans">
+              <select v-model.number="categoryForm.span" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none">
                 <option :value="6">Media pantalla (6 columnas - Estándar)</option>
                 <option :value="12">Ancho completo (12 columnas - Destacado grande)</option>
               </select>
             </div>
             <div>
               <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Etiqueta / Badge Opcional</label>
-              <input v-model="categoryForm.badge" type="text" placeholder="Ej. Más Pedidos / Tendencia" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans" />
+              <input v-model="categoryForm.badge" type="text" placeholder="Ej. Más Pedidos / Tendencia" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none" />
             </div>
           </div>
 
@@ -2683,19 +2713,19 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                 <div v-else class="w-full h-full flex items-center justify-center text-secondary text-xs">Sin foto</div>
               </div>
               <div class="space-y-2 flex-grow">
-                <label class="inline-flex items-center gap-1.5 bg-primary-container text-on-primary font-label text-[11px] uppercase px-3.5 py-2 rounded-full cursor-pointer hover:bg-inverse-surface shadow-xs">
+                <label class="inline-flex items-center gap-1.5 bg-primary hover:bg-slate-800 text-on-primary font-label text-[11px] uppercase px-3.5 py-2 rounded-xs cursor-pointer transition-colors shadow-xs border border-primary/20">
                   <span class="material-symbols-outlined text-sm">upload</span>
                   <span>Subir desde mi PC</span>
                   <input type="file" accept="image/*" class="hidden" @change="handleModalImageUpload(categoryForm, 'image', $event)" />
                 </label>
-                <input v-model="categoryForm.image" type="text" placeholder="O pegar URL: https://..." class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans" />
+                <input v-model="categoryForm.image" type="text" placeholder="O pegar URL: https://..." class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans focus:border-primary focus:outline-none" />
               </div>
             </div>
           </div>
 
           <div class="flex justify-end gap-3 pt-2">
-            <button @click="isCategoryModalOpen = false" type="button" class="px-5 py-2.5 text-xs font-label uppercase border rounded-full">Cancelar</button>
-            <button :disabled="isSubmittingCategory" type="submit" class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-7 py-2.5 rounded-full hover:bg-inverse-surface shadow-md disabled:opacity-50">
+            <button @click="isCategoryModalOpen = false" type="button" class="px-4 py-2 text-xs font-label uppercase tracking-wider border border-outline-variant rounded-xs text-secondary hover:text-primary hover:bg-surface-container transition-colors">Cancelar</button>
+            <button :disabled="isSubmittingCategory" type="submit" class="bg-primary hover:bg-slate-800 text-on-primary font-label text-xs uppercase tracking-wider px-6 py-2.5 rounded-xs transition-all shadow-xs border border-primary/20 disabled:opacity-50">
               {{ isSubmittingCategory ? 'Guardando...' : (isEditingCategory ? 'Guardar Cambios' : 'Crear Categoría') }}
             </button>
           </div>
@@ -2706,13 +2736,13 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
     <!-- ==================================================== -->
     <!-- MODAL: CREAR / EDITAR FAMILIA OLFATIVA -->
     <!-- ==================================================== -->
-    <div v-if="isFamilyModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+    <div v-if="isFamilyModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
       <div class="bg-surface border border-outline-variant rounded-xs max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 sm:p-8 space-y-5">
         <div class="flex justify-between items-center border-b border-outline-variant pb-3">
           <h3 class="font-sans text-2xl text-primary font-normal">
             {{ isEditingFamily ? 'Editar Familia Olfativa' : 'Nueva Familia Olfativa' }}
           </h3>
-          <button @click="isFamilyModalOpen = false" class="p-1.5 text-secondary hover:text-primary rounded-full">
+          <button @click="isFamilyModalOpen = false" class="p-1.5 text-secondary hover:text-primary rounded-xs border border-transparent hover:border-outline-variant hover:bg-surface-container transition-colors">
             <span class="material-symbols-outlined text-xl">close</span>
           </button>
         </div>
@@ -2737,19 +2767,19 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                 <div v-else class="w-full h-full flex items-center justify-center text-secondary text-xs">Sin foto</div>
               </div>
               <div class="space-y-2 flex-grow">
-                <label class="inline-flex items-center gap-1.5 bg-primary-container text-on-primary font-label text-[11px] uppercase px-3.5 py-2 rounded-full cursor-pointer hover:bg-inverse-surface shadow-xs">
+                <label class="inline-flex items-center gap-1.5 bg-primary hover:bg-slate-800 text-on-primary font-label text-[11px] uppercase px-3.5 py-2 rounded-xs cursor-pointer transition-colors shadow-xs border border-primary/20">
                   <span class="material-symbols-outlined text-sm">upload</span>
                   <span>Subir desde mi PC</span>
                   <input type="file" accept="image/*" class="hidden" @change="handleModalImageUpload(familyForm, 'image', $event)" />
                 </label>
-                <input v-model="familyForm.image" type="text" placeholder="O pegar URL: https://..." class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans" />
+                <input v-model="familyForm.image" type="text" placeholder="O pegar URL: https://..." class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans focus:border-primary focus:outline-none" />
               </div>
             </div>
           </div>
 
           <div class="flex justify-end gap-3 pt-2">
-            <button @click="isFamilyModalOpen = false" type="button" class="px-5 py-2.5 text-xs font-label uppercase border rounded-full">Cancelar</button>
-            <button :disabled="isSubmittingFamily" type="submit" class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-7 py-2.5 rounded-full hover:bg-inverse-surface shadow-md disabled:opacity-50">
+            <button @click="isFamilyModalOpen = false" type="button" class="px-4 py-2 text-xs font-label uppercase tracking-wider border border-outline-variant rounded-xs text-secondary hover:text-primary hover:bg-surface-container transition-colors">Cancelar</button>
+            <button :disabled="isSubmittingFamily" type="submit" class="bg-primary hover:bg-slate-800 text-on-primary font-label text-xs uppercase tracking-wider px-6 py-2.5 rounded-xs transition-all shadow-xs border border-primary/20 disabled:opacity-50">
               {{ isSubmittingFamily ? 'Guardando...' : (isEditingFamily ? 'Guardar Cambios' : 'Crear Familia') }}
             </button>
           </div>
@@ -2760,13 +2790,13 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
     <!-- ==================================================== -->
     <!-- MODAL: CREAR / EDITAR SLIDE DE PORTADA -->
     <!-- ==================================================== -->
-    <div v-if="isSlideModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+    <div v-if="isSlideModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
       <div class="bg-surface border border-outline-variant rounded-xs max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl p-6 sm:p-8 space-y-5">
         <div class="flex justify-between items-center border-b border-outline-variant pb-3">
           <h3 class="font-sans text-2xl text-primary font-normal">
             {{ isEditingSlide ? 'Editar Diapositiva de Portada' : 'Nuevo Slide de Portada' }}
           </h3>
-          <button @click="isSlideModalOpen = false" class="p-1.5 text-secondary hover:text-primary rounded-full">
+          <button @click="isSlideModalOpen = false" class="p-1.5 text-secondary hover:text-primary rounded-xs border border-transparent hover:border-outline-variant hover:bg-surface-container transition-colors">
             <span class="material-symbols-outlined text-xl">close</span>
           </button>
         </div>
@@ -2775,28 +2805,28 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Etiqueta Superior (Tag)</label>
-              <input v-model="slideForm.tag" type="text" placeholder="Ej. 100% Originales & Sellados" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans" />
+              <input v-model="slideForm.tag" type="text" placeholder="Ej. 100% Originales & Sellados" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none" />
             </div>
             <div>
               <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Rating / Badge del Frasco</label>
-              <input v-model="slideForm.featuredRating" type="text" placeholder="Ej. 4.9 ★ Exclusivo" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans" />
+              <input v-model="slideForm.featuredRating" type="text" placeholder="Ej. 4.9 ★ Exclusivo" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none" />
             </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Título Principal *</label>
-              <input v-model="slideForm.title" type="text" required placeholder="Ej. Encontrá tu nueva" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans" />
+              <input v-model="slideForm.title" type="text" required placeholder="Ej. Encontrá tu nueva" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none" />
             </div>
             <div>
               <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Texto en Cursiva / Resalte</label>
-              <input v-model="slideForm.highlight" type="text" placeholder="Ej. fragancia favorita." class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans italic" />
+              <input v-model="slideForm.highlight" type="text" placeholder="Ej. fragancia favorita." class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans italic focus:border-primary focus:outline-none" />
             </div>
           </div>
 
           <div>
             <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Bajada / Descripción</label>
-            <textarea v-model="slideForm.description" rows="2" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans"></textarea>
+            <textarea v-model="slideForm.description" rows="2" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none"></textarea>
           </div>
 
           <!-- Slide Images (Background & Bottle) -->
@@ -2807,12 +2837,12 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
               <div class="aspect-[16/9] rounded-xs overflow-hidden border border-outline-variant bg-surface mb-2">
                 <img v-if="slideForm.image" :src="slideForm.image" class="w-full h-full object-cover" />
               </div>
-              <label class="inline-flex items-center gap-1 bg-primary-container text-on-primary font-label text-[10px] uppercase px-3 py-1.5 rounded-full cursor-pointer hover:bg-inverse-surface">
+              <label class="inline-flex items-center gap-1 bg-primary hover:bg-slate-800 text-on-primary font-label text-[10px] uppercase px-3 py-1.5 rounded-xs cursor-pointer transition-colors shadow-xs border border-primary/20">
                 <span class="material-symbols-outlined text-sm">upload</span>
                 <span>Subir Fondo</span>
                 <input type="file" accept="image/*" class="hidden" @change="handleModalImageUpload(slideForm, 'image', $event)" />
               </label>
-              <input v-model="slideForm.image" type="text" placeholder="URL Fondo: https://..." class="w-full bg-surface border border-outline-variant rounded-xs p-2 text-xs font-sans" />
+              <input v-model="slideForm.image" type="text" placeholder="URL Fondo: https://..." class="w-full bg-surface border border-outline-variant rounded-xs p-2 text-xs font-sans focus:border-primary focus:outline-none" />
             </div>
 
             <!-- Bottle Image -->
@@ -2821,12 +2851,12 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
               <div class="aspect-[3/4] max-h-36 rounded-xs overflow-hidden border border-outline-variant bg-surface mb-2 mx-auto">
                 <img v-if="slideForm.bottleImage" :src="slideForm.bottleImage" class="w-full h-full object-cover" />
               </div>
-              <label class="inline-flex items-center gap-1 bg-primary-container text-on-primary font-label text-[10px] uppercase px-3 py-1.5 rounded-full cursor-pointer hover:bg-inverse-surface">
+              <label class="inline-flex items-center gap-1 bg-primary hover:bg-slate-800 text-on-primary font-label text-[10px] uppercase px-3 py-1.5 rounded-xs cursor-pointer transition-colors shadow-xs border border-primary/20">
                 <span class="material-symbols-outlined text-sm">upload</span>
                 <span>Subir Frasco</span>
                 <input type="file" accept="image/*" class="hidden" @change="handleModalImageUpload(slideForm, 'bottleImage', $event)" />
               </label>
-              <input v-model="slideForm.bottleImage" type="text" placeholder="URL Frasco: https://..." class="w-full bg-surface border border-outline-variant rounded-xs p-2 text-xs font-sans" />
+              <input v-model="slideForm.bottleImage" type="text" placeholder="URL Frasco: https://..." class="w-full bg-surface border border-outline-variant rounded-xs p-2 text-xs font-sans focus:border-primary focus:outline-none" />
             </div>
           </div>
 
@@ -2835,22 +2865,22 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
             <div>
               <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Botón Principal (Texto & Link)</label>
               <div class="grid grid-cols-2 gap-2">
-                <input v-model="slideForm.primaryCtaText" type="text" placeholder="Texto Botón" class="bg-surface-container border border-outline-variant rounded-xs p-2.5 text-xs font-sans" />
-                <input v-model="slideForm.primaryCtaLink" type="text" placeholder="/catalogo" class="bg-surface-container border border-outline-variant rounded-xs p-2.5 text-xs font-sans font-mono" />
+                <input v-model="slideForm.primaryCtaText" type="text" placeholder="Texto Botón" class="bg-surface-container border border-outline-variant rounded-xs p-2.5 text-xs font-sans focus:border-primary focus:outline-none" />
+                <input v-model="slideForm.primaryCtaLink" type="text" placeholder="/catalogo" class="bg-surface-container border border-outline-variant rounded-xs p-2.5 text-xs font-sans font-mono focus:border-primary focus:outline-none" />
               </div>
             </div>
             <div>
               <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Botón Secundario (Texto & Link)</label>
               <div class="grid grid-cols-2 gap-2">
-                <input v-model="slideForm.secondaryCtaText" type="text" placeholder="Texto Secundario" class="bg-surface-container border border-outline-variant rounded-xs p-2.5 text-xs font-sans" />
-                <input v-model="slideForm.secondaryCtaLink" type="text" placeholder="/quiz" class="bg-surface-container border border-outline-variant rounded-xs p-2.5 text-xs font-sans font-mono" />
+                <input v-model="slideForm.secondaryCtaText" type="text" placeholder="Texto Secundario" class="bg-surface-container border border-outline-variant rounded-xs p-2.5 text-xs font-sans focus:border-primary focus:outline-none" />
+                <input v-model="slideForm.secondaryCtaLink" type="text" placeholder="/quiz" class="bg-surface-container border border-outline-variant rounded-xs p-2.5 text-xs font-sans font-mono focus:border-primary focus:outline-none" />
               </div>
             </div>
           </div>
 
           <div class="flex justify-end gap-3 pt-2">
-            <button @click="isSlideModalOpen = false" type="button" class="px-5 py-2.5 text-xs font-label uppercase border rounded-full">Cancelar</button>
-            <button :disabled="isSubmittingSlide" type="submit" class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest px-7 py-2.5 rounded-full hover:bg-inverse-surface shadow-md disabled:opacity-50">
+            <button @click="isSlideModalOpen = false" type="button" class="px-4 py-2 text-xs font-label uppercase tracking-wider border border-outline-variant rounded-xs text-secondary hover:text-primary hover:bg-surface-container transition-colors">Cancelar</button>
+            <button :disabled="isSubmittingSlide" type="submit" class="bg-primary hover:bg-slate-800 text-on-primary font-label text-xs uppercase tracking-wider px-6 py-2.5 rounded-xs transition-all shadow-xs border border-primary/20 disabled:opacity-50">
               {{ isSubmittingSlide ? 'Guardando...' : 'Guardar Diapositiva' }}
             </button>
           </div>
@@ -2861,7 +2891,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
     <!-- ==================================================== -->
     <!-- MODAL: CONFIRMAR ELIMINACIÓN DE CONTENIDO / FOTOS -->
     <!-- ==================================================== -->
-    <div v-if="isDeleteContentModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+    <div v-if="isDeleteContentModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
       <div class="bg-surface border border-outline-variant rounded-xs max-w-sm w-full p-6 text-center space-y-4 shadow-xl">
         <span class="material-symbols-outlined text-4xl text-error">delete</span>
         <h3 class="font-sans text-xl font-normal text-primary">¿Eliminar "{{ contentToDelete?.title }}"?</h3>
@@ -2869,8 +2899,8 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
           Este elemento dejará de mostrarse en la web inmediatamente.
         </p>
         <div class="flex gap-3 justify-center pt-2">
-          <button @click="isDeleteContentModalOpen = false" class="px-5 py-2 text-xs font-label uppercase border rounded-full">Cancelar</button>
-          <button @click="handleExecuteDeleteContent" class="bg-red-600 text-white font-label text-xs uppercase px-5 py-2 rounded-full font-bold">
+          <button @click="isDeleteContentModalOpen = false" class="px-5 py-2 text-xs font-label uppercase tracking-wider border border-outline-variant rounded-xs text-secondary hover:text-primary hover:bg-surface-container transition-colors">Cancelar</button>
+          <button @click="handleExecuteDeleteContent" class="bg-red-600 hover:bg-red-700 text-white font-label text-xs uppercase tracking-wider px-5 py-2 rounded-xs font-bold transition-colors shadow-xs">
             Eliminar
           </button>
         </div>
