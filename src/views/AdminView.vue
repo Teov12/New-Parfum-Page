@@ -686,9 +686,13 @@ const handleGenerateShipment = async (order) => {
   if (!order) return
   isGeneratingShipment.value = true
   try {
+    const token = localStorage.getItem('gicca_admin_token')
+    const headers = { 'Content-Type': 'application/json' }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+
     const res = await fetch('/api/shipping/generate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ orderId: order.id })
     })
     const data = await res.json()

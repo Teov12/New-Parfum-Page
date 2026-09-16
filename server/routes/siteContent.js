@@ -14,9 +14,9 @@ import { requireAuth } from '../middleware/auth.js'
 const router = express.Router()
 
 // GET /api/site-content (Público: para renderizar la web)
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const content = getSiteContent()
+    const content = await getSiteContent()
     res.json(content)
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener contenido del sitio' })
@@ -24,9 +24,9 @@ router.get('/', (req, res) => {
 })
 
 // PUT /api/site-content (Admin: guardar todo el contenido o bloques específicos)
-router.put('/', requireAuth, (req, res) => {
+router.put('/', requireAuth, async (req, res) => {
   try {
-    const updated = saveSiteContent(req.body)
+    const updated = await saveSiteContent(req.body)
     if (!updated) {
       return res.status(500).json({ error: 'No se pudo guardar el contenido' })
     }
@@ -40,18 +40,18 @@ router.put('/', requireAuth, (req, res) => {
 // CATEGORÍAS PRINCIPALES CRUD
 // ==========================================
 
-router.post('/categories', requireAuth, (req, res) => {
+router.post('/categories', requireAuth, async (req, res) => {
   try {
-    const newCat = addCategory(req.body)
+    const newCat = await addCategory(req.body)
     res.status(201).json({ success: true, category: newCat })
   } catch (err) {
     res.status(500).json({ error: err.message || 'Error al crear categoría' })
   }
 })
 
-router.put('/categories/:id', requireAuth, (req, res) => {
+router.put('/categories/:id', requireAuth, async (req, res) => {
   try {
-    const updated = updateCategory(req.params.id, req.body)
+    const updated = await updateCategory(req.params.id, req.body)
     if (!updated) {
       return res.status(404).json({ error: 'Categoría no encontrada' })
     }
@@ -61,9 +61,9 @@ router.put('/categories/:id', requireAuth, (req, res) => {
   }
 })
 
-router.delete('/categories/:id', requireAuth, (req, res) => {
+router.delete('/categories/:id', requireAuth, async (req, res) => {
   try {
-    const deleted = deleteCategory(req.params.id)
+    const deleted = await deleteCategory(req.params.id)
     if (!deleted) {
       return res.status(404).json({ error: 'Categoría no encontrada' })
     }
@@ -77,18 +77,18 @@ router.delete('/categories/:id', requireAuth, (req, res) => {
 // FAMILIAS OLFATIVAS CRUD
 // ==========================================
 
-router.post('/families', requireAuth, (req, res) => {
+router.post('/families', requireAuth, async (req, res) => {
   try {
-    const newFam = addOlfactiveFamily(req.body)
+    const newFam = await addOlfactiveFamily(req.body)
     res.status(201).json({ success: true, family: newFam })
   } catch (err) {
     res.status(500).json({ error: err.message || 'Error al crear familia olfativa' })
   }
 })
 
-router.put('/families/:id', requireAuth, (req, res) => {
+router.put('/families/:id', requireAuth, async (req, res) => {
   try {
-    const updated = updateOlfactiveFamily(req.params.id, req.body)
+    const updated = await updateOlfactiveFamily(req.params.id, req.body)
     if (!updated) {
       return res.status(404).json({ error: 'Familia olfativa no encontrada' })
     }
@@ -98,9 +98,9 @@ router.put('/families/:id', requireAuth, (req, res) => {
   }
 })
 
-router.delete('/families/:id', requireAuth, (req, res) => {
+router.delete('/families/:id', requireAuth, async (req, res) => {
   try {
-    const deleted = deleteOlfactiveFamily(req.params.id)
+    const deleted = await deleteOlfactiveFamily(req.params.id)
     if (!deleted) {
       return res.status(404).json({ error: 'Familia olfativa no encontrada' })
     }

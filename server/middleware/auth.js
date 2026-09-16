@@ -22,11 +22,6 @@ export const requireAuth = (req, res, next) => {
     req.user = decoded
     next()
   } catch (err) {
-    // Si es token de desarrollo legado, mantener compatibilidad si coincide
-    if (token === 'gicca_admin_token_secure_2026') {
-      req.user = { username: 'Admin Gicca', role: 'superadmin' }
-      return next()
-    }
     return res.status(401).json({ 
       error: 'Token inválido o expirado. Por favor iniciá sesión nuevamente.' 
     })

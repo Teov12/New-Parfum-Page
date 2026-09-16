@@ -4,17 +4,16 @@ import {
   getProductByIdOrSlug,
   createProduct,
   updateProduct,
-  deleteProduct,
-  saveProducts
+  deleteProduct
 } from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
 
 const router = express.Router()
 
 // GET /api/products - List all products with optional filters (público)
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    let list = getProducts()
+    let list = await getProducts()
     const { gender, category, family, brand, q } = req.query
 
     if (gender) {
@@ -49,9 +48,9 @@ router.get('/', (req, res) => {
 })
 
 // GET /api/products/stats - Dashboard summary metrics (público)
-router.get('/stats', (req, res) => {
+router.get('/stats', async (req, res) => {
   try {
-    const list = getProducts()
+    const list = await getProducts()
     const brandsSet = new Set(list.map(p => p.brand).filter(Boolean))
     const totalRevenue = list.reduce((acc, p) => acc + (Number(p.price) || 0), 0)
 
@@ -68,9 +67,9 @@ router.get('/stats', (req, res) => {
 })
 
 // GET /api/products/:idOrSlug - Get single product (público)
-router.get('/:idOrSlug', (req, res) => {
+router.get('/:idOrSlug', async (req, res) => {
   try {
-    const product = getProductByIdOrSlug(req.params.idOrSlug)
+    const product = await getProductByIdOrSlug(req.params.idOrSlug)
     if (!product) {
       return res.status(404).json({ error: 'Perfume no encontrado' })
     }
@@ -81,14 +80,14 @@ router.get('/:idOrSlug', (req, res) => {
 })
 
 // POST /api/products - Create new product (protegido con requireAuth)
-router.post('/', requireAuth, (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   try {
     const { name, brand, price } = req.body
     if (!name || !brand || price === undefined) {
       return res.status(400).json({ error: 'Nombre, marca y precio son obligatorios' })
     }
 
-    const newProduct = createProduct(req.body)
+    const newProduct = await createProduct(req.body)
     res.status(201).json(newProduct)
   } catch (err) {
     console.error('Error creating product:', err)
@@ -97,9 +96,9 @@ router.post('/', requireAuth, (req, res) => {
 })
 
 // PUT /api/products/:id - Update product (protegido con requireAuth)
-router.put('/:id', requireAuth, (req, res) => {
+router.put('/:id', requireAuth, async (req, res) => {
   try {
-    const updated = updateProduct(req.params.id, req.body)
+    const updated = await updateProduct(req.params.id, req.body)
     if (!updated) {
       return res.status(404).json({ error: 'Perfume no encontrado para actualizar' })
     }
@@ -111,9 +110,9 @@ router.put('/:id', requireAuth, (req, res) => {
 })
 
 // DELETE /api/products/:id - Delete product (protegido con requireAuth)
-router.delete('/:id', requireAuth, (req, res) => {
+router.delete('/:id', requireAuth, async (req, res) => {
   try {
-    const deleted = deleteProduct(req.params.id)
+    const deleted = await deleteProduct(req.params.id)
     if (!deleted) {
       return res.status(404).json({ error: 'Perfume no encontrado para eliminar' })
     }

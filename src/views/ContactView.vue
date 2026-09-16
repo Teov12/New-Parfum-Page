@@ -67,11 +67,25 @@ const toggleFaq = (id) => {
 
 const handleSubmitContact = handleSubmit(async (formValues) => {
   isSending.value = true
+
+  const text = `*CONSULTA DESDE LA WEB - GICCA PERFUMES*
+━━━━━━━━━━━━━━━━━━━━━
+• *Nombre:* ${formValues.name}
+• *Email:* ${formValues.email}
+${formValues.phone ? `• *Teléfono:* ${formValues.phone}\n` : ''}• *Motivo:* ${formValues.subject}
+• *Mensaje:*
+${formValues.message}
+━━━━━━━━━━━━━━━━━━━━━
+Hola! Les escribo a través del formulario de la web para hacerles una consulta.`
+
+  const whatsappUrl = `https://wa.me/5493564622055?text=${encodeURIComponent(text)}`
+  window.open(whatsappUrl, '_blank')
+
   setTimeout(() => {
     isSending.value = false
-    toastStore.show('¡Mensaje enviado con éxito! Nos comunicaremos con vos a la brevedad.', 'success')
+    toastStore.show('¡Redirigiendo a WhatsApp para responderte al instante!', 'success')
     resetForm()
-  }, 1000)
+  }, 400)
 })
 </script>
 

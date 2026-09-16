@@ -7,6 +7,7 @@ import {
   checkAndreaniConnection
 } from '../services/andreani.js'
 import { getOrders, updateOrder } from '../db.js'
+import { requireAuth } from '../middleware/auth.js'
 
 const router = express.Router()
 
@@ -115,14 +116,14 @@ router.get('/tracking/:trackingCode', async (req, res) => {
  * POST /api/shipping/generate
  * Genera la orden de despacho formal en Andreani para un pedido
  */
-router.post('/generate', async (req, res) => {
+router.post('/generate', requireAuth, async (req, res) => {
   try {
     const { orderId } = req.body
     if (!orderId) {
       return res.status(400).json({ error: 'El orderId es requerido' })
     }
 
-    const orders = getOrders()
+    const orders = await getOrders()
     const order = orders.find(o => o.id === orderId || o.orderNumber === orderId)
 
     if (!order) {
@@ -134,7 +135,7 @@ router.post('/generate', async (req, res) => {
 
     if (shipmentResult.success && shipmentResult.trackingCode) {
       // Actualizar la orden con el código de seguimiento
-      updateOrder(order.id, {
+      await updateOrder(order.id, {
         trackingCode: shipmentResult.trackingCode,
         fulfillmentStatus: 'shipped',
         shippingCarrier: 'Andreani',

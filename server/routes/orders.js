@@ -10,9 +10,9 @@ import { requireAuth } from '../middleware/auth.js'
 const router = express.Router()
 
 // GET /api/orders - List all orders with filters (Admin only)
-router.get('/', requireAuth, (req, res) => {
+router.get('/', requireAuth, async (req, res) => {
   try {
-    let orders = getOrders()
+    let orders = await getOrders()
     const { paymentStatus, fulfillmentStatus, source, q } = req.query
 
     if (paymentStatus && paymentStatus !== 'all') {
@@ -46,9 +46,9 @@ router.get('/', requireAuth, (req, res) => {
 })
 
 // GET /api/orders/stats - Comprehensive financial and sales stats (Admin only)
-router.get('/stats', requireAuth, (req, res) => {
+router.get('/stats', requireAuth, async (req, res) => {
   try {
-    const orders = getOrders()
+    const orders = await getOrders()
     const paidOrders = orders.filter(o => o.paymentStatus === 'paid')
 
     const totalRevenue = paidOrders.reduce((acc, o) => acc + (Number(o.total) || 0), 0)
@@ -80,9 +80,9 @@ router.get('/stats', requireAuth, (req, res) => {
 })
 
 // GET /api/orders/:id - Get single order (Admin only)
-router.get('/:id', requireAuth, (req, res) => {
+router.get('/:id', requireAuth, async (req, res) => {
   try {
-    const orders = getOrders()
+    const orders = await getOrders()
     const order = orders.find(o => o.id === req.params.id || o.orderNumber === req.params.id)
     if (!order) {
       return res.status(404).json({ error: 'Pedido no encontrado' })
@@ -94,14 +94,14 @@ router.get('/:id', requireAuth, (req, res) => {
 })
 
 // POST /api/orders - Create new order (manual sale from admin or web)
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const orderData = req.body
     if (!orderData.items || !Array.isArray(orderData.items) || orderData.items.length === 0) {
       return res.status(400).json({ error: 'El pedido debe incluir al menos un producto' })
     }
 
-    const created = createOrder(orderData)
+    const created = await createOrder(orderData)
     res.status(201).json(created)
   } catch (err) {
     console.error('Error creating order:', err)
@@ -110,9 +110,9 @@ router.post('/', (req, res) => {
 })
 
 // PUT /api/orders/:id - Update order status, tracking, fulfillment, etc. (Admin only)
-router.put('/:id', requireAuth, (req, res) => {
+router.put('/:id', requireAuth, async (req, res) => {
   try {
-    const updated = updateOrder(req.params.id, req.body)
+    const updated = await updateOrder(req.params.id, req.body)
     if (!updated) {
       return res.status(404).json({ error: 'Pedido no encontrado' })
     }
@@ -124,9 +124,9 @@ router.put('/:id', requireAuth, (req, res) => {
 })
 
 // DELETE /api/orders/:id - Delete order (Admin only)
-router.delete('/:id', requireAuth, (req, res) => {
+router.delete('/:id', requireAuth, async (req, res) => {
   try {
-    const deleted = deleteOrder(req.params.id)
+    const deleted = await deleteOrder(req.params.id)
     if (!deleted) {
       return res.status(404).json({ error: 'Pedido no encontrado' })
     }
