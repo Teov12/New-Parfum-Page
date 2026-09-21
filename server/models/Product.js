@@ -10,6 +10,7 @@ const productSchema = new mongoose.Schema({
   category: { type: String, default: 'disenador' },
   fragranceFamily: { type: String, default: 'Floral' },
   price: { type: Number, default: 0 },
+  transferPrice: { type: Number, default: 0 },
   costPrice: { type: Number, default: 0 },
   originalPrice: { type: Number, default: 0 },
   discountPercentage: { type: Number, default: 0 },
@@ -23,6 +24,7 @@ const productSchema = new mongoose.Schema({
   sizes: [{
     size: String,
     price: Number,
+    transferPrice: Number,
     costPrice: Number,
     default: Boolean
   }],
@@ -32,10 +34,10 @@ const productSchema = new mongoose.Schema({
     baseNotes: [String]
   },
   characteristics: {
-    longevity: String,
-    sillage: String,
-    season: String,
-    occasion: String
+    longevity: { type: String, default: '8 a 12 horas' },
+    sillage: { type: String, default: 'Moderada' },
+    season: { type: mongoose.Schema.Types.Mixed, default: 'Todo el año' },
+    occasion: { type: String, default: 'Uso diario y ocasiones especiales' }
   },
   usageTips: { type: String, default: 'Pulverizar en puntos de pulso (cuello y muñecas).' },
   stock: { type: Number, default: 10 }

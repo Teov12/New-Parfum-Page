@@ -1,69 +1,6 @@
 [
   {
-    "id": "prod_1787880385005_odb29z",
-    "slug": "asdasd",
-    "brand": "asdasdasd",
-    "name": "asdasd",
-    "concentration": "Eau de Parfum",
-    "gender": "man",
-    "category": "arabes",
-    "fragranceFamily": "Amaderada",
-    "price": 48000,
-    "originalPrice": 0,
-    "discountPercentage": 0,
-    "isFeatured": false,
-    "isNew": false,
-    "isBestSeller": false,
-    "badge": "",
-    "shortDescription": "",
-    "description": "",
-    "images": [
-      "/uploads/perfume_1787880338088_l5xa2h.png"
-    ],
-    "sizes": [
-      {
-        "size": "100 ml",
-        "price": 48000,
-        "costPrice": 21600,
-        "profit": 26400,
-        "profitMargin": 55,
-        "default": true
-      }
-    ],
-    "olfactoryPyramid": {
-      "topNotes": [
-        "asd",
-        "addd",
-        "aa",
-        "dd"
-      ],
-      "heartNotes": [
-        "dasd",
-        "asd",
-        "adsad"
-      ],
-      "baseNotes": [
-        "adsad",
-        "asdasd",
-        "asdasd",
-        "asdasd"
-      ]
-    },
-    "characteristics": {
-      "longevity": "8 a 12 horas (Muy Duradera)",
-      "sillage": "Moderada (Radio de 1 metro)",
-      "season": "Primavera / Verano / Otoño / Invierno",
-      "occasion": "Uso diario y ocasiones especiales"
-    },
-    "usageTips": "Pulverizar en puntos de pulso (cuello y muñecas).",
-    "createdAt": "2026-08-28T01:26:25.005Z",
-    "updatedAt": "2026-08-28T01:26:25.005Z",
-    "stock": 8,
-    "costPrice": 21600,
-    "profit": 26400,
-    "profitMargin": 55
-  },
-  {
+    "_id": "6aa9e2cf29a9982146c6e1aa",
     "id": "prod_1787879815888_az3922",
     "slug": "asdad",
     "brand": "asdasd",
@@ -73,6 +10,7 @@
     "category": "disenador",
     "fragranceFamily": "Amaderada",
     "price": 215000,
+    "costPrice": 96750,
     "originalPrice": 0,
     "discountPercentage": 0,
     "isFeatured": false,
@@ -80,7 +18,7 @@
     "isBestSeller": false,
     "badge": "",
     "shortDescription": "",
-    "description": "",
+    "description": "Updated test description 1789762522272",
     "images": [
       "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1000&q=85"
     ],
@@ -115,11 +53,75 @@
       "occasion": "Uso Diario & Ocasiones Especiales"
     },
     "usageTips": "Para una estela envolvente, pulverizá sobre los puntos de pulso: cuello y muñecas.",
-    "createdAt": "2026-08-28T01:16:55.888Z",
-    "updatedAt": "2026-08-28T01:16:55.888Z",
     "stock": 10,
-    "costPrice": 96750,
+    "updatedAt": "2026-09-18T20:15:22.272Z",
+    "__v": 0,
     "profit": 118250,
     "profitMargin": 55
+  },
+  {
+    "_id": "6aa9e2cf29a9982146c6e1a8",
+    "id": "prod_1787880385005_odb29z",
+    "slug": "asdasd",
+    "brand": "Lattafa Perfumes",
+    "name": "Mayar Cherry Intense",
+    "concentration": "Eau de Parfum",
+    "gender": "mujer",
+    "category": "arabe",
+    "fragranceFamily": "Amaderada",
+    "price": 60000,
+    "costPrice": 21600,
+    "originalPrice": 0,
+    "discountPercentage": 0,
+    "isFeatured": false,
+    "isNew": false,
+    "isBestSeller": false,
+    "badge": "",
+    "shortDescription": "",
+    "description": "",
+    "images": [
+      "/uploads/perfume_1787880338088_l5xa2h.png"
+    ],
+    "sizes": [
+      {
+        "size": "100 ml",
+        "price": 60000,
+        "costPrice": 21600,
+        "profit": 38400,
+        "profitMargin": 64,
+        "default": true
+      }
+    ],
+    "olfactoryPyramid": {
+      "topNotes": [
+        "Fresa",
+        "Bergamota"
+      ],
+      "heartNotes": [
+        "Mermelada de cereza",
+        "Cacao"
+      ],
+      "baseNotes": [
+        "Vainilla",
+        "Ámbar",
+        "Panchulí"
+      ]
+    },
+    "characteristics": {
+      "longevity": "6 a 8 horas (Duradera)",
+      "sillage": "Pesada (De gran estela)",
+      "season": [
+        "Invierno",
+        "Otoño",
+        "Primavera"
+      ],
+      "occasion": "Uso diario y ocasiones especiales"
+    },
+    "usageTips": "Pulverizar en puntos de pulso (cuello y muñecas).",
+    "stock": 8,
+    "updatedAt": "2026-09-18T20:12:38.636Z",
+    "__v": 0,
+    "profit": 38400,
+    "profitMargin": 64
   }
 ]

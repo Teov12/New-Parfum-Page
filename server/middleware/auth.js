@@ -1,6 +1,14 @@
 import jwt from 'jsonwebtoken'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'gicca_perfumes_boutique_jwt_secret_key_2026_super_secure'
+const getJwtSecret = () => {
+  const secret = process.env.JWT_SECRET?.trim()
+  if (!secret && process.env.NODE_ENV === 'production') {
+    console.error('[CRITICAL SECURITY] JWT_SECRET no está configurada en producción. Se requiere definir una clave secreta fuerte.')
+  }
+  return secret || 'gicca_perfumes_boutique_jwt_secret_key_2026_super_secure'
+}
+
+const JWT_SECRET = getJwtSecret()
 
 /**
  * Middleware para proteger rutas administrativas

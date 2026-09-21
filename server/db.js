@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import mongoose from 'mongoose'
 import { Product } from './models/Product.js'
 import { Order } from './models/Order.js'
 import { SiteContent } from './models/SiteContent.js'
@@ -42,24 +43,30 @@ if (!fs.existsSync(SITE_CONTENT_FILE)) {
 const formatProduct = (p) => {
   if (!p) return null
   const price = Number(p.price) || 0
+  const transferPrice = Number(p.transferPrice) || (price > 0 ? Math.round(price * 0.8) : 0)
   const costPrice = Number(p.costPrice) || Math.round(price * 0.45)
   const stock = p.stock !== undefined ? Math.max(0, Number(p.stock)) : 10
   return {
     ...p,
     stock,
     price,
+    transferPrice,
     costPrice,
-    profit: Math.max(0, price - costPrice),
-    profitMargin: price > 0 ? Math.round(((price - costPrice) / price) * 100) : 0,
+    profit: Math.max(0, (transferPrice || price) - costPrice),
+    profitMargin: (transferPrice || price) > 0 ? Math.round((((transferPrice || price) - costPrice) / (transferPrice || price)) * 100) : 0,
     sizes: (p.sizes || []).map(s => {
       const sPrice = typeof s === 'object' ? Number(s.price) || price : price
+      const sTransfer = typeof s === 'object' && s.transferPrice !== undefined && s.transferPrice !== null
+        ? Number(s.transferPrice)
+        : (sPrice > 0 ? Math.round(sPrice * 0.8) : 0)
       const sCost = typeof s === 'object' && s.costPrice !== undefined ? Number(s.costPrice) : Math.round(sPrice * 0.45)
       return {
         size: typeof s === 'string' ? s : s.size,
         price: sPrice,
+        transferPrice: sTransfer,
         costPrice: sCost,
-        profit: Math.max(0, sPrice - sCost),
-        profitMargin: sPrice > 0 ? Math.round(((sPrice - sCost) / sPrice) * 100) : 0,
+        profit: Math.max(0, (sTransfer || sPrice) - sCost),
+        profitMargin: (sTransfer || sPrice) > 0 ? Math.round((((sTransfer || sPrice) - sCost) / (sTransfer || sPrice)) * 100) : 0,
         default: typeof s === 'object' ? Boolean(s.default) : false
       }
     })
@@ -103,7 +110,11 @@ export const saveProducts = (products) => {
 export const getProductByIdOrSlug = async (idOrSlug) => {
   if (isMongoConnected()) {
     try {
-      const p = await Product.findOne({ $or: [{ id: idOrSlug }, { slug: idOrSlug }] }).lean()
+      const conditions = [{ id: idOrSlug }, { slug: idOrSlug }]
+      if (mongoose.Types.ObjectId.isValid(idOrSlug)) {
+        conditions.push({ _id: idOrSlug })
+      }
+      const p = await Product.findOne({ $or: conditions }).lean()
       return p ? formatProduct(p) : null
     } catch (err) {
       console.error('[DB] Error buscando producto en MongoDB:', err.message)
@@ -111,7 +122,7 @@ export const getProductByIdOrSlug = async (idOrSlug) => {
   }
 
   const products = await getProducts()
-  return products.find(p => p.id === idOrSlug || p.slug === idOrSlug) || null
+  return products.find(p => p.id === idOrSlug || p.slug === idOrSlug || p._id === idOrSlug) || null
 }
 
 export const createProduct = async (productData) => {
@@ -134,18 +145,23 @@ export const createProduct = async (productData) => {
   }
 
   const price = Number(productData.price) || 0
+  const transferPrice = Number(productData.transferPrice) || (price > 0 ? Math.round(price * 0.8) : 0)
   const costPrice = Number(productData.costPrice) || Math.round(price * 0.45)
 
   const rawSizes = Array.isArray(productData.sizes) && productData.sizes.length > 0
     ? productData.sizes
-    : [{ size: '100 ml', price, costPrice, default: true }]
+    : [{ size: '100 ml', price, transferPrice, costPrice, default: true }]
 
   const formattedSizes = rawSizes.map(s => {
     const sPrice = typeof s === 'object' ? Number(s.price) || price : price
+    const sTransfer = typeof s === 'object' && s.transferPrice !== undefined && s.transferPrice !== null
+      ? Number(s.transferPrice)
+      : (sPrice > 0 ? Math.round(sPrice * 0.8) : transferPrice)
     const sCost = typeof s === 'object' && s.costPrice !== undefined ? Number(s.costPrice) : costPrice
     return {
       size: typeof s === 'string' ? s : s.size,
       price: sPrice,
+      transferPrice: sTransfer,
       costPrice: sCost,
       default: typeof s === 'object' ? Boolean(s.default) : true
     }
@@ -161,6 +177,7 @@ export const createProduct = async (productData) => {
     category: productData.category || 'disenador',
     fragranceFamily: productData.fragranceFamily || 'Floral',
     price,
+    transferPrice,
     costPrice,
     originalPrice: Number(productData.originalPrice) || (price > 0 ? Math.round(price * 1.2) : 0),
     discountPercentage: Number(productData.discountPercentage) || 0,
@@ -206,48 +223,60 @@ export const createProduct = async (productData) => {
 }
 
 export const updateProduct = async (id, updateData) => {
+  // Strip immutable / metadata / transient fields that must not be sent to MongoDB
+  const { _id, __v, id: rawId, createdAt, profit, profitMargin, ...cleanUpdateData } = updateData
+
   if (isMongoConnected()) {
     try {
+      const conditions = [{ id }, { slug: id }]
+      if (mongoose.Types.ObjectId.isValid(id)) {
+        conditions.push({ _id: id })
+      }
+
       const updated = await Product.findOneAndUpdate(
-        { $or: [{ id }, { slug: id }] },
-        { ...updateData, updatedAt: new Date().toISOString() },
-        { new: true }
+        { $or: conditions },
+        { ...cleanUpdateData, updatedAt: new Date().toISOString() },
+        { returnDocument: 'after' }
       ).lean()
+
       if (updated) return formatProduct(updated)
     } catch (err) {
       console.error('[DB] Error actualizando producto en MongoDB:', err.message)
+      throw err
     }
   }
 
   const products = await getProducts()
-  const index = products.findIndex(p => p.id === id || p.slug === id)
+  const index = products.findIndex(p => p.id === id || p.slug === id || p._id === id)
   if (index === -1) return null
 
   const existing = products[index]
-  const price = Number(updateData.price ?? existing.price)
-  const costPrice = Number(updateData.costPrice ?? existing.costPrice)
+  const price = Number(cleanUpdateData.price ?? existing.price)
+  const transferPrice = Number(cleanUpdateData.transferPrice ?? (existing.transferPrice || (price > 0 ? Math.round(price * 0.8) : 0)))
+  const costPrice = Number(cleanUpdateData.costPrice ?? existing.costPrice)
 
   const updated = {
     ...existing,
-    ...updateData,
+    ...cleanUpdateData,
     id: existing.id,
     price,
+    transferPrice,
     costPrice,
-    originalPrice: Number(updateData.originalPrice ?? existing.originalPrice),
-    discountPercentage: Number(updateData.discountPercentage ?? existing.discountPercentage),
-    isFeatured: Boolean(updateData.isFeatured ?? existing.isFeatured),
-    isNew: Boolean(updateData.isNew ?? existing.isNew),
-    isBestSeller: Boolean(updateData.isBestSeller ?? existing.isBestSeller),
-    sizes: Array.isArray(updateData.sizes) ? updateData.sizes : existing.sizes,
-    images: Array.isArray(updateData.images) ? updateData.images : existing.images,
-    stock: Number(updateData.stock ?? existing.stock ?? 10),
+    originalPrice: Number(cleanUpdateData.originalPrice ?? existing.originalPrice),
+    discountPercentage: Number(cleanUpdateData.discountPercentage ?? existing.discountPercentage),
+    isFeatured: Boolean(cleanUpdateData.isFeatured ?? existing.isFeatured),
+    isNew: Boolean(cleanUpdateData.isNew ?? existing.isNew),
+    isBestSeller: Boolean(cleanUpdateData.isBestSeller ?? existing.isBestSeller),
+    sizes: Array.isArray(cleanUpdateData.sizes) ? cleanUpdateData.sizes : existing.sizes,
+    images: Array.isArray(cleanUpdateData.images) ? cleanUpdateData.images : existing.images,
+    stock: Number(cleanUpdateData.stock ?? existing.stock ?? 10),
     olfactoryPyramid: {
       ...existing.olfactoryPyramid,
-      ...(updateData.olfactoryPyramid || {})
+      ...(cleanUpdateData.olfactoryPyramid || {})
     },
     characteristics: {
       ...existing.characteristics,
-      ...(updateData.characteristics || {})
+      ...(cleanUpdateData.characteristics || {})
     },
     updatedAt: new Date().toISOString()
   }
@@ -260,15 +289,20 @@ export const updateProduct = async (id, updateData) => {
 export const deleteProduct = async (id) => {
   if (isMongoConnected()) {
     try {
-      const res = await Product.findOneAndDelete({ $or: [{ id }, { slug: id }] })
+      const conditions = [{ id }, { slug: id }]
+      if (mongoose.Types.ObjectId.isValid(id)) {
+        conditions.push({ _id: id })
+      }
+      const res = await Product.findOneAndDelete({ $or: conditions })
       if (res) return true
     } catch (err) {
       console.error('[DB] Error eliminando producto en MongoDB:', err.message)
+      throw err
     }
   }
 
   const products = await getProducts()
-  const index = products.findIndex(p => p.id === id || p.slug === id)
+  const index = products.findIndex(p => p.id === id || p.slug === id || p._id === id)
   if (index === -1) return false
 
   products.splice(index, 1)
