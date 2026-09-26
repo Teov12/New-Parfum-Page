@@ -30,6 +30,35 @@ const handleCsvImported = async () => {
   await productStore.fetchStats()
 }
 
+// Catalog Inventory KPI Metrics
+const catalogStats = computed(() => {
+  const items = productStore.items || []
+  const totalFragancias = items.length
+  const totalBrands = new Set(items.map(p => p.brand).filter(Boolean)).size
+  
+  let totalStock = 0
+  let totalInventoryValue = 0
+  let decantsCount = 0
+
+  for (const p of items) {
+    const stock = Number(p.stock ?? 10)
+    totalStock += stock
+    const effectivePrice = Number(p.transferPrice || Math.round((p.price || 0) * 0.8))
+    totalInventoryValue += stock * effectivePrice
+    if ((p.decantPrices && Object.keys(p.decantPrices).length > 0) || (p.sizes && p.sizes.some(s => s.size && s.size.toLowerCase().includes('decant')))) {
+      decantsCount++
+    }
+  }
+
+  return {
+    totalFragancias,
+    totalBrands,
+    totalStock,
+    totalInventoryValue,
+    decantsCount
+  }
+})
+
 // Filtered Products
 const filteredProducts = computed(() => {
   return productStore.items.filter(p => {
@@ -80,6 +109,77 @@ const handleDeleteProduct = async () => {
 <template>
   <div class="space-y-6 animate-in fade-in duration-300">
     
+    <!-- Catalog Inventory KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+      <!-- Total Fragancias -->
+      <div class="bg-surface border border-outline-variant rounded-2xl p-4 sm:p-6 shadow-[0_10px_25px_-8px_rgba(46,25,17,0.05)] hover:shadow-[0_18px_35px_-10px_rgba(46,25,17,0.1)] hover:-translate-y-1 transition-all duration-300 group">
+        <div class="flex justify-between items-start mb-2 sm:mb-3">
+          <span class="font-label text-xs uppercase tracking-widest text-secondary font-semibold">Fragancias Activas</span>
+          <div class="w-10 h-10 sm:w-11 sm:h-11 bg-surface-container rounded-xl border border-outline-variant/70 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300 shadow-2xs">
+            <span class="material-symbols-outlined text-xl">spa</span>
+          </div>
+        </div>
+        <p class="font-sans text-2xl sm:text-3xl font-bold text-primary tracking-tight">
+          {{ catalogStats.totalFragancias }}
+        </p>
+        <p class="text-xs text-secondary mt-1.5 flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+          <span>{{ catalogStats.totalBrands }} marcas de lujo registradas</span>
+        </p>
+      </div>
+
+      <!-- Stock Total -->
+      <div class="bg-surface border border-outline-variant rounded-2xl p-4 sm:p-6 shadow-[0_10px_25px_-8px_rgba(46,25,17,0.05)] hover:shadow-[0_18px_35px_-10px_rgba(46,25,17,0.1)] hover:-translate-y-1 transition-all duration-300 group">
+        <div class="flex justify-between items-start mb-2 sm:mb-3">
+          <span class="font-label text-xs uppercase tracking-widest text-secondary font-semibold">Stock en Frascos</span>
+          <div class="w-10 h-10 sm:w-11 sm:h-11 bg-surface-container rounded-xl border border-outline-variant/70 flex items-center justify-center text-secondary group-hover:scale-110 transition-transform duration-300 shadow-2xs">
+            <span class="material-symbols-outlined text-xl">inventory_2</span>
+          </div>
+        </div>
+        <p class="font-sans text-2xl sm:text-3xl font-bold text-primary tracking-tight">
+          {{ catalogStats.totalStock }} <span class="text-sm font-normal text-secondary">unidades</span>
+        </p>
+        <p class="text-xs text-secondary mt-1.5 flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+          <span>Disponibles para entrega inmediata</span>
+        </p>
+      </div>
+
+      <!-- Valuación del Inventario -->
+      <div class="bg-surface border border-outline-variant rounded-2xl p-4 sm:p-6 shadow-[0_10px_25px_-8px_rgba(46,25,17,0.05)] hover:shadow-[0_18px_35px_-10px_rgba(46,25,17,0.1)] hover:-translate-y-1 transition-all duration-300 group">
+        <div class="flex justify-between items-start mb-2 sm:mb-3">
+          <span class="font-label text-xs uppercase tracking-widest text-emerald-900 font-semibold">Valor de Inventario</span>
+          <div class="w-10 h-10 sm:w-11 sm:h-11 bg-emerald-50 rounded-xl border border-emerald-200/80 flex items-center justify-center text-emerald-800 group-hover:scale-110 transition-transform duration-300 shadow-2xs">
+            <span class="material-symbols-outlined text-xl">payments</span>
+          </div>
+        </div>
+        <p class="font-sans text-2xl sm:text-3xl font-bold text-emerald-950 tracking-tight">
+          ${{ catalogStats.totalInventoryValue.toLocaleString('es-AR') }}
+        </p>
+        <p class="text-xs text-emerald-800 mt-1.5 flex items-center gap-1.5 font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+          <span>Capital en mercadería disponible</span>
+        </p>
+      </div>
+
+      <!-- Decants & Fraccionados -->
+      <div class="bg-surface border border-outline-variant rounded-2xl p-4 sm:p-6 shadow-[0_10px_25px_-8px_rgba(46,25,17,0.05)] hover:shadow-[0_18px_35px_-10px_rgba(46,25,17,0.1)] hover:-translate-y-1 transition-all duration-300 group">
+        <div class="flex justify-between items-start mb-2 sm:mb-3">
+          <span class="font-label text-xs uppercase tracking-widest text-secondary font-semibold">Muestras & Decants</span>
+          <div class="w-10 h-10 sm:w-11 sm:h-11 bg-surface-container rounded-xl border border-outline-variant/70 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300 shadow-2xs">
+            <span class="material-symbols-outlined text-xl">science</span>
+          </div>
+        </div>
+        <p class="font-sans text-2xl sm:text-3xl font-bold text-primary tracking-tight">
+          {{ catalogStats.decantsCount }} <span class="text-sm font-normal text-secondary">fragancias</span>
+        </p>
+        <p class="text-xs text-secondary mt-1.5 flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+          <span>Presentaciones fraccionadas de 5ml/10ml</span>
+        </p>
+      </div>
+    </div>
+
     <!-- Header Actions for Products -->
     <div class="bg-surface border border-outline-variant rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 shadow-[0_4px_18px_-4px_rgba(46,25,17,0.04)]">
       <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3 flex-grow">
