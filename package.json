@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@vee-validate/rules": "^4.15.1",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "autoprefixer": "^10.4.20",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^1.41.3",
     "concurrently": "^10.0.5",
@@ -26,17 +28,13 @@
     "multer": "^2.2.0",
     "multer-storage-cloudinary": "^4.0.0",
     "pinia": "^2.3.1",
+    "postcss": "^8.5.1",
     "swagger-ui-express": "^5.0.1",
+    "tailwindcss": "^3.4.17",
     "vee-validate": "^4.15.1",
+    "vite": "^6.1.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
     "yup": "^1.7.1"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^5.2.1",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.5.1",
-    "tailwindcss": "^3.4.17",
-    "vite": "^6.1.0"
   }
 }
