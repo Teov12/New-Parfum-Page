@@ -7,6 +7,7 @@ import { useWishlistStore } from "@/stores/wishlist";
 import { useToastStore } from "@/stores/toast";
 import OlfactivePyramid from "@/components/product/OlfactivePyramid.vue";
 import ProductCard from "@/components/product/ProductCard.vue";
+import BatchCodeModal from "@/components/product/BatchCodeModal.vue";
 
 import { useShippingStore } from "@/stores/shipping";
 
@@ -32,6 +33,20 @@ const selectedSize = ref(null);
 const selectedImageIndex = ref(0);
 const quantity = ref(1);
 const activeTab = ref("pyramid");
+const isBatchModalOpen = ref(false);
+
+const isDecantSize = (sizeStrOrNum) => {
+  if (!sizeStrOrNum) return false;
+  const s = String(sizeStrOrNum).toLowerCase();
+  if (s.includes('decant') || s.includes('muestra') || s.includes('fraccionado')) return true;
+  const num = parseInt(s.replace(/\D/g, ''), 10);
+  return !isNaN(num) && num > 0 && num <= 15;
+};
+
+const hasDecantSizes = computed(() => {
+  if (!product.value?.sizes) return false;
+  return product.value.sizes.some((s) => isDecantSize(s.size));
+});
 
 // Postal code calculator state (Andreani)
 const postalCode = ref("");
@@ -409,11 +424,15 @@ const calculateShipping = async () => {
               >
                 {{ product.badge }}
               </span>
-              <span
-                class="bg-surface/90 backdrop-blur-xs text-primary font-label text-[10px] px-3.5 py-1 uppercase tracking-widest rounded-full border border-outline-variant shadow-xs"
+              <button
+                type="button"
+                @click="isBatchModalOpen = true"
+                class="bg-surface/90 hover:bg-surface text-primary font-label text-[10px] px-3.5 py-1 uppercase tracking-widest rounded-full border border-outline-variant shadow-xs flex items-center gap-1 hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xs"
+                title="Ver Certificado de Autenticidad y Validador de Batch Code"
               >
-                100% Original
-              </span>
+                <span class="material-symbols-outlined text-xs text-amber-700">verified</span>
+                <span>100% Original</span>
+              </button>
             </div>
 
             <!-- Wishlist Floating Button with Burst Animation -->
@@ -543,36 +562,69 @@ const calculateShipping = async () => {
             {{ product.shortDescription }}
           </p>
 
-          <!-- Size Selector (Píldoras) -->
+          <!-- Size Selector (Píldoras & Decants) -->
           <div class="space-y-2.5">
-            <div class="flex justify-between items-baseline">
-              <label
-                class="font-label text-xs uppercase tracking-widest text-primary font-bold"
-              >
-                Presentación / Tamaño:
-              </label>
-              <span class="font-label text-xs text-secondary">{{
+            <div class="flex justify-between items-baseline flex-wrap gap-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <label
+                  class="font-label text-xs uppercase tracking-widest text-primary font-bold"
+                >
+                  Presentación / Tamaño:
+                </label>
+                <span 
+                  v-if="hasDecantSizes"
+                  class="text-[9px] font-label font-bold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full inline-flex items-center gap-1 shadow-2xs"
+                >
+                  <span class="material-symbols-outlined text-[11px]">science</span>
+                  Decants Disponibles
+                </span>
+              </div>
+              <span class="font-label text-xs text-secondary font-medium">{{
                 selectedSize?.size
               }}</span>
             </div>
 
-            <div class="grid grid-cols-3 gap-2">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
               <button
                 v-for="s in product.sizes"
                 :key="s.size"
                 @click="selectedSize = s"
-                class="font-label text-xs tracking-wider py-1.5 px-2 rounded-full border text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-2xs"
-                :class="
+                class="font-label text-xs tracking-wider py-2 px-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 shadow-2xs relative"
+                :class="[
                   selectedSize?.size === s.size
-                    ? 'bg-primary-container text-on-primary border-primary-container shadow-xs'
-                    : 'bg-surface text-primary border-outline-variant hover:border-outline'
-                "
+                    ? 'bg-primary-container text-on-primary border-primary-container shadow-xs scale-102 ring-1 ring-primary'
+                    : 'bg-surface text-primary border-outline-variant hover:border-outline hover:bg-surface-container/40',
+                  isDecantSize(s.size) && selectedSize?.size !== s.size ? 'border-amber-600/30 bg-amber-50/20' : ''
+                ]"
               >
+                <!-- Decant / Muestra Badge -->
+                <span 
+                  v-if="isDecantSize(s.size)" 
+                  class="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md flex items-center gap-0.5 leading-none"
+                  :class="selectedSize?.size === s.size ? 'bg-amber-300/30 text-amber-100 border border-amber-300/30' : 'bg-amber-100 text-amber-900 border border-amber-300'"
+                >
+                  <span>🧪 Decant</span>
+                </span>
+
                 <span class="font-bold text-xs">{{ s.size }}</span>
                 <span class="text-[10px] opacity-85"
                   >${{ s.price.toLocaleString("es-AR") }}</span
                 >
               </button>
+            </div>
+
+            <!-- Decant Explainer Callout -->
+            <div 
+              v-if="isDecantSize(selectedSize?.size)" 
+              class="p-3 bg-amber-50/90 border border-amber-200/90 rounded-xl text-amber-950 text-xs flex items-start gap-2.5 animate-in fade-in"
+            >
+              <span class="material-symbols-outlined text-amber-800 text-base flex-shrink-0 mt-0.5">science</span>
+              <div class="space-y-0.5">
+                <strong class="font-bold text-xs block text-amber-950">Muestra / Decant Oficial Fraccionado ({{ selectedSize?.size }}):</strong>
+                <p class="text-[11px] text-amber-900 leading-relaxed">
+                  Fracción extraída del frasco original en atomizador de vidrio hermético. Ideal para probar la evolución y fijación en piel antes de comprar el frasco grande.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -735,23 +787,31 @@ const calculateShipping = async () => {
 
           <!-- Trust Badges Mini Grid -->
           <div class="grid grid-cols-2 gap-3 pt-2">
-            <div
-              class="flex items-center gap-2 p-3 bg-surface-container rounded-xs border border-outline-variant shadow-2xs"
+            <button
+              type="button"
+              @click="isBatchModalOpen = true"
+              class="flex items-center justify-between p-3 bg-surface-container hover:bg-surface rounded-xl border border-outline-variant hover:border-primary shadow-2xs cursor-pointer transition-all text-left group"
+              title="Abrir Validador Oficial de Batch Code y Certificado"
             >
-              <span class="material-symbols-outlined text-base text-primary"
-                >verified</span
-              >
-              <span class="font-label text-[10px] uppercase text-primary"
-                >Batch Code Verificable</span
-              >
-            </div>
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-base text-primary group-hover:scale-110 transition-transform"
+                  >verified</span
+                >
+                <span class="font-label text-[10px] uppercase text-primary font-bold"
+                  >Batch Code Verificable</span
+                >
+              </div>
+              <span class="material-symbols-outlined text-xs text-secondary group-hover:text-primary group-hover:translate-x-0.5 transition-transform">
+                arrow_forward
+              </span>
+            </button>
             <div
-              class="flex items-center gap-2 p-3 bg-surface-container rounded-xs border border-outline-variant shadow-2xs"
+              class="flex items-center gap-2 p-3 bg-surface-container rounded-xl border border-outline-variant shadow-2xs"
             >
               <span class="material-symbols-outlined text-base text-primary"
                 >local_shipping</span
               >
-              <span class="font-label text-[10px] uppercase text-primary"
+              <span class="font-label text-[10px] uppercase text-primary font-bold"
                 >Envío Asegurado</span
               >
             </div>
@@ -1006,5 +1066,12 @@ const calculateShipping = async () => {
         </button>
       </div>
     </div>
+
+    <!-- Interactive Batch Code & Authenticity Modal -->
+    <BatchCodeModal
+      :is-open="isBatchModalOpen"
+      :product="product"
+      @close="isBatchModalOpen = false"
+    />
   </div>
 </template>

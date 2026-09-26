@@ -102,6 +102,53 @@ router.get('/:idOrSlug', async (req, res) => {
   }
 })
 
+// POST /api/products/bulk - Bulk create products (protegido con requireAuth)
+router.post('/bulk', requireAuth, async (req, res) => {
+  try {
+    const tenantId = req.tenantId || 'gicca'
+    const { products: itemsToCreate } = req.body
+    if (!Array.isArray(itemsToCreate) || itemsToCreate.length === 0) {
+      return res.status(400).json({ error: 'La lista de perfumes es requerida' })
+    }
+
+    const created = []
+    const errors = []
+
+    for (let i = 0; i < itemsToCreate.length; i++) {
+      const item = itemsToCreate[i]
+      if (!item || !item.name || !item.brand || item.price === undefined) {
+        errors.push({
+          index: i,
+          name: item?.name || `Fila ${i + 1}`,
+          error: 'Nombre, marca y precio son obligatorios'
+        })
+        continue
+      }
+      try {
+        const prod = await createProduct(item, tenantId)
+        created.push(prod)
+      } catch (err) {
+        errors.push({
+          index: i,
+          name: item.name,
+          error: err.message || 'Error al guardar el perfume'
+        })
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      count: created.length,
+      errorsCount: errors.length,
+      created,
+      errors
+    })
+  } catch (err) {
+    console.error('Error in bulk import:', err)
+    res.status(500).json({ error: 'Error al procesar la importación masiva de perfumes' })
+  }
+})
+
 // POST /api/products - Create new product (protegido con requireAuth)
 router.post('/', requireAuth, async (req, res) => {
   try {

@@ -29,11 +29,32 @@ const selectedBrands = ref([])
 const selectedFamilies = ref([])
 const selectedConcentrations = ref([])
 const onlyWishlist = ref(false)
+const onlyDecants = ref(false)
 const maxPrice = ref(350000)
 const sortBy = ref('popularity')
 const isMobileFiltersOpen = ref(false)
 
 const concentrations = ['Parfum', 'Eau de Parfum', 'Eau de Toilette']
+
+const isProductWithDecants = (p) => {
+  if (!p) return false
+  const cat = String(p.category || '').toLowerCase()
+  if (cat.includes('decant') || cat.includes('muestra') || cat.includes('fraccionado')) return true
+  if (Array.isArray(p.sizes)) {
+    return p.sizes.some(s => {
+      const sizeStr = typeof s === 'object' ? String(s.size || '') : String(s)
+      const lower = sizeStr.toLowerCase()
+      if (lower.includes('decant') || lower.includes('muestra') || lower.includes('fraccionado')) return true
+      const num = parseInt(lower.replace(/\D/g, ''), 10)
+      return !isNaN(num) && num > 0 && num <= 15
+    })
+  }
+  return false
+}
+
+const totalDecantsCount = computed(() => {
+  return productStore.items.filter(isProductWithDecants).length
+})
 
 const availableBrands = computed(() => {
   const dynamic = productStore.brandsList
@@ -70,6 +91,12 @@ const initFromQuery = () => {
     onlyWishlist.value = true
   } else {
     onlyWishlist.value = false
+  }
+
+  if (route.query.decants === 'true' || route.query.decant === 'true') {
+    onlyDecants.value = true
+  } else {
+    onlyDecants.value = false
   }
 
   if (route.query.q) {
@@ -204,6 +231,11 @@ const filteredProducts = computed(() => {
       return false
     }
 
+    // Decants / Fraccionados
+    if (onlyDecants.value && !isProductWithDecants(p)) {
+      return false
+    }
+
     // Price
     if (p.price > maxPrice.value) {
       return false
@@ -227,6 +259,7 @@ const clearAllFilters = () => {
   selectedFamilies.value = []
   selectedConcentrations.value = []
   onlyWishlist.value = false
+  onlyDecants.value = false
   maxPrice.value = 350000
   sortBy.value = 'popularity'
   router.push({ query: {} })
@@ -241,6 +274,7 @@ const activeFiltersCount = computed(() => {
   if (selectedFamilies.value.length) count += selectedFamilies.value.length
   if (selectedConcentrations.value.length) count += selectedConcentrations.value.length
   if (onlyWishlist.value) count++
+  if (onlyDecants.value) count++
   if (maxPrice.value < 350000) count++
   return count
 })
@@ -305,6 +339,67 @@ const activeFiltersCount = computed(() => {
         </div>
       </div>
 
+      <!-- Horizontal Quick Filter Pills -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-6 no-scrollbar">
+        <button
+          type="button"
+          @click="onlyDecants = !onlyDecants"
+          class="font-label text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full border transition-all flex items-center gap-1.5 flex-shrink-0 shadow-2xs cursor-pointer"
+          :class="onlyDecants 
+            ? 'bg-amber-800 text-white border-amber-800 font-bold scale-102 shadow-xs' 
+            : 'bg-amber-50 hover:bg-amber-100/80 text-amber-950 border-amber-300'"
+        >
+          <span class="material-symbols-outlined text-sm">science</span>
+          <span>🧪 Decants & Muestras</span>
+          <span class="text-[10px] opacity-80">({{ totalDecantsCount }})</span>
+        </button>
+
+        <button
+          type="button"
+          @click="selectedCategories.includes('arabe') ? selectedCategories = selectedCategories.filter(c => c !== 'arabe') : selectedCategories.push('arabe')"
+          class="font-label text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full border transition-all flex items-center gap-1.5 flex-shrink-0 shadow-2xs cursor-pointer"
+          :class="selectedCategories.includes('arabe') 
+            ? 'bg-primary text-on-primary border-primary font-bold shadow-xs' 
+            : 'bg-surface hover:bg-surface-container text-primary border-outline-variant'"
+        >
+          <span>Perfumes Árabes</span>
+        </button>
+
+        <button
+          type="button"
+          @click="selectedCategories.includes('disenador') ? selectedCategories = selectedCategories.filter(c => c !== 'disenador') : selectedCategories.push('disenador')"
+          class="font-label text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full border transition-all flex items-center gap-1.5 flex-shrink-0 shadow-2xs cursor-pointer"
+          :class="selectedCategories.includes('disenador') 
+            ? 'bg-primary text-on-primary border-primary font-bold shadow-xs' 
+            : 'bg-surface hover:bg-surface-container text-primary border-outline-variant'"
+        >
+          <span>Diseñador</span>
+        </button>
+
+        <button
+          type="button"
+          @click="selectedCategories.includes('nicho') ? selectedCategories = selectedCategories.filter(c => c !== 'nicho') : selectedCategories.push('nicho')"
+          class="font-label text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full border transition-all flex items-center gap-1.5 flex-shrink-0 shadow-2xs cursor-pointer"
+          :class="selectedCategories.includes('nicho') 
+            ? 'bg-primary text-on-primary border-primary font-bold shadow-xs' 
+            : 'bg-surface hover:bg-surface-container text-primary border-outline-variant'"
+        >
+          <span>Nicho Exclusivo</span>
+        </button>
+
+        <button
+          type="button"
+          @click="onlyWishlist = !onlyWishlist"
+          class="font-label text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full border transition-all flex items-center gap-1.5 flex-shrink-0 shadow-2xs cursor-pointer"
+          :class="onlyWishlist 
+            ? 'bg-rose-700 text-white border-rose-700 font-bold shadow-xs' 
+            : 'bg-surface hover:bg-surface-container text-primary border-outline-variant'"
+        >
+          <span class="material-symbols-outlined text-sm">favorite</span>
+          <span>Favoritos</span>
+        </button>
+      </div>
+
       <!-- Main Layout: Sidebar Filters + Products Grid -->
       <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         
@@ -317,7 +412,7 @@ const activeFiltersCount = computed(() => {
             <button 
               v-if="activeFiltersCount > 0"
               @click="clearAllFilters"
-              class="font-label text-[11px] uppercase tracking-widest text-error hover:underline"
+              class="font-label text-[11px] uppercase tracking-widest text-error hover:underline cursor-pointer"
             >
               Limpiar ({{ activeFiltersCount }})
             </button>
@@ -336,6 +431,31 @@ const activeFiltersCount = computed(() => {
                 search
               </span>
             </div>
+          </div>
+
+          <!-- Decants Spotlight Card -->
+          <div class="p-3.5 bg-amber-50/80 border border-amber-200/90 rounded-xl space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5 font-bold text-xs text-amber-950 font-label uppercase tracking-wider">
+                <span class="material-symbols-outlined text-base text-amber-800">science</span>
+                <span>Decants & Muestras</span>
+              </div>
+              <span class="text-[10px] font-bold bg-amber-200/60 text-amber-900 px-2 py-0.5 rounded-full">
+                {{ totalDecantsCount }}
+              </span>
+            </div>
+            <p class="text-[11px] text-amber-900/80 leading-snug">
+              Fracciones de 2ml, 5ml y 10ml para probar antes de comprar frascos completos.
+            </p>
+            <button
+              type="button"
+              @click="onlyDecants = !onlyDecants"
+              class="w-full py-2 px-3 rounded-lg text-xs font-label uppercase tracking-wider font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              :class="onlyDecants ? 'bg-amber-800 text-white shadow-xs' : 'bg-surface hover:bg-amber-100/80 text-amber-950 border border-amber-300/80'"
+            >
+              <span class="material-symbols-outlined text-sm">{{ onlyDecants ? 'check_circle' : 'filter_alt' }}</span>
+              <span>{{ onlyDecants ? 'Filtrando Decants' : 'Ver Sólo Decants' }}</span>
+            </button>
           </div>
 
           <!-- Gender Filter -->
@@ -470,11 +590,19 @@ const activeFiltersCount = computed(() => {
             <span class="font-sans text-xs font-semibold text-neutral-400 uppercase tracking-wider">Filtros Activos:</span>
             
             <span 
+              v-if="onlyDecants" 
+              class="inline-flex items-center gap-1.5 bg-amber-100 text-amber-950 text-xs font-sans font-medium px-3 py-1 rounded-full border border-amber-300 shadow-2xs"
+            >
+              <span>🧪 Sólo Decants & Fraccionados</span>
+              <button @click="onlyDecants = false" class="hover:text-rose-600 text-xs font-bold cursor-pointer">✕</button>
+            </span>
+
+            <span 
               v-if="searchQuery" 
               class="inline-flex items-center gap-1.5 bg-neutral-100 text-xs font-sans font-medium px-3 py-1 rounded-full border border-neutral-200"
             >
               "{{ searchQuery }}"
-              <button @click="searchQuery = ''" class="hover:text-rose-600 text-xs">✕</button>
+              <button @click="searchQuery = ''" class="hover:text-rose-600 text-xs cursor-pointer">✕</button>
             </span>
 
             <span 
@@ -578,6 +706,31 @@ const activeFiltersCount = computed(() => {
 
                 <!-- Quick Filters in Mobile -->
                 <div class="space-y-6">
+                  <!-- Decants Spotlight Mobile Card -->
+                  <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-xl space-y-2">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-1.5 font-bold text-xs text-amber-950 font-label uppercase tracking-wider">
+                        <span class="material-symbols-outlined text-base text-amber-800">science</span>
+                        <span>Decants & Muestras</span>
+                      </div>
+                      <span class="text-[10px] font-bold bg-amber-200/60 text-amber-900 px-2 py-0.5 rounded-full">
+                        {{ totalDecantsCount }}
+                      </span>
+                    </div>
+                    <p class="text-[11px] text-amber-900/80 leading-snug">
+                      Fracciones de 2ml, 5ml y 10ml en atomizador.
+                    </p>
+                    <button
+                      type="button"
+                      @click="onlyDecants = !onlyDecants"
+                      class="w-full py-2 px-3 rounded-lg text-xs font-label uppercase tracking-wider font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      :class="onlyDecants ? 'bg-amber-800 text-white shadow-xs' : 'bg-surface hover:bg-amber-100 text-amber-950 border border-amber-300'"
+                    >
+                      <span class="material-symbols-outlined text-sm">{{ onlyDecants ? 'check_circle' : 'filter_alt' }}</span>
+                      <span>{{ onlyDecants ? 'Filtrando Decants' : 'Ver Sólo Decants' }}</span>
+                    </button>
+                  </div>
+
                   <div>
                     <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-3">Género</h4>
                     <div class="space-y-2 font-sans text-sm text-secondary">

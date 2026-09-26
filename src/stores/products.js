@@ -104,6 +104,33 @@ export const useProductStore = defineStore('products', {
       return this.addProduct(productData)
     },
 
+    async bulkCreateProducts(productsList) {
+      this.loading = true
+      try {
+        const token = localStorage.getItem('gicca_admin_token')
+        const headers = { 'Content-Type': 'application/json' }
+        if (token) headers['Authorization'] = `Bearer ${token}`
+
+        const res = await fetch('/api/products/bulk', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ products: productsList })
+        })
+        if (!res.ok) {
+          const errData = await res.json()
+          throw new Error(errData.error || 'Error al importar perfumes')
+        }
+        const data = await res.json()
+        await this.fetchProducts()
+        await this.fetchStats()
+        return { success: true, count: data.count, errorsCount: data.errorsCount, errors: data.errors }
+      } catch (err) {
+        return { success: false, error: err.message }
+      } finally {
+        this.loading = false
+      }
+    },
+
     async updateProduct(id, productData) {
       this.loading = true
       try {

@@ -47,6 +47,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
 // API Routes
 app.use('/api/tenant', tenantRoutes)
+app.use('/api/tenants', tenantRoutes)
 app.use('/api/checkout', checkoutRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/products', productRoutes)

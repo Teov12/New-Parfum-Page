@@ -269,7 +269,38 @@ const goToPrevStep = () => {
 }
 
 const addSize = () => {
-  formData.value.sizes.push({ size: 50, transferPrice: null, price: null, costPrice: null, default: false })
+  formData.value.sizes.push({ size: '50 ml', transferPrice: null, price: null, costPrice: null, default: false })
+}
+
+const addDecantPreset = (ml) => {
+  const mainSize = formData.value.sizes[0]
+  const mainTransfer = Number(mainSize?.transferPrice) || 60000
+  const mainCost = Number(mainSize?.costPrice) || 30000
+  
+  // Ratio of retail price for high-margin decants
+  const ratio = ml === 2 ? 0.10 : (ml === 5 ? 0.18 : 0.30)
+  const transferPrice = Math.max(3500, Math.round((mainTransfer * ratio) / 100) * 100)
+  const fee = Number(cardFeeRate.value) || 20
+  const factor = Math.max(0.01, 1 - (fee / 100))
+  const price = Math.round(transferPrice / factor)
+  const costPrice = Math.max(1200, Math.round((mainCost * ratio) / 100) * 100)
+
+  // Avoid duplicate
+  const sizeName = `${ml} ml (Decant)`
+  const existing = formData.value.sizes.find(s => String(s.size).includes(`${ml} ml`))
+  if (existing) {
+    toastStore.show(`La presentación de ${ml} ml ya está agregada`, 'info')
+    return
+  }
+
+  formData.value.sizes.push({
+    size: sizeName,
+    transferPrice,
+    price,
+    costPrice,
+    default: false
+  })
+  toastStore.show(`Presentación Decant de ${ml} ml añadida`, 'success')
 }
 
 const removeSize = (index) => {
@@ -367,8 +398,9 @@ const handleSubmitProduct = async () => {
         const transfer = Number(s.transferPrice) || (s.price ? Math.round(Number(s.price) * factor) : 0)
         const listPrice = Number(s.price) || (transfer ? Math.round(transfer / factor) : 0)
         const cost = Number(s.costPrice) || Math.round(((transfer || listPrice) || 0) * 0.45)
+        const sizeLabel = String(s.size).includes('ml') ? String(s.size) : `${s.size} ml`
         return {
-          size: `${s.size} ml`,
+          size: sizeLabel,
           price: listPrice,
           transferPrice: transfer,
           costPrice: cost,
@@ -541,10 +573,9 @@ const handleSubmitProduct = async () => {
               >
                 <!-- Volumen (ml) -->
                 <div class="sm:col-span-2">
-                  <label class="block text-[10px] font-label uppercase tracking-wider text-secondary mb-1">Volumen</label>
+                  <label class="block text-[10px] font-label uppercase tracking-wider text-secondary mb-1">Presentación</label>
                   <div class="flex items-center gap-1.5">
-                    <input v-model.number="sizeObj.size" type="number" placeholder="100" class="w-full bg-surface-container/70 border border-outline-variant rounded-xl p-2.5 text-xs font-sans text-center focus:border-primary focus:outline-none" />
-                    <span class="text-xs text-secondary font-bold">ml</span>
+                    <input v-model="sizeObj.size" type="text" placeholder="100 ml" class="w-full bg-surface-container/70 border border-outline-variant rounded-xl p-2.5 text-xs font-sans text-center focus:border-primary focus:outline-none font-medium" />
                   </div>
                 </div>
 
@@ -606,6 +637,50 @@ const handleSubmitProduct = async () => {
                 <div class="sm:col-span-1 text-right pt-0 sm:pt-7">
                   <button v-if="formData.sizes.length > 1" @click="removeSize(idx)" type="button" class="w-8 h-8 rounded-full inline-flex items-center justify-center text-secondary hover:text-red-700 hover:bg-red-50 transition-colors">
                     <span class="material-symbols-outlined text-base">delete</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Actions for Sizes & Decants -->
+              <div class="flex flex-wrap items-center justify-between gap-2.5 pt-1">
+                <button 
+                  type="button" 
+                  @click="addSize" 
+                  class="font-label text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl border border-outline-variant hover:border-primary bg-surface hover:bg-surface-container text-primary transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                >
+                  <span class="material-symbols-outlined text-sm">add</span>
+                  <span>+ Medida Personalizada</span>
+                </button>
+
+                <!-- Decants Quick Presets -->
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-[10px] font-label uppercase text-amber-900 font-bold bg-amber-100 px-2.5 py-1.5 rounded-lg border border-amber-200 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-xs">science</span>
+                    <span>Añadir Decant:</span>
+                  </span>
+                  <button 
+                    type="button" 
+                    @click="addDecantPreset(2)" 
+                    class="font-label text-[11px] font-bold px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-950 transition-all cursor-pointer shadow-2xs"
+                    title="Añadir fraccionado muestra de 2ml"
+                  >
+                    + 2 ml
+                  </button>
+                  <button 
+                    type="button" 
+                    @click="addDecantPreset(5)" 
+                    class="font-label text-[11px] font-bold px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-950 transition-all cursor-pointer shadow-2xs"
+                    title="Añadir fraccionado muestra de 5ml"
+                  >
+                    + 5 ml
+                  </button>
+                  <button 
+                    type="button" 
+                    @click="addDecantPreset(10)" 
+                    class="font-label text-[11px] font-bold px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-950 transition-all cursor-pointer shadow-2xs"
+                    title="Añadir fraccionado muestra de 10ml"
+                  >
+                    + 10 ml
                   </button>
                 </div>
               </div>

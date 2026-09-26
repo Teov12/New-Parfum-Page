@@ -31,6 +31,24 @@
         "profit": 19925,
         "profitMargin": 36,
         "default": true
+      },
+      {
+        "size": "5 ml (Decant)",
+        "price": 11000,
+        "transferPrice": 8800,
+        "costPrice": 4200,
+        "profit": 4600,
+        "profitMargin": 52,
+        "default": false
+      },
+      {
+        "size": "10 ml (Decant)",
+        "price": 19000,
+        "transferPrice": 15200,
+        "costPrice": 7500,
+        "profit": 7700,
+        "profitMargin": 50,
+        "default": false
       }
     ],
     "olfactoryPyramid": {
@@ -62,7 +80,7 @@
       "occasion": "Uso diario y ocasiones especiales"
     },
     "usageTips": "Pulverizar en puntos de pulso (cuello y muñecas).",
-    "stock": 10,
+    "stock": 9,
     "createdAt": "2026-09-26T01:34:11.776Z",
     "updatedAt": "2026-09-26T01:35:45.004Z",
     "profit": 19925,
@@ -100,6 +118,15 @@
         "profit": 18400,
         "profitMargin": 30,
         "default": true
+      },
+      {
+        "size": "5 ml (Decant)",
+        "price": 12250,
+        "transferPrice": 9800,
+        "costPrice": 4800,
+        "profit": 5000,
+        "profitMargin": 51,
+        "default": false
       }
     ],
     "olfactoryPyramid": {
@@ -164,6 +191,8 @@
         "price": 79000,
         "transferPrice": 63200,
         "costPrice": 43463,
+        "profit": 19737,
+        "profitMargin": 31,
         "default": true
       }
     ],
@@ -191,11 +220,11 @@
       "occasion": "Uso diario y ocasiones especiales"
     },
     "usageTips": "Pulverizar en puntos de pulso (cuello y muñecas).",
-    "stock": 8,
+    "stock": 7,
     "updatedAt": "2026-09-26T01:46:30.345Z",
     "__v": 0,
-    "profit": 26400,
-    "profitMargin": 55,
+    "profit": 19737,
+    "profitMargin": 31,
     "transferPrice": 63200
   }
 ]

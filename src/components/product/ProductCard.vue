@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useWishlistStore } from '@/stores/wishlist'
@@ -15,6 +15,17 @@ const props = defineProps({
 const cartStore = useCartStore()
 const wishlistStore = useWishlistStore()
 const toastStore = useToastStore()
+
+const hasDecants = computed(() => {
+  if (!props.product?.sizes) return false
+  return props.product.sizes.some(s => {
+    const sizeStr = typeof s === 'object' ? String(s.size || '') : String(s)
+    const lower = sizeStr.toLowerCase()
+    if (lower.includes('decant') || lower.includes('muestra') || lower.includes('fraccionado')) return true
+    const num = parseInt(lower.replace(/\D/g, ''), 10)
+    return !isNaN(num) && num > 0 && num <= 15
+  })
+})
 
 const selectedSize = ref(
   props.product.sizes.find(s => s.default) || props.product.sizes[0]
@@ -60,9 +71,13 @@ const handleWishlist = () => {
       </RouterLink>
 
       <!-- Floating Badges Top-Left -->
-      <div v-if="product.badge" class="absolute top-3 left-3 z-10">
-        <span class="bg-primary-container text-on-primary font-label text-[10px] font-bold px-3 py-1 uppercase tracking-wider rounded-md shadow-xs backdrop-blur-sm group-hover:scale-105 transition-transform duration-300">
+      <div class="absolute top-3 left-3 z-10 flex flex-col gap-1 items-start">
+        <span v-if="product.badge" class="bg-primary-container text-on-primary font-label text-[10px] font-bold px-3 py-1 uppercase tracking-wider rounded-md shadow-xs backdrop-blur-sm group-hover:scale-105 transition-transform duration-300">
           {{ product.badge }}
+        </span>
+        <span v-if="hasDecants" class="bg-amber-100 text-amber-900 border border-amber-300/80 font-label text-[9px] font-bold px-2 py-0.5 uppercase tracking-wider rounded-md shadow-2xs backdrop-blur-sm flex items-center gap-1">
+          <span class="material-symbols-outlined text-[10px]">science</span>
+          <span>Decants</span>
         </span>
       </div>
 

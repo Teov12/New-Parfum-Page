@@ -224,7 +224,8 @@ const buildWhatsAppMessage = (orderNumber) => {
   let paymentMethodLabel = 'Transferencia Bancaria (20% OFF)'
   if (paymentMethod.value === 'credit_card') paymentMethodLabel = 'Tarjeta de Crédito (3 Cuotas Sin Interés)'
 
-  let msg = `✨ *NUEVO PEDIDO - GICCA PERFUMES* ✨\n`
+  const storeNameUpper = (tenantStore.storeName || 'Gicca Perfumes').toUpperCase()
+  let msg = `✨ *NUEVO PEDIDO - ${storeNameUpper}* ✨\n`
   msg += `━━━━━━━━━━━━━━━━━━━━━\n`
   msg += `📦 *Nº de Orden:* #${orderNumber}\n`
   msg += `📅 *Fecha:* ${new Date().toLocaleDateString('es-AR')}\n\n`

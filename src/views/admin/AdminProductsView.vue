@@ -4,6 +4,7 @@ import { useProductStore } from '@/stores/products'
 import { useToastStore } from '@/stores/toast'
 import ProductWizardModal from '@/components/admin/ProductWizardModal.vue'
 import DeleteConfirmModal from '@/components/admin/DeleteConfirmModal.vue'
+import CsvImportModal from '@/components/admin/CsvImportModal.vue'
 import { normalizeGender, normalizeCategory } from '@/utils/normalize'
 
 const productStore = useProductStore()
@@ -18,9 +19,16 @@ const filterCategory = ref('all')
 const isWizardModalOpen = ref(false)
 const selectedProductForEdit = ref(null)
 
+const isCsvModalOpen = ref(false)
+
 const isDeleteModalOpen = ref(false)
 const productToDelete = ref(null)
 const isDeleting = ref(false)
+
+const handleCsvImported = async () => {
+  await productStore.fetchProducts()
+  await productStore.fetchStats()
+}
 
 // Filtered Products
 const filteredProducts = computed(() => {
@@ -108,13 +116,24 @@ const handleDeleteProduct = async () => {
         </div>
       </div>
 
-      <button 
-        @click="openCreateModal"
-        class="w-full sm:w-auto bg-primary hover:bg-primary-container text-on-primary font-label text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs hover:shadow-md active:scale-95 border border-primary/20 flex-shrink-0"
-      >
-        <span class="material-symbols-outlined text-base">add</span>
-        <span>+ Nuevo Perfume</span>
-      </button>
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <button 
+          @click="isCsvModalOpen = true"
+          class="flex-1 sm:flex-initial bg-surface hover:bg-surface-container text-primary font-label text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-2xs border border-outline-variant hover:border-primary active:scale-95 cursor-pointer"
+          title="Importar catálogo masivo desde Excel o archivo CSV"
+        >
+          <span class="material-symbols-outlined text-base text-primary">upload_file</span>
+          <span>Importar CSV</span>
+        </button>
+
+        <button 
+          @click="openCreateModal"
+          class="flex-1 sm:flex-initial bg-primary hover:bg-primary-container text-on-primary font-label text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs hover:shadow-md active:scale-95 border border-primary/20 flex-shrink-0 cursor-pointer"
+        >
+          <span class="material-symbols-outlined text-base">add</span>
+          <span>+ Nuevo Perfume</span>
+        </button>
+      </div>
     </div>
 
     <!-- Mobile Product Cards View (< md) -->
@@ -320,6 +339,13 @@ const handleDeleteProduct = async () => {
       :is-deleting="isDeleting"
       @close="isDeleteModalOpen = false"
       @confirm="handleDeleteProduct"
+    />
+
+    <!-- CSV Bulk Importer Modal -->
+    <CsvImportModal 
+      :is-open="isCsvModalOpen"
+      @close="isCsvModalOpen = false"
+      @imported="handleCsvImported"
     />
 
   </div>
