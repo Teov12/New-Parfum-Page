@@ -1,23 +1,86 @@
 import express from 'express'
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago'
 import { createOrder, updateOrder } from '../db.js'
+import { requireAuth } from '../middleware/auth.js'
 
 const router = express.Router()
 
 // Helper para obtener el token de Mercado Pago del tenant o de las variables de entorno
 const getMpAccessToken = (tenant) => {
-  return tenant?.commercial?.mpAccessToken || process.env.MERCADOPAGO_ACCESS_TOKEN || ''
+  return (
+    tenant?.commercial?.mpAccessToken || 
+    tenant?.commercial?.mercadoPagoAccessToken || 
+    process.env.MERCADOPAGO_ACCESS_TOKEN || 
+    ''
+  ).trim()
+}
+
+const getMpPublicKey = (tenant) => {
+  return (
+    tenant?.commercial?.mpPublicKey || 
+    tenant?.commercial?.mercadoPagoPublicKey || 
+    process.env.MERCADOPAGO_PUBLIC_KEY || 
+    ''
+  ).trim()
 }
 
 // GET /api/checkout/config - Estado de configuración de Mercado Pago para la tienda actual
 router.get('/config', (req, res) => {
   const tenant = req.tenant
   const accessToken = getMpAccessToken(tenant)
+  const publicKey = getMpPublicKey(tenant)
   res.json({
     isMpConfigured: Boolean(accessToken),
-    publicKey: tenant?.commercial?.mpPublicKey || process.env.MERCADOPAGO_PUBLIC_KEY || '',
+    publicKey: publicKey,
     cardFeeRate: tenant?.commercial?.cardFeeRate ?? 20
   })
+})
+
+// POST /api/checkout/test-credentials - Probar credenciales en vivo con la API oficial de Mercado Pago (Admin)
+router.post('/test-credentials', requireAuth, async (req, res) => {
+  try {
+    const { accessToken } = req.body
+    const cleanToken = (accessToken || '').trim()
+
+    if (!cleanToken) {
+      return res.status(400).json({ error: 'Ingresá un Access Token para probar la conexión.' })
+    }
+
+    if (!cleanToken.startsWith('APP_USR-') && !cleanToken.startsWith('TEST-')) {
+      return res.status(400).json({ 
+        error: 'El token ingresado no tiene el formato estándar de Mercado Pago (debe iniciar con APP_USR- o TEST-).' 
+      })
+    }
+
+    const mpRes = await fetch('https://api.mercadopago.com/users/me', {
+      headers: {
+        'Authorization': `Bearer ${cleanToken}`
+      }
+    })
+
+    if (!mpRes.ok) {
+      const errData = await mpRes.json().catch(() => ({}))
+      return res.status(400).json({
+        success: false,
+        error: errData.message || 'Token de Mercado Pago inválido o revocado. Revisá tus credenciales en Mercado Pago Developers.'
+      })
+    }
+
+    const userData = await mpRes.json()
+    res.json({
+      success: true,
+      message: `¡Conexión verificada con éxito! Cuenta: ${userData.nickname || userData.first_name || 'Mercado Pago'} (${userData.email || 'Email autenticado'}).`,
+      account: {
+        id: userData.id,
+        nickname: userData.nickname,
+        email: userData.email,
+        siteId: userData.site_id
+      }
+    })
+  } catch (err) {
+    console.error('Error al probar credenciales de Mercado Pago:', err)
+    res.status(500).json({ error: 'Error al contactar los servidores de Mercado Pago.' })
+  }
 })
 
 // POST /api/checkout/create-preference - Crear preferencia de Mercado Pago y registrar pedido
@@ -62,51 +125,56 @@ router.post('/create-preference', async (req, res) => {
     const host = req.get('host')
     const origin = `${protocol}://${host}`
 
-    // Mapear productos del carrito a ítems de Mercado Pago
-    const items = orderData.items.map(i => ({
-      id: String(i.id || i.slug),
+    // Mapear productos del carrito a ítems de Mercado Pago con precios válidos (> 0)
+    let items = orderData.items.map(i => ({
+      id: String(i.id || i.slug || 'perfume'),
       title: `${i.name} (${i.brand || 'Perfume'}) - ${i.size || '100 ml'}`,
-      unit_price: Number(i.price),
+      unit_price: Math.max(1, Math.round(Number(i.price) || 0)),
       quantity: Math.max(1, Number(i.quantity) || 1),
       currency_id: 'ARS'
     }))
+
+    // Si hay un descuento por cupón, prorratear en los ítems para nunca enviar unit_price negativo a MP
+    const couponDiscount = Number(orderData.couponDiscount) || 0
+    if (couponDiscount > 0) {
+      const itemsTotal = items.reduce((sum, it) => sum + (it.unit_price * it.quantity), 0)
+      if (itemsTotal > couponDiscount) {
+        const ratio = (itemsTotal - couponDiscount) / itemsTotal
+        items = items.map(it => ({
+          ...it,
+          unit_price: Math.max(1, Math.round(it.unit_price * ratio))
+        }))
+      }
+    }
 
     // Agregar costo de envío como ítem si corresponde
     if (Number(orderData.shippingCost) > 0) {
       items.push({
         id: 'shipping_andreani',
         title: `Envío ${orderData.shippingMethod || 'Andreani a Domicilio'}`,
-        unit_price: Number(orderData.shippingCost),
+        unit_price: Math.round(Number(orderData.shippingCost)),
         quantity: 1,
         currency_id: 'ARS'
       })
     }
 
-    // Aplicar descuento por cupón si existe
-    if (Number(orderData.couponDiscount) > 0) {
-      items.push({
-        id: 'coupon_discount',
-        title: 'Descuento cupón promocional',
-        unit_price: -Math.abs(Number(orderData.couponDiscount)),
-        quantity: 1,
-        currency_id: 'ARS'
-      })
+    const payerPhone = String(orderData.customer?.phone || '').replace(/\D/g, '')
+    const payer = {
+      name: orderData.customer?.firstName || 'Cliente',
+      surname: orderData.customer?.lastName || 'Gicca',
+      email: orderData.customer?.email || 'cliente@giccaperfumes.com.ar',
+      address: {
+        street_name: orderData.customer?.address || 'Dirección de Entrega',
+        zip_code: String(orderData.customer?.postalCode || '5000')
+      }
+    }
+    if (payerPhone && payerPhone.length >= 6) {
+      payer.phone = { number: payerPhone }
     }
 
     const prefPayload = {
       items,
-      payer: {
-        name: orderData.customer?.firstName || 'Cliente',
-        surname: orderData.customer?.lastName || '',
-        email: orderData.customer?.email || 'comprador@giccaparfum.com',
-        phone: {
-          number: String(orderData.customer?.phone || '').replace(/\D/g, '')
-        },
-        address: {
-          street_name: orderData.customer?.address || 'Dirección de Entrega',
-          zip_code: String(orderData.customer?.postalCode || '5000')
-        }
-      },
+      payer,
       back_urls: {
         success: `${origin}/checkout/success?orderNumber=${order.orderNumber}`,
         failure: `${origin}/checkout/failure?orderNumber=${order.orderNumber}`,

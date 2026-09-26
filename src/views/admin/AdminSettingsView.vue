@@ -47,7 +47,53 @@ const form = ref({
   }
 })
 
+const isTestingMp = ref(false)
+const mpTestResult = ref(null)
+
 onMounted(async () => {
+  try {
+    const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
+    const res = await fetch('/api/tenant/settings', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    if (res.ok) {
+      const data = await res.json()
+      if (data?.tenant) {
+        form.value.name = data.tenant.name || 'Gicca Perfumes'
+        if (data.tenant.branding) {
+          form.value.branding = {
+            tagline: data.tenant.branding.tagline || '',
+            logoUrl: data.tenant.branding.logoUrl || '',
+            iconUrl: data.tenant.branding.iconUrl || '',
+            storeIcon: data.tenant.branding.storeIcon || 'spa',
+            faviconUrl: data.tenant.branding.faviconUrl || '',
+            whatsappNumber: data.tenant.branding.whatsappNumber || '5493564622055',
+            instagram: data.tenant.branding.instagram || '@giccaparfum',
+            primaryColor: data.tenant.branding.primaryColor || '#D4AF37'
+          }
+        }
+        if (data.tenant.commercial) {
+          form.value.commercial = {
+            alias: data.tenant.commercial.alias || 'GICCA.PERFUMES.MP',
+            cbu: data.tenant.commercial.cbu || '0000003100010000000000',
+            bankName: data.tenant.commercial.bankName || 'Mercado Pago',
+            accountHolder: data.tenant.commercial.accountHolder || 'Gicca Perfumes S.A.',
+            cuit: data.tenant.commercial.cuit || '30-71829401-9',
+            cardFeeRate: data.tenant.commercial.cardFeeRate ?? 20,
+            freeShippingThreshold: data.tenant.commercial.freeShippingThreshold ?? 250000,
+            mpAccessToken: data.tenant.commercial.mpAccessToken || '',
+            mpPublicKey: data.tenant.commercial.mpPublicKey || ''
+          }
+        }
+        return
+      }
+    }
+  } catch (e) {
+    console.warn('Fallback loading tenant:', e)
+  }
+
   await tenantStore.fetchCurrentTenant()
   form.value.name = tenantStore.name || 'Gicca Perfumes'
   form.value.branding = {
@@ -72,6 +118,53 @@ onMounted(async () => {
     mpPublicKey: tenantStore.commercial?.mpPublicKey || ''
   }
 })
+
+const handleTestMercadoPago = async () => {
+  if (!form.value.commercial.mpAccessToken) {
+    toastStore.show('Ingresá primero el Access Token de Mercado Pago', 'error')
+    return
+  }
+  isTestingMp.value = true
+  mpTestResult.value = null
+  try {
+    const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
+    const res = await fetch('/api/checkout/test-credentials', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        accessToken: form.value.commercial.mpAccessToken
+      })
+    })
+
+    const data = await res.json()
+    if (!res.ok || !data.success) {
+      mpTestResult.value = {
+        success: false,
+        message: data.error || 'Credenciales inválidas en Mercado Pago'
+      }
+      toastStore.show(data.error || 'Error al validar credenciales', 'error')
+      return
+    }
+
+    mpTestResult.value = {
+      success: true,
+      message: data.message,
+      account: data.account
+    }
+    toastStore.show('¡Credenciales de Mercado Pago verificadas y listas para cobrar!', 'success')
+  } catch (err) {
+    mpTestResult.value = {
+      success: false,
+      message: err.message || 'Error de conexión con Mercado Pago'
+    }
+    toastStore.show(err.message || 'Error al probar credenciales', 'error')
+  } finally {
+    isTestingMp.value = false
+  }
+}
 
 const handleIconUpload = async (event) => {
   const file = event.target.files?.[0]
@@ -529,6 +622,36 @@ const handleSave = async () => {
                 placeholder="APP_USR-xxxxxxxx-xxxx-xxxx..."
                 class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 font-mono text-xs focus:border-primary focus:outline-none"
               />
+            </div>
+
+            <!-- Test Connection Button & Result -->
+            <div class="flex flex-col gap-2 pt-1">
+              <button
+                type="button"
+                @click="handleTestMercadoPago"
+                :disabled="isTestingMp || !form.commercial.mpAccessToken"
+                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-blue-600/30 bg-blue-50 text-blue-800 hover:bg-blue-100 font-label text-xs uppercase tracking-wider font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                <span v-if="isTestingMp" class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                <span v-else class="material-symbols-outlined text-sm">verified_user</span>
+                <span>{{ isTestingMp ? 'Verificando con Mercado Pago...' : 'Verificar Conexión con Mercado Pago' }}</span>
+              </button>
+
+              <div
+                v-if="mpTestResult"
+                class="p-3 rounded-xl border text-xs flex items-start gap-2.5 transition-all"
+                :class="mpTestResult.success ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-rose-50 border-rose-200 text-rose-900'"
+              >
+                <span class="material-symbols-outlined text-base mt-0.5 shrink-0">
+                  {{ mpTestResult.success ? 'check_circle' : 'error' }}
+                </span>
+                <div class="space-y-0.5">
+                  <p class="font-bold">{{ mpTestResult.message }}</p>
+                  <p v-if="mpTestResult.account" class="text-[11px] opacity-90">
+                    Cuenta: {{ mpTestResult.account.email }} ({{ mpTestResult.account.country }})
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div class="p-4 bg-blue-50/60 rounded-xl border border-blue-200/70 text-xs text-blue-900 space-y-1.5">

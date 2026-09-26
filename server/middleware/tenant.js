@@ -1,5 +1,23 @@
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import { Tenant } from '../models/Tenant.js'
 import { isMongoConnected } from '../dbConnection.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const TENANT_FILE = path.join(__dirname, '..', 'data', 'tenant.json')
+
+function getStoredLocalTenant() {
+  try {
+    if (fs.existsSync(TENANT_FILE)) {
+      return JSON.parse(fs.readFileSync(TENANT_FILE, 'utf-8'))
+    }
+  } catch (e) {
+    // ignore
+  }
+  return null
+}
 
 // Cache en memoria para resolver dominios rápidamente sin golpear la base de datos en cada request
 const tenantCache = new Map()
@@ -31,6 +49,8 @@ export const DEFAULT_TENANT_CONFIG = {
     cuit: '20-12345678-9',
     mercadoPagoAccessToken: '',
     mercadoPagoPublicKey: '',
+    mpAccessToken: '',
+    mpPublicKey: '',
     cardFeeRate: 20,
     andreaniContractNumber: '',
     freeShippingThreshold: 250000
@@ -98,8 +118,6 @@ export const tenantMiddleware = async (req, res, next) => {
 }
 
 async function resolveTenantById(id) {
-  if (id === 'gicca') return DEFAULT_TENANT_CONFIG
-  
   if (isMongoConnected()) {
     try {
       const doc = await Tenant.findOne({ tenantId: id, status: 'active' }).lean()
@@ -109,12 +127,17 @@ async function resolveTenantById(id) {
     }
   }
 
-  return {
-    ...DEFAULT_TENANT_CONFIG,
-    tenantId: id,
-    name: id.toUpperCase() + ' Perfumes',
-    slug: id
+  const local = getStoredLocalTenant()
+  if (local && (local.tenantId === id || id === 'gicca')) {
+    return {
+      ...DEFAULT_TENANT_CONFIG,
+      ...local,
+      branding: { ...DEFAULT_TENANT_CONFIG.branding, ...(local.branding || {}) },
+      commercial: { ...DEFAULT_TENANT_CONFIG.commercial, ...(local.commercial || {}) }
+    }
   }
+
+  return DEFAULT_TENANT_CONFIG
 }
 
 export const clearTenantCache = () => {

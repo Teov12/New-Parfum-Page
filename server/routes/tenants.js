@@ -69,11 +69,55 @@ router.get('/current', async (req, res) => {
   }
 })
 
+// GET /api/tenant/settings - Obtener configuración completa con credenciales (Solo Admin Autenticado)
+router.get('/settings', requireAuth, async (req, res) => {
+  try {
+    const tenantId = req.tenantId || 'gicca'
+    const local = getStoredLocalTenant()
+    let tenant = local || req.tenant || DEFAULT_TENANT_CONFIG
+
+    if (isMongoConnected()) {
+      const doc = await Tenant.findOne({ tenantId }).lean()
+      if (doc) tenant = doc
+    }
+
+    const commercial = {
+      ...DEFAULT_TENANT_CONFIG.commercial,
+      ...(tenant.commercial || {}),
+      mpAccessToken: tenant.commercial?.mpAccessToken || tenant.commercial?.mercadoPagoAccessToken || '',
+      mpPublicKey: tenant.commercial?.mpPublicKey || tenant.commercial?.mercadoPagoPublicKey || ''
+    }
+
+    res.json({
+      success: true,
+      tenant: {
+        tenantId,
+        name: tenant.name || DEFAULT_TENANT_CONFIG.name,
+        branding: tenant.branding || DEFAULT_TENANT_CONFIG.branding,
+        commercial
+      }
+    })
+  } catch (err) {
+    console.error('Error fetching admin tenant settings:', err)
+    res.status(500).json({ error: 'Error al obtener configuración de la tienda' })
+  }
+})
+
 // PUT /api/tenant/settings - Actualizar datos comerciales y branding de la tienda (Admin)
 router.put('/settings', requireAuth, async (req, res) => {
   try {
     const tenantId = req.tenantId || 'gicca'
     const { name, branding, commercial } = req.body
+
+    // Normalizar credenciales de Mercado Pago para compatibilidad total
+    if (commercial) {
+      const token = commercial.mpAccessToken || commercial.mercadoPagoAccessToken || ''
+      const pubKey = commercial.mpPublicKey || commercial.mercadoPagoPublicKey || ''
+      commercial.mpAccessToken = token
+      commercial.mpPublicKey = pubKey
+      commercial.mercadoPagoAccessToken = token
+      commercial.mercadoPagoPublicKey = pubKey
+    }
 
     // Persistir siempre localmente para garantizar disponibilidad inmediata
     const existing = getStoredLocalTenant() || {}
