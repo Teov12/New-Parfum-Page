@@ -48,6 +48,20 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   immutable: true
 }))
 
+// Direct favicon & touch icons serving with 7 days cache
+app.get(['/favicon.ico', '/favicon.png', '/apple-touch-icon.png'], (req, res) => {
+  const fileName = path.basename(req.path)
+  const distFile = path.join(__dirname, '..', 'dist', fileName)
+  const pubFile = path.join(__dirname, '..', 'public', fileName)
+  const target = fs.existsSync(distFile) ? distFile : (fs.existsSync(pubFile) ? pubFile : null)
+  
+  if (target) {
+    res.setHeader('Cache-Control', 'public, max-age=604800, immutable')
+    return res.sendFile(target)
+  }
+  res.status(204).end()
+})
+
 // API Routes
 app.use('/api/tenant', tenantRoutes)
 app.use('/api/tenants', tenantRoutes)

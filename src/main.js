@@ -18,6 +18,16 @@ app.directive('reveal', {
     const delay = val.delay || 0
     const direction = val.direction || 'up' // 'up', 'down', 'left', 'right', 'zoom'
 
+    // If element is already in the viewport on initial page load (above the fold),
+    // activate it immediately to prevent initial layout shift, flickering, or displacement.
+    const rect = el.getBoundingClientRect()
+    const isAboveFold = rect.top < (window.innerHeight || 800) && rect.bottom > 0
+
+    if (isAboveFold) {
+      el.classList.add('reveal-active')
+      return
+    }
+
     el.classList.add('reveal-init', `reveal-${direction}`)
 
     const observer = new IntersectionObserver(

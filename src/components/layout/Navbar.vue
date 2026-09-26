@@ -56,6 +56,8 @@ const isActive = (path) => {
           v-if="tenantStore.branding?.iconUrl || tenantStore.branding?.logoUrl" 
           :src="tenantStore.branding?.iconUrl || tenantStore.branding?.logoUrl" 
           :alt="tenantStore.storeName" 
+          width="36"
+          height="36"
           class="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-xl shadow-2xs group-hover:scale-105 transition-transform" 
         />
         <!-- Material Symbol Icon Badge -->

@@ -4,25 +4,22 @@ import { defineStore } from 'pinia'
 export function applyDynamicFavicon(branding, storeName) {
   if (typeof document === 'undefined') return
   try {
-    let link = document.querySelector("link[rel*='icon']")
-    if (!link) {
-      link = document.createElement('link')
-      link.rel = 'icon'
-      document.head.appendChild(link)
-    }
+    const customImage = branding?.iconUrl || branding?.faviconUrl || branding?.logoUrl || '/favicon.png'
 
-    const customImage = branding?.iconUrl || branding?.faviconUrl || branding?.logoUrl
-    if (customImage) {
-      link.type = customImage.endsWith('.svg') ? 'image/svg+xml' : 'image/png'
-      link.href = customImage
+    const links = document.querySelectorAll("link[rel*='icon']")
+    if (links && links.length > 0) {
+      links.forEach(l => {
+        l.href = customImage
+        if (customImage.endsWith('.png')) l.type = 'image/png'
+      })
       return
     }
 
-    // Dynamic Luxury SVG Favicon based on initial or store icon
-    const initial = (storeName || 'G').trim().charAt(0).toUpperCase()
-    const svgIcon = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232E1911'/><rect x='6' y='6' width='88' height='88' rx='18' fill='none' stroke='%23D4AF37' stroke-width='3' opacity='0.7'/><text x='50%' y='68%' font-family='serif' font-size='56' fill='%23D4AF37' font-weight='bold' text-anchor='middle'>${initial}</text></svg>`
-    link.type = 'image/svg+xml'
-    link.href = `data:image/svg+xml,${encodeURIComponent(svgIcon)}`
+    const link = document.createElement('link')
+    link.rel = 'icon'
+    link.type = customImage.endsWith('.png') ? 'image/png' : 'image/svg+xml'
+    link.href = customImage
+    document.head.appendChild(link)
   } catch (err) {
     console.warn('[Tenant] Error updating favicon:', err)
   }
@@ -38,10 +35,10 @@ export const useTenantStore = defineStore('tenant', {
     branding: {
       tagline: 'Alta Perfumería y Fragancias Exclusivas',
       logoUrl: '',
-      iconUrl: '',
+      iconUrl: '/uploads/perfume_1790448931002_az0ndj.png',
       storeIcon: 'spa',
-      faviconUrl: '',
-      primaryColor: '#D4AF37',
+      faviconUrl: '/favicon.png',
+      primaryColor: '#2E1911',
       whatsappNumber: '5493564622055',
       instagram: '@giccaparfum'
     },
