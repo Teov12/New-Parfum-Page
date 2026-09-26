@@ -54,6 +54,33 @@ const routes = [
     }
   },
   {
+    path: '/checkout/success',
+    name: 'checkout-success',
+    component: CheckoutView,
+    meta: { 
+      title: '¡Pago Aprobado con Éxito! | Gicca Perfumes',
+      robots: 'noindex, nofollow'
+    }
+  },
+  {
+    path: '/checkout/pending',
+    name: 'checkout-pending',
+    component: CheckoutView,
+    meta: { 
+      title: 'Pago en Proceso | Gicca Perfumes',
+      robots: 'noindex, nofollow'
+    }
+  },
+  {
+    path: '/checkout/failure',
+    name: 'checkout-failure',
+    component: CheckoutView,
+    meta: { 
+      title: 'Pago No Concretado | Gicca Perfumes',
+      robots: 'noindex, nofollow'
+    }
+  },
+  {
     path: '/nosotros',
     redirect: '/'
   },
@@ -115,6 +142,12 @@ const routes = [
         name: 'admin-design',
         component: () => import('../views/admin/AdminDesignView.vue'),
         meta: { title: 'Diseño & Contenido | Admin Gicca', requiresAuth: true }
+      },
+      {
+        path: 'tienda',
+        name: 'admin-settings',
+        component: () => import('../views/admin/AdminSettingsView.vue'),
+        meta: { title: 'Mi Tienda & Pagos | Admin Gicca', requiresAuth: true }
       }
     ]
   }

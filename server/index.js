@@ -11,6 +11,7 @@ import shippingRoutes from './routes/shipping.js'
 import orderRoutes from './routes/orders.js'
 import siteContentRoutes from './routes/siteContent.js'
 import tenantRoutes from './routes/tenants.js'
+import checkoutRoutes from './routes/checkout.js'
 import { tenantMiddleware } from './middleware/tenant.js'
 import { connectDatabase } from './dbConnection.js'
 import { getProducts } from './db.js'
@@ -46,6 +47,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
 // API Routes
 app.use('/api/tenant', tenantRoutes)
+app.use('/api/checkout', checkoutRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/upload', uploadRoutes)

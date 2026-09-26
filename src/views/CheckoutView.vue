@@ -1,22 +1,40 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
+import { useRouter, useRoute, RouterLink } from 'vue-router'
 import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 import { useCartStore } from '@/stores/cart'
 import { useShippingStore } from '@/stores/shipping'
 import { useToastStore } from '@/stores/toast'
+import { useTenantStore } from '@/stores/tenant'
 
 const cartStore = useCartStore()
 const shippingStore = useShippingStore()
 const toastStore = useToastStore()
+const tenantStore = useTenantStore()
 const router = useRouter()
+const route = useRoute()
 
 // Checkout Steps: 1: Delivery info, 2: WhatsApp & Payment, 3: Confirmation
 const currentStep = ref(1)
 const isSubmitting = ref(false)
+const isProcessingPayment = ref(false)
 const isFetchingAndreani = ref(false)
 const orderResult = ref(null)
+const copiedField = ref('')
+
+const copyToClipboard = async (text, label) => {
+  try {
+    await navigator.clipboard.writeText(text)
+    copiedField.value = label
+    toastStore.show(`¡${label} copiado al portapapeles!`, 'info')
+    setTimeout(() => {
+      if (copiedField.value === label) copiedField.value = ''
+    }, 2500)
+  } catch (err) {
+    toastStore.show('No se pudo copiar automáticamente', 'error')
+  }
+}
 
 // Vee-Validate Schema with Yup
 const validationSchema = yup.object({
@@ -115,9 +133,44 @@ const onPostalCodeInput = () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   // El código postal siempre inicia vacío al montar el checkout
   postalCode.value = ''
+  
+  // Detectar retorno desde Mercado Pago o pasarela de pago
+  const urlParams = new URLSearchParams(window.location.search)
+  const returnOrderNumber = urlParams.get('orderNumber') || urlParams.get('external_reference')
+  const collectionStatus = urlParams.get('collection_status') || urlParams.get('status')
+
+  if (returnOrderNumber && (collectionStatus === 'approved' || route.path.includes('/checkout/success'))) {
+    try {
+      const res = await fetch(`/api/orders/${encodeURIComponent(returnOrderNumber)}`)
+      if (res.ok) {
+        const ord = await res.json()
+        const waNumber = (tenantStore.whatsappNumber || '5493564622055').replace(/\D/g, '')
+        const msg = `¡Hola! Acabo de abonar mi pedido #${ord.orderNumber} con Mercado Pago por $${(ord.total || 0).toLocaleString('es-AR')}. ¿Cuándo se despacha?`
+        
+        orderResult.value = {
+          orderNumber: ord.orderNumber,
+          date: new Date(ord.createdAt || Date.now()).toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' }),
+          items: ord.items || [],
+          shippingService: ord.shippingMethod || 'Andreani Estándar a Domicilio',
+          shippingEstimatedDays: '24 a 48 hs',
+          total: ord.total,
+          paymentMethod: 'mercadopago',
+          customer: ord.customer || {},
+          whatsappUrl: `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`
+        }
+        currentStep.value = 3
+        cartStore.clearCart()
+        toastStore.show('¡Pago aprobado por Mercado Pago!', 'success')
+        return
+      }
+    } catch (e) {
+      console.warn('Error al recuperar pedido retornado:', e)
+    }
+  }
+
   if (postalCode.value && postalCode.value.length >= 4) {
     fetchAndreaniQuotes()
   }
@@ -226,7 +279,8 @@ const handleFinalOrder = async () => {
   const orderNumber = `GIC-${Math.floor(100000 + Math.random() * 900000)}`
   const messageText = buildWhatsAppMessage(orderNumber)
   const encodedText = encodeURIComponent(messageText)
-  const whatsappUrl = `https://wa.me/5493564622055?text=${encodedText}`
+  const waNumber = (tenantStore.whatsappNumber || '5493564622055').replace(/\D/g, '')
+  const whatsappUrl = `https://wa.me/${waNumber}?text=${encodedText}`
 
   // Build order payload for backend database
   const orderData = {
@@ -259,10 +313,10 @@ const handleFinalOrder = async () => {
     totalCost: cartStore.items.reduce((acc, i) => acc + (Math.round(i.price * 0.45) * i.quantity), 0),
     shippingMethod: shippingStore.selectedOption?.name || 'Andreani Estándar a Domicilio',
     pickupBranch: shippingStore.isBranchPickup ? shippingStore.selectedBranch : null,
-    paymentMethod: paymentMethod.value,
+    paymentMethod: 'transfer',
     paymentStatus: 'pending',
     fulfillmentStatus: 'unfulfilled',
-    notes: '',
+    notes: 'Pago a confirmar vía Transferencia Bancaria (Comprobante WhatsApp)',
     source: 'web'
   }
 
@@ -270,7 +324,10 @@ const handleFinalOrder = async () => {
   try {
     await fetch('/api/orders', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-tenant-id': tenantStore.tenantId || 'gicca'
+      },
       body: JSON.stringify(orderData)
     })
   } catch (err) {
@@ -284,7 +341,7 @@ const handleFinalOrder = async () => {
     shippingService: shippingStore.selectedOption?.name || 'Andreani Estándar a Domicilio',
     shippingEstimatedDays: shippingStore.selectedOption?.estimatedDays || '24 a 48 hs',
     total: finalTotal.value,
-    paymentMethod: paymentMethod.value,
+    paymentMethod: 'transfer',
     customer: { ...values },
     whatsappUrl
   }
@@ -297,8 +354,97 @@ const handleFinalOrder = async () => {
     cartStore.clearCart()
     currentStep.value = 3
     window.scrollTo({ top: 0, behavior: 'smooth' })
-    toastStore.show(`¡Pedido ${orderNumber} enviado por WhatsApp!`, 'success')
+    toastStore.show(`¡Pedido ${orderNumber} registrado! Enviá tu comprobante por WhatsApp.`, 'success')
   }, 500)
+}
+
+const handleMercadoPagoPayment = async () => {
+  isProcessingPayment.value = true
+
+  const orderNumber = `GIC-${Math.floor(100000 + Math.random() * 900000)}`
+  const orderData = {
+    orderNumber,
+    customer: {
+      firstName: firstName.value,
+      lastName: lastName.value,
+      phone: phone.value,
+      email: email.value || 'cliente@giccaparfum.com',
+      dni: dni.value,
+      address: address.value,
+      apartment: apartment.value,
+      city: city.value,
+      province: province.value,
+      postalCode: postalCode.value
+    },
+    items: cartStore.items.map(i => ({
+      id: i.id,
+      name: i.name,
+      brand: i.brand,
+      size: i.size,
+      quantity: i.quantity,
+      price: i.price,
+      costPrice: Math.round(i.price * 0.45)
+    })),
+    subtotal: cartStore.subtotal,
+    shippingCost: shippingCost.value,
+    discountAmount: cartStore.discountAmount || 0,
+    couponDiscount: cartStore.discountAmount || 0,
+    total: finalTotal.value,
+    shippingMethod: shippingStore.selectedOption?.name || 'Andreani Estándar a Domicilio',
+    pickupBranch: shippingStore.isBranchPickup ? shippingStore.selectedBranch : null,
+    paymentMethod: 'mercadopago',
+    paymentStatus: 'pending',
+    fulfillmentStatus: 'unfulfilled',
+    notes: 'Pago iniciado con Mercado Pago',
+    source: 'web'
+  }
+
+  try {
+    const res = await fetch('/api/checkout/create-preference', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-tenant-id': tenantStore.tenantId || 'gicca'
+      },
+      body: JSON.stringify({ orderData })
+    })
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.error || 'Error al conectar con Mercado Pago')
+    }
+
+    const data = await res.json()
+
+    if (data.initPoint) {
+      toastStore.show('Redirigiendo a Mercado Pago...', 'info')
+      cartStore.clearCart()
+      window.location.href = data.initPoint
+    } else if (data.isSimulation) {
+      toastStore.show(data.message || 'Pedido guardado en modo simulación', 'info')
+      orderResult.value = {
+        orderNumber: data.order?.orderNumber || orderNumber,
+        date: new Date().toLocaleDateString('es-AR'),
+        items: [...cartStore.items],
+        shippingService: shippingStore.selectedOption?.name || 'Andreani Estándar',
+        shippingEstimatedDays: '24 a 48 hs',
+        total: finalTotal.value,
+        paymentMethod: 'mercadopago',
+        customer: { ...values },
+        whatsappUrl: data.whatsappFallbackUrl
+      }
+      if (data.whatsappFallbackUrl) {
+        window.open(data.whatsappFallbackUrl, '_blank')
+      }
+      cartStore.clearCart()
+      currentStep.value = 3
+    }
+  } catch (err) {
+    console.error('Error al iniciar Mercado Pago:', err)
+    toastStore.show(err.message || 'No se pudo iniciar el pago con Mercado Pago', 'error')
+  } finally {
+    isProcessingPayment.value = false
+  }
 }
 </script>
 
@@ -847,20 +993,113 @@ const handleFinalOrder = async () => {
               </div>
             </div>
 
-            <!-- Send WhatsApp Order Button: Botón Verde WhatsApp & Píldora -->
-            <div class="pt-4 space-y-2">
-              <button 
-                @click="handleFinalOrder"
-                :disabled="isSubmitting"
-                class="w-full bg-[#25D366] hover:bg-[#20ba5a] text-white font-label text-xs uppercase tracking-widest py-4 rounded-full transition-all flex items-center justify-center gap-2.5 shadow-md disabled:opacity-50 font-bold"
-              >
-                <span class="material-symbols-outlined text-lg">chat</span>
-                <span v-if="isSubmitting">Abriendo WhatsApp...</span>
-                <span v-else>Enviar Pedido por WhatsApp (${{ finalTotal.toLocaleString('es-AR') }})</span>
-              </button>
-              <p class="text-center text-[11px] text-secondary">
-                🔒 Tu pedido queda registrado automáticamente y te redirigimos al chat de la boutique.
-              </p>
+            <!-- BLOQUE DINÁMICO: SEGÚN FORMA DE PAGO SELECCIONADA -->
+
+            <!-- 1. DETALLES BANCARIOS SI ELIGE TRANSFERENCIA -->
+            <div v-if="paymentMethod === 'transfer'" class="space-y-4 pt-2">
+              <div class="bg-surface-container rounded-md p-4 sm:p-5 border border-outline-variant space-y-3.5 shadow-2xs">
+                <div class="flex items-center justify-between border-b border-outline-variant/60 pb-2.5">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-emerald-700 text-lg">account_balance</span>
+                    <span class="font-sans font-bold text-xs text-primary uppercase tracking-wider">Datos para Transferencia Bancaria</span>
+                  </div>
+                  <span class="text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                    20% OFF Aplicado
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-sans">
+                  <!-- Alias -->
+                  <div class="bg-surface p-3 rounded-xs border border-outline-variant/70 space-y-1">
+                    <span class="text-[10px] text-secondary font-label uppercase block">Alias Bancario / CVU:</span>
+                    <div class="flex items-center justify-between gap-1">
+                      <span class="font-mono font-bold text-primary truncate">{{ tenantStore.bankDetails.alias || 'GICCA.PERFUMES.MP' }}</span>
+                      <button 
+                        @click="copyToClipboard(tenantStore.bankDetails.alias || 'GICCA.PERFUMES.MP', 'Alias')"
+                        type="button"
+                        class="text-[10px] font-bold text-primary hover:text-emerald-700 uppercase tracking-wider px-2 py-1 bg-surface-container rounded-xs border border-outline-variant transition-colors flex items-center gap-1"
+                      >
+                        <span class="material-symbols-outlined text-xs">{{ copiedField === 'Alias' ? 'check' : 'content_copy' }}</span>
+                        <span>{{ copiedField === 'Alias' ? 'Copiado' : 'Copiar' }}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- CBU / CVU -->
+                  <div class="bg-surface p-3 rounded-xs border border-outline-variant/70 space-y-1">
+                    <span class="text-[10px] text-secondary font-label uppercase block">CBU / CVU:</span>
+                    <div class="flex items-center justify-between gap-1">
+                      <span class="font-mono font-bold text-primary truncate text-[11px]">{{ tenantStore.bankDetails.cbu || '0000003100010000000000' }}</span>
+                      <button 
+                        @click="copyToClipboard(tenantStore.bankDetails.cbu || '0000003100010000000000', 'CBU')"
+                        type="button"
+                        class="text-[10px] font-bold text-primary hover:text-emerald-700 uppercase tracking-wider px-2 py-1 bg-surface-container rounded-xs border border-outline-variant transition-colors flex items-center gap-1"
+                      >
+                        <span class="material-symbols-outlined text-xs">{{ copiedField === 'CBU' ? 'check' : 'content_copy' }}</span>
+                        <span>{{ copiedField === 'CBU' ? 'Copiado' : 'Copiar' }}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex flex-wrap justify-between gap-2 text-[11px] text-secondary border-t border-outline-variant/60 pt-2.5">
+                  <div><strong>Banco:</strong> {{ tenantStore.bankDetails.bankName || 'Mercado Pago' }}</div>
+                  <div><strong>Titular:</strong> {{ tenantStore.bankDetails.accountHolder || 'Gicca Perfumes S.A.' }}</div>
+                </div>
+              </div>
+
+              <!-- Botón Confirmar por WhatsApp con comprobante -->
+              <div class="pt-2 space-y-2">
+                <button 
+                  @click="handleFinalOrder"
+                  :disabled="isSubmitting"
+                  class="w-full bg-[#25D366] hover:bg-[#20ba5a] text-white font-label text-xs uppercase tracking-widest py-4 rounded-full transition-all flex items-center justify-center gap-2.5 shadow-md disabled:opacity-50 font-bold"
+                >
+                  <span class="material-symbols-outlined text-lg">chat</span>
+                  <span v-if="isSubmitting">Registrando orden...</span>
+                  <span v-else>Confirmar y Enviar Comprobante (${{ finalTotal.toLocaleString('es-AR') }})</span>
+                </button>
+                <p class="text-center text-[11px] text-secondary">
+                  🔒 Tu orden se registra en el sistema y se abre WhatsApp para adjuntar tu comprobante bancario.
+                </p>
+              </div>
+            </div>
+
+            <!-- 2. BOTÓN DE PAGO CON MERCADO PAGO SI ELIGE TARJETA -->
+            <div v-else class="space-y-4 pt-2">
+              <div class="bg-blue-50/50 border border-blue-200/80 rounded-md p-4 sm:p-5 text-xs text-blue-950 space-y-3 shadow-2xs">
+                <div class="flex items-center justify-between border-b border-blue-200/60 pb-2">
+                  <div class="flex items-center gap-2 font-bold text-blue-900 uppercase font-sans text-xs tracking-wider">
+                    <span class="material-symbols-outlined text-blue-700 text-lg">credit_card</span>
+                    <span>Pasarela de Pago Segura Mercado Pago</span>
+                  </div>
+                  <span class="text-[10px] font-bold uppercase bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                    3 Cuotas Fijas
+                  </span>
+                </div>
+                <p class="text-secondary leading-relaxed">
+                  Aboná con cualquier <strong>Tarjeta de Crédito</strong> (Visa, Mastercard, Cabal, Amex), <strong>Tarjeta de Débito</strong> o dinero disponible en cuenta de Mercado Pago con protección de compra.
+                </p>
+                <div class="flex items-center gap-2 pt-1 text-[11px] text-blue-900 font-semibold">
+                  <span class="material-symbols-outlined text-sm text-emerald-700">lock</span>
+                  <span>Acreditación instantánea • Encriptación SSL de 256 bits</span>
+                </div>
+              </div>
+
+              <div class="pt-2 space-y-2">
+                <button 
+                  @click="handleMercadoPagoPayment"
+                  :disabled="isProcessingPayment"
+                  class="w-full bg-[#009EE3] hover:bg-[#0089c7] text-white font-label text-xs uppercase tracking-widest py-4 rounded-full transition-all flex items-center justify-center gap-2.5 shadow-md disabled:opacity-50 font-bold"
+                >
+                  <span class="material-symbols-outlined text-lg">payments</span>
+                  <span v-if="isProcessingPayment">Conectando con Mercado Pago...</span>
+                  <span v-else>Pagar con Mercado Pago (${{ finalTotal.toLocaleString('es-AR') }})</span>
+                </button>
+                <p class="text-center text-[11px] text-secondary">
+                  Serás redirigido a la pantalla oficial y protegida de Mercado Pago para abonar de forma 100% segura.
+                </p>
+              </div>
             </div>
           </div>
 

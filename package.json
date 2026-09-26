@@ -24,6 +24,7 @@
     "express-rate-limit": "^8.7.0",
     "jsonwebtoken": "^9.0.3",
     "lucide-vue-next": "^0.475.0",
+    "mercadopago": "^3.6.1",
     "mongoose": "^9.10.1",
     "multer": "^2.2.0",
     "multer-storage-cloudinary": "^4.0.0",

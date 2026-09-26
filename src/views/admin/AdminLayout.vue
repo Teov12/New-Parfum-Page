@@ -80,6 +80,16 @@ const handleLogout = () => {
             <span class="material-symbols-outlined text-base">palette</span>
             <span>Diseño</span>
           </RouterLink>
+
+          <RouterLink 
+            to="/admin/tienda"
+            class="px-4 py-2 rounded-xl text-xs font-label uppercase tracking-wider transition-all flex items-center gap-2"
+            active-class="bg-primary text-on-primary font-bold shadow-xs"
+            exact-active-class="bg-primary text-on-primary font-bold shadow-xs"
+          >
+            <span class="material-symbols-outlined text-base">tune</span>
+            <span>Mi Tienda</span>
+          </RouterLink>
         </nav>
 
         <!-- Right User Actions -->
@@ -115,42 +125,52 @@ const handleLogout = () => {
     <nav class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-surface/95 backdrop-blur-md border-t border-outline-variant py-2 px-3 flex justify-around items-center shadow-[0_-4px_20px_rgba(46,25,17,0.06)]">
       <RouterLink 
         to="/admin/ventas"
-        class="flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all text-secondary"
+        class="flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all text-secondary"
         active-class="!text-primary font-bold bg-surface-container shadow-2xs"
         exact-active-class="!text-primary font-bold bg-surface-container shadow-2xs"
       >
         <span class="material-symbols-outlined text-xl">receipt_long</span>
-        <span class="text-[10px] font-label uppercase tracking-wider mt-0.5">Ventas</span>
+        <span class="text-[9px] font-label uppercase tracking-wider mt-0.5">Ventas</span>
       </RouterLink>
 
       <RouterLink 
         to="/admin/productos"
-        class="flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all text-secondary"
+        class="flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all text-secondary"
         active-class="!text-primary font-bold bg-surface-container shadow-2xs"
         exact-active-class="!text-primary font-bold bg-surface-container shadow-2xs"
       >
         <span class="material-symbols-outlined text-xl">local_pharmacy</span>
-        <span class="text-[10px] font-label uppercase tracking-wider mt-0.5">Catálogo</span>
+        <span class="text-[9px] font-label uppercase tracking-wider mt-0.5">Catálogo</span>
       </RouterLink>
 
       <RouterLink 
         to="/admin/finanzas"
-        class="flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all text-secondary"
+        class="flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all text-secondary"
         active-class="!text-primary font-bold bg-surface-container shadow-2xs"
         exact-active-class="!text-primary font-bold bg-surface-container shadow-2xs"
       >
         <span class="material-symbols-outlined text-xl">monitoring</span>
-        <span class="text-[10px] font-label uppercase tracking-wider mt-0.5">Finanzas</span>
+        <span class="text-[9px] font-label uppercase tracking-wider mt-0.5">Finanzas</span>
       </RouterLink>
 
       <RouterLink 
         to="/admin/diseno"
-        class="flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all text-secondary"
+        class="flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all text-secondary"
         active-class="!text-primary font-bold bg-surface-container shadow-2xs"
         exact-active-class="!text-primary font-bold bg-surface-container shadow-2xs"
       >
         <span class="material-symbols-outlined text-xl">palette</span>
-        <span class="text-[10px] font-label uppercase tracking-wider mt-0.5">Diseño</span>
+        <span class="text-[9px] font-label uppercase tracking-wider mt-0.5">Diseño</span>
+      </RouterLink>
+
+      <RouterLink 
+        to="/admin/tienda"
+        class="flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all text-secondary"
+        active-class="!text-primary font-bold bg-surface-container shadow-2xs"
+        exact-active-class="!text-primary font-bold bg-surface-container shadow-2xs"
+      >
+        <span class="material-symbols-outlined text-xl">tune</span>
+        <span class="text-[9px] font-label uppercase tracking-wider mt-0.5">Tienda</span>
       </RouterLink>
     </nav>
 
