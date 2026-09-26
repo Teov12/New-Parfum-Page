@@ -34,8 +34,8 @@ if (isCloudinaryConfigured) {
     cloudinary: cloudinary,
     params: {
       folder: 'gicca_perfumes',
-      allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-      transformation: [{ quality: 'auto', fetch_format: 'auto' }]
+      allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'svg', 'ico', 'avif'],
+      resource_type: 'auto'
     }
   })
   console.log('[Uploads] Almacenamiento activo: Cloudinary Cloud CDN')
@@ -57,33 +57,46 @@ const upload = multer({
   storage: uploadStorage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
+    const isImageMime = file.mimetype.startsWith('image/') || 
+      file.mimetype === 'image/x-icon' || 
+      file.mimetype === 'image/vnd.microsoft.icon' ||
+      file.mimetype === 'image/svg+xml'
+    const isImageExt = /\.(jpg|jpeg|png|webp|svg|ico|avif)$/i.test(file.originalname)
+
+    if (isImageMime || isImageExt) {
       cb(null, true)
     } else {
-      cb(new Error('Solo se permiten archivos de imagen'))
+      cb(new Error('Solo se permiten archivos de imagen (PNG, JPG, SVG, ICO, WEBP)'))
     }
   }
 })
 
 const router = express.Router()
 
-router.post('/', requireAuth, upload.any(), (req, res) => {
-  if (!req.files || req.files.length === 0) {
-    return res.status(400).json({ error: 'No se subió ningún archivo' })
-  }
-
-  const urls = req.files.map(file => {
-    if (file.path && (file.path.startsWith('http://') || file.path.startsWith('https://'))) {
-      return file.path
+router.post('/', requireAuth, (req, res) => {
+  upload.any()(req, res, (err) => {
+    if (err) {
+      console.error('[Upload Error]', err)
+      return res.status(400).json({ error: err.message || 'Error al procesar el archivo subido' })
     }
-    return `/uploads/${file.filename}`
-  })
-  
-  res.json({
-    success: true,
-    url: urls[0],
-    urls: urls,
-    files: req.files.map((f, i) => ({ url: urls[i], filename: f.filename || f.originalname }))
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: 'No se subió ningún archivo' })
+    }
+
+    const urls = req.files.map(file => {
+      if (file.path && (file.path.startsWith('http://') || file.path.startsWith('https://'))) {
+        return file.path
+      }
+      return `/uploads/${file.filename}`
+    })
+    
+    res.json({
+      success: true,
+      url: urls[0],
+      urls: urls,
+      files: req.files.map((f, i) => ({ url: urls[i], filename: f.filename || f.originalname }))
+    })
   })
 })
 
