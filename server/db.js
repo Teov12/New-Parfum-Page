@@ -77,10 +77,11 @@ const formatProduct = (p) => {
 // PRODUCTS CRUD
 // ==========================================
 
-export const getProducts = async () => {
+export const getProducts = async (tenantId = 'gicca') => {
   if (isMongoConnected()) {
     try {
-      const list = await Product.find().sort({ createdAt: -1 }).lean()
+      const query = tenantId ? { tenantId } : {}
+      const list = await Product.find(query).sort({ createdAt: -1 }).lean()
       return list.map(formatProduct)
     } catch (err) {
       console.error('[DB] Error leyendo productos desde MongoDB:', err.message)
@@ -107,26 +108,27 @@ export const saveProducts = (products) => {
   }
 }
 
-export const getProductByIdOrSlug = async (idOrSlug) => {
+export const getProductByIdOrSlug = async (idOrSlug, tenantId = 'gicca') => {
   if (isMongoConnected()) {
     try {
       const conditions = [{ id: idOrSlug }, { slug: idOrSlug }]
       if (mongoose.Types.ObjectId.isValid(idOrSlug)) {
         conditions.push({ _id: idOrSlug })
       }
-      const p = await Product.findOne({ $or: conditions }).lean()
+      const query = tenantId ? { tenantId, $or: conditions } : { $or: conditions }
+      const p = await Product.findOne(query).lean()
       return p ? formatProduct(p) : null
     } catch (err) {
       console.error('[DB] Error buscando producto en MongoDB:', err.message)
     }
   }
 
-  const products = await getProducts()
+  const products = await getProducts(tenantId)
   return products.find(p => p.id === idOrSlug || p.slug === idOrSlug || p._id === idOrSlug) || null
 }
 
-export const createProduct = async (productData) => {
-  const products = await getProducts()
+export const createProduct = async (productData, tenantId = 'gicca') => {
+  const products = await getProducts(tenantId)
   
   // Generate slug if not present
   const baseSlug = (productData.name || 'perfume')
@@ -169,6 +171,7 @@ export const createProduct = async (productData) => {
 
   const newProduct = {
     id: `prod_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+    tenantId: tenantId || 'gicca',
     slug: productData.slug || slug,
     brand: productData.brand || 'Gicca',
     name: productData.name || '',
@@ -222,7 +225,7 @@ export const createProduct = async (productData) => {
   return formatProduct(newProduct)
 }
 
-export const updateProduct = async (id, updateData) => {
+export const updateProduct = async (id, updateData, tenantId = 'gicca') => {
   // Strip immutable / metadata / transient fields that must not be sent to MongoDB
   const { _id, __v, id: rawId, createdAt, profit, profitMargin, ...cleanUpdateData } = updateData
 
@@ -233,8 +236,9 @@ export const updateProduct = async (id, updateData) => {
         conditions.push({ _id: id })
       }
 
+      const query = tenantId ? { tenantId, $or: conditions } : { $or: conditions }
       const updated = await Product.findOneAndUpdate(
-        { $or: conditions },
+        query,
         { ...cleanUpdateData, updatedAt: new Date().toISOString() },
         { returnDocument: 'after' }
       ).lean()
@@ -246,7 +250,7 @@ export const updateProduct = async (id, updateData) => {
     }
   }
 
-  const products = await getProducts()
+  const products = await getProducts(tenantId)
   const index = products.findIndex(p => p.id === id || p.slug === id || p._id === id)
   if (index === -1) return null
 
@@ -286,14 +290,15 @@ export const updateProduct = async (id, updateData) => {
   return formatProduct(updated)
 }
 
-export const deleteProduct = async (id) => {
+export const deleteProduct = async (id, tenantId = 'gicca') => {
   if (isMongoConnected()) {
     try {
       const conditions = [{ id }, { slug: id }]
       if (mongoose.Types.ObjectId.isValid(id)) {
         conditions.push({ _id: id })
       }
-      const res = await Product.findOneAndDelete({ $or: conditions })
+      const query = tenantId ? { tenantId, $or: conditions } : { $or: conditions }
+      const res = await Product.findOneAndDelete(query)
       if (res) return true
     } catch (err) {
       console.error('[DB] Error eliminando producto en MongoDB:', err.message)
@@ -301,7 +306,7 @@ export const deleteProduct = async (id) => {
     }
   }
 
-  const products = await getProducts()
+  const products = await getProducts(tenantId)
   const index = products.findIndex(p => p.id === id || p.slug === id || p._id === id)
   if (index === -1) return false
 
@@ -314,10 +319,11 @@ export const deleteProduct = async (id) => {
 // ORDERS CRUD (TIENDA NUBE SYSTEM)
 // ==========================================
 
-export const getOrders = async () => {
+export const getOrders = async (tenantId = 'gicca') => {
   if (isMongoConnected()) {
     try {
-      return await Order.find().sort({ createdAt: -1 }).lean()
+      const query = tenantId ? { tenantId } : {}
+      return await Order.find(query).sort({ createdAt: -1 }).lean()
     } catch (err) {
       console.error('[DB] Error leyendo pedidos desde MongoDB:', err.message)
     }
@@ -342,8 +348,9 @@ export const saveOrders = (orders) => {
   }
 }
 
-export const createOrder = async (orderData) => {
-  const products = await getProducts()
+export const createOrder = async (orderData, tenantId = 'gicca') => {
+  const currentTenant = tenantId || 'gicca'
+  const products = await getProducts(currentTenant)
   const incomingItems = Array.isArray(orderData.items) ? orderData.items : []
   
   let calculatedSubtotal = 0
@@ -372,7 +379,7 @@ export const createOrder = async (orderData) => {
       if (isMongoConnected()) {
         try {
           await Product.findOneAndUpdate(
-            { $or: [{ id: item.id }, { slug: item.id }] },
+            { tenantId: currentTenant, $or: [{ id: item.id }, { slug: item.id }] },
             { $inc: { stock: -qty } }
           )
         } catch (e) {}
@@ -416,6 +423,7 @@ export const createOrder = async (orderData) => {
 
   const newOrder = {
     id: `ord_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+    tenantId: currentTenant,
     orderNumber: orderData.orderNumber || `GIC-${Math.floor(100000 + Math.random() * 900000)}`,
     date: new Date().toISOString(),
     customer: {
@@ -461,17 +469,19 @@ export const createOrder = async (orderData) => {
     }
   }
 
-  const orders = await getOrders()
+  const orders = await getOrders(currentTenant)
   orders.unshift(newOrder)
   saveOrders(orders)
   return newOrder
 }
 
-export const updateOrder = async (id, updateData) => {
+export const updateOrder = async (id, updateData, tenantId = 'gicca') => {
   if (isMongoConnected()) {
     try {
+      const conditions = [{ id }, { orderNumber: id }]
+      const query = tenantId ? { tenantId, $or: conditions } : { $or: conditions }
       const updated = await Order.findOneAndUpdate(
-        { $or: [{ id }, { orderNumber: id }] },
+        query,
         { ...updateData, updatedAt: new Date().toISOString() },
         { new: true }
       ).lean()
@@ -481,7 +491,7 @@ export const updateOrder = async (id, updateData) => {
     }
   }
 
-  const orders = await getOrders()
+  const orders = await getOrders(tenantId)
   const index = orders.findIndex(o => o.id === id || o.orderNumber === id)
   if (index === -1) return null
 
@@ -503,17 +513,19 @@ export const updateOrder = async (id, updateData) => {
   return updated
 }
 
-export const deleteOrder = async (id) => {
+export const deleteOrder = async (id, tenantId = 'gicca') => {
   if (isMongoConnected()) {
     try {
-      const res = await Order.findOneAndDelete({ $or: [{ id }, { orderNumber: id }] })
+      const conditions = [{ id }, { orderNumber: id }]
+      const query = tenantId ? { tenantId, $or: conditions } : { $or: conditions }
+      const res = await Order.findOneAndDelete(query)
       if (res) return true
     } catch (err) {
       console.error('[DB] Error eliminando pedido en MongoDB:', err.message)
     }
   }
 
-  const orders = await getOrders()
+  const orders = await getOrders(tenantId)
   const index = orders.findIndex(o => o.id === id || o.orderNumber === id)
   if (index === -1) return false
 
@@ -526,10 +538,15 @@ export const deleteOrder = async (id) => {
 // SITE CONTENT & STATIC IMAGES MANAGEMENT
 // ==========================================
 
-export const getSiteContent = async () => {
+export const getSiteContent = async (tenantId = 'gicca') => {
+  const currentTenant = tenantId || 'gicca'
   if (isMongoConnected()) {
     try {
-      const doc = await SiteContent.findOne({ key: 'global_content' }).lean()
+      let doc = await SiteContent.findOne({ key: 'global_content', tenantId: currentTenant }).lean()
+      // Fallback a contenido base si el tenant es nuevo y aún no tiene contenido propio guardado
+      if (!doc && currentTenant !== 'gicca') {
+        doc = await SiteContent.findOne({ key: 'global_content' }).lean()
+      }
       if (doc) {
         return {
           heroSlides: Array.isArray(doc.heroSlides) ? doc.heroSlides : [],
@@ -563,8 +580,9 @@ export const getSiteContent = async () => {
   }
 }
 
-export const saveSiteContent = async (content) => {
-  const current = await getSiteContent()
+export const saveSiteContent = async (content, tenantId = 'gicca') => {
+  const currentTenant = tenantId || 'gicca'
+  const current = await getSiteContent(currentTenant)
   const merged = {
     ...current,
     ...content,
@@ -578,8 +596,8 @@ export const saveSiteContent = async (content) => {
   if (isMongoConnected()) {
     try {
       const updated = await SiteContent.findOneAndUpdate(
-        { key: 'global_content' },
-        { ...merged, key: 'global_content' },
+        { key: 'global_content', tenantId: currentTenant },
+        { ...merged, key: 'global_content', tenantId: currentTenant },
         { upsert: true, new: true }
       ).lean()
       return updated
@@ -597,8 +615,8 @@ export const saveSiteContent = async (content) => {
   }
 }
 
-export const addCategory = async (categoryData) => {
-  const content = await getSiteContent()
+export const addCategory = async (categoryData, tenantId = 'gicca') => {
+  const content = await getSiteContent(tenantId)
   const newCat = {
     id: categoryData.id || `cat_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
     title: categoryData.title || 'Nueva Categoría',
@@ -613,12 +631,12 @@ export const addCategory = async (categoryData) => {
     createdAt: new Date().toISOString()
   }
   content.mainCategories.push(newCat)
-  await saveSiteContent(content)
+  await saveSiteContent(content, tenantId)
   return newCat
 }
 
-export const updateCategory = async (id, categoryData) => {
-  const content = await getSiteContent()
+export const updateCategory = async (id, categoryData, tenantId = 'gicca') => {
+  const content = await getSiteContent(tenantId)
   const index = content.mainCategories.findIndex(c => c.id === id)
   if (index === -1) return null
 
@@ -628,22 +646,22 @@ export const updateCategory = async (id, categoryData) => {
     id: content.mainCategories[index].id,
     updatedAt: new Date().toISOString()
   }
-  await saveSiteContent(content)
+  await saveSiteContent(content, tenantId)
   return content.mainCategories[index]
 }
 
-export const deleteCategory = async (id) => {
-  const content = await getSiteContent()
+export const deleteCategory = async (id, tenantId = 'gicca') => {
+  const content = await getSiteContent(tenantId)
   const index = content.mainCategories.findIndex(c => c.id === id)
   if (index === -1) return false
 
   content.mainCategories.splice(index, 1)
-  await saveSiteContent(content)
+  await saveSiteContent(content, tenantId)
   return true
 }
 
-export const addOlfactiveFamily = async (familyData) => {
-  const content = await getSiteContent()
+export const addOlfactiveFamily = async (familyData, tenantId = 'gicca') => {
+  const content = await getSiteContent(tenantId)
   const newFam = {
     id: familyData.id || `fam_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
     name: familyData.name || 'Nueva Familia',
@@ -652,12 +670,12 @@ export const addOlfactiveFamily = async (familyData) => {
     createdAt: new Date().toISOString()
   }
   content.olfactiveFamilies.push(newFam)
-  await saveSiteContent(content)
+  await saveSiteContent(content, tenantId)
   return newFam
 }
 
-export const updateOlfactiveFamily = async (id, familyData) => {
-  const content = await getSiteContent()
+export const updateOlfactiveFamily = async (id, familyData, tenantId = 'gicca') => {
+  const content = await getSiteContent(tenantId)
   const index = content.olfactiveFamilies.findIndex(f => f.id === id || f.name?.toLowerCase() === id?.toLowerCase())
   if (index === -1) return null
 
@@ -667,16 +685,16 @@ export const updateOlfactiveFamily = async (id, familyData) => {
     id: content.olfactiveFamilies[index].id,
     updatedAt: new Date().toISOString()
   }
-  await saveSiteContent(content)
+  await saveSiteContent(content, tenantId)
   return content.olfactiveFamilies[index]
 }
 
-export const deleteOlfactiveFamily = async (id) => {
-  const content = await getSiteContent()
+export const deleteOlfactiveFamily = async (id, tenantId = 'gicca') => {
+  const content = await getSiteContent(tenantId)
   const index = content.olfactiveFamilies.findIndex(f => f.id === id || f.name?.toLowerCase() === id?.toLowerCase())
   if (index === -1) return false
 
   content.olfactiveFamilies.splice(index, 1)
-  await saveSiteContent(content)
+  await saveSiteContent(content, tenantId)
   return true
 }

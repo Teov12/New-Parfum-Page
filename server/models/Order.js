@@ -1,8 +1,9 @@
 import mongoose from 'mongoose'
 
 const orderSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true, index: true },
-  orderNumber: { type: String, required: true, unique: true, index: true },
+  tenantId: { type: String, default: 'gicca', index: true },
+  id: { type: String, required: true, index: true },
+  orderNumber: { type: String, required: true, index: true },
   date: { type: String, default: () => new Date().toISOString() },
   customer: {
     firstName: { type: String, default: '' },

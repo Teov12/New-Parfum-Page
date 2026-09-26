@@ -12,7 +12,8 @@ const router = express.Router()
 // GET /api/orders - List all orders with filters (Admin only)
 router.get('/', requireAuth, async (req, res) => {
   try {
-    let orders = await getOrders()
+    const tenantId = req.tenantId || 'gicca'
+    let orders = await getOrders(tenantId)
     const { paymentStatus, fulfillmentStatus, source, q } = req.query
 
     if (paymentStatus && paymentStatus !== 'all') {
@@ -48,7 +49,8 @@ router.get('/', requireAuth, async (req, res) => {
 // GET /api/orders/stats - Comprehensive financial and sales stats (Admin only)
 router.get('/stats', requireAuth, async (req, res) => {
   try {
-    const orders = await getOrders()
+    const tenantId = req.tenantId || 'gicca'
+    const orders = await getOrders(tenantId)
     const paidOrders = orders.filter(o => o.paymentStatus === 'paid')
 
     const totalRevenue = paidOrders.reduce((acc, o) => acc + (Number(o.total) || 0), 0)
@@ -82,7 +84,8 @@ router.get('/stats', requireAuth, async (req, res) => {
 // GET /api/orders/:id - Get single order (Admin only)
 router.get('/:id', requireAuth, async (req, res) => {
   try {
-    const orders = await getOrders()
+    const tenantId = req.tenantId || 'gicca'
+    const orders = await getOrders(tenantId)
     const order = orders.find(o => o.id === req.params.id || o.orderNumber === req.params.id)
     if (!order) {
       return res.status(404).json({ error: 'Pedido no encontrado' })
@@ -96,12 +99,13 @@ router.get('/:id', requireAuth, async (req, res) => {
 // POST /api/orders - Create new order (manual sale from admin or web)
 router.post('/', async (req, res) => {
   try {
+    const tenantId = req.tenantId || 'gicca'
     const orderData = req.body
     if (!orderData.items || !Array.isArray(orderData.items) || orderData.items.length === 0) {
       return res.status(400).json({ error: 'El pedido debe incluir al menos un producto' })
     }
 
-    const created = await createOrder(orderData)
+    const created = await createOrder(orderData, tenantId)
     res.status(201).json(created)
   } catch (err) {
     console.error('Error creating order:', err)
@@ -112,7 +116,8 @@ router.post('/', async (req, res) => {
 // PUT /api/orders/:id - Update order status, tracking, fulfillment, etc. (Admin only)
 router.put('/:id', requireAuth, async (req, res) => {
   try {
-    const updated = await updateOrder(req.params.id, req.body)
+    const tenantId = req.tenantId || 'gicca'
+    const updated = await updateOrder(req.params.id, req.body, tenantId)
     if (!updated) {
       return res.status(404).json({ error: 'Pedido no encontrado' })
     }
@@ -126,7 +131,8 @@ router.put('/:id', requireAuth, async (req, res) => {
 // DELETE /api/orders/:id - Delete order (Admin only)
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
-    const deleted = await deleteOrder(req.params.id)
+    const tenantId = req.tenantId || 'gicca'
+    const deleted = await deleteOrder(req.params.id, tenantId)
     if (!deleted) {
       return res.status(404).json({ error: 'Pedido no encontrado' })
     }

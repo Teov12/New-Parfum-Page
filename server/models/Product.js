@@ -1,8 +1,9 @@
 import mongoose from 'mongoose'
 
 const productSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true, index: true },
-  slug: { type: String, required: true, unique: true, index: true },
+  tenantId: { type: String, default: 'gicca', index: true },
+  id: { type: String, required: true, index: true },
+  slug: { type: String, required: true, index: true },
   brand: { type: String, default: 'Gicca' },
   name: { type: String, required: true },
   concentration: { type: String, default: 'Eau de Parfum' },

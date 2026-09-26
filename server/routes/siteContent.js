@@ -16,7 +16,8 @@ const router = express.Router()
 // GET /api/site-content (Público: para renderizar la web)
 router.get('/', async (req, res) => {
   try {
-    const content = await getSiteContent()
+    const tenantId = req.tenantId || 'gicca'
+    const content = await getSiteContent(tenantId)
     res.json(content)
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener contenido del sitio' })
@@ -26,7 +27,8 @@ router.get('/', async (req, res) => {
 // PUT /api/site-content (Admin: guardar todo el contenido o bloques específicos)
 router.put('/', requireAuth, async (req, res) => {
   try {
-    const updated = await saveSiteContent(req.body)
+    const tenantId = req.tenantId || 'gicca'
+    const updated = await saveSiteContent(req.body, tenantId)
     if (!updated) {
       return res.status(500).json({ error: 'No se pudo guardar el contenido' })
     }
@@ -42,7 +44,8 @@ router.put('/', requireAuth, async (req, res) => {
 
 router.post('/categories', requireAuth, async (req, res) => {
   try {
-    const newCat = await addCategory(req.body)
+    const tenantId = req.tenantId || 'gicca'
+    const newCat = await addCategory(req.body, tenantId)
     res.status(201).json({ success: true, category: newCat })
   } catch (err) {
     res.status(500).json({ error: err.message || 'Error al crear categoría' })
@@ -51,7 +54,8 @@ router.post('/categories', requireAuth, async (req, res) => {
 
 router.put('/categories/:id', requireAuth, async (req, res) => {
   try {
-    const updated = await updateCategory(req.params.id, req.body)
+    const tenantId = req.tenantId || 'gicca'
+    const updated = await updateCategory(req.params.id, req.body, tenantId)
     if (!updated) {
       return res.status(404).json({ error: 'Categoría no encontrada' })
     }
@@ -63,7 +67,8 @@ router.put('/categories/:id', requireAuth, async (req, res) => {
 
 router.delete('/categories/:id', requireAuth, async (req, res) => {
   try {
-    const deleted = await deleteCategory(req.params.id)
+    const tenantId = req.tenantId || 'gicca'
+    const deleted = await deleteCategory(req.params.id, tenantId)
     if (!deleted) {
       return res.status(404).json({ error: 'Categoría no encontrada' })
     }
@@ -79,7 +84,8 @@ router.delete('/categories/:id', requireAuth, async (req, res) => {
 
 router.post('/families', requireAuth, async (req, res) => {
   try {
-    const newFam = await addOlfactiveFamily(req.body)
+    const tenantId = req.tenantId || 'gicca'
+    const newFam = await addOlfactiveFamily(req.body, tenantId)
     res.status(201).json({ success: true, family: newFam })
   } catch (err) {
     res.status(500).json({ error: err.message || 'Error al crear familia olfativa' })
@@ -88,7 +94,8 @@ router.post('/families', requireAuth, async (req, res) => {
 
 router.put('/families/:id', requireAuth, async (req, res) => {
   try {
-    const updated = await updateOlfactiveFamily(req.params.id, req.body)
+    const tenantId = req.tenantId || 'gicca'
+    const updated = await updateOlfactiveFamily(req.params.id, req.body, tenantId)
     if (!updated) {
       return res.status(404).json({ error: 'Familia olfativa no encontrada' })
     }
@@ -100,7 +107,8 @@ router.put('/families/:id', requireAuth, async (req, res) => {
 
 router.delete('/families/:id', requireAuth, async (req, res) => {
   try {
-    const deleted = await deleteOlfactiveFamily(req.params.id)
+    const tenantId = req.tenantId || 'gicca'
+    const deleted = await deleteOlfactiveFamily(req.params.id, tenantId)
     if (!deleted) {
       return res.status(404).json({ error: 'Familia olfativa no encontrada' })
     }

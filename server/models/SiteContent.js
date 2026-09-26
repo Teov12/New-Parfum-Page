@@ -1,7 +1,8 @@
 import mongoose from 'mongoose'
 
 const siteContentSchema = new mongoose.Schema({
-  key: { type: String, default: 'global_content', unique: true },
+  tenantId: { type: String, default: 'gicca', index: true },
+  key: { type: String, default: 'global_content' },
   heroSlides: [{ type: Object }],
   mainCategories: [{ type: Object }],
   olfactiveFamilies: [{ type: Object }],

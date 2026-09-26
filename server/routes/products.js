@@ -31,7 +31,8 @@ const normalizeCategory = (c) => {
 // GET /api/products - List all products with optional filters (público)
 router.get('/', async (req, res) => {
   try {
-    let list = await getProducts()
+    const tenantId = req.tenantId || 'gicca'
+    let list = await getProducts(tenantId)
     const { gender, category, family, brand, q } = req.query
 
     if (gender) {
@@ -70,7 +71,8 @@ router.get('/', async (req, res) => {
 // GET /api/products/stats - Dashboard summary metrics (público)
 router.get('/stats', async (req, res) => {
   try {
-    const list = await getProducts()
+    const tenantId = req.tenantId || 'gicca'
+    const list = await getProducts(tenantId)
     const brandsSet = new Set(list.map(p => p.brand).filter(Boolean))
     const totalRevenue = list.reduce((acc, p) => acc + (Number(p.price) || 0), 0)
 
@@ -89,7 +91,8 @@ router.get('/stats', async (req, res) => {
 // GET /api/products/:idOrSlug - Get single product (público)
 router.get('/:idOrSlug', async (req, res) => {
   try {
-    const product = await getProductByIdOrSlug(req.params.idOrSlug)
+    const tenantId = req.tenantId || 'gicca'
+    const product = await getProductByIdOrSlug(req.params.idOrSlug, tenantId)
     if (!product) {
       return res.status(404).json({ error: 'Perfume no encontrado' })
     }
@@ -102,12 +105,13 @@ router.get('/:idOrSlug', async (req, res) => {
 // POST /api/products - Create new product (protegido con requireAuth)
 router.post('/', requireAuth, async (req, res) => {
   try {
+    const tenantId = req.tenantId || 'gicca'
     const { name, brand, price } = req.body
     if (!name || !brand || price === undefined) {
       return res.status(400).json({ error: 'Nombre, marca y precio son obligatorios' })
     }
 
-    const newProduct = await createProduct(req.body)
+    const newProduct = await createProduct(req.body, tenantId)
     res.status(201).json(newProduct)
   } catch (err) {
     console.error('Error creating product:', err)
@@ -118,7 +122,8 @@ router.post('/', requireAuth, async (req, res) => {
 // PUT /api/products/:id - Update product (protegido con requireAuth)
 router.put('/:id', requireAuth, async (req, res) => {
   try {
-    const updated = await updateProduct(req.params.id, req.body)
+    const tenantId = req.tenantId || 'gicca'
+    const updated = await updateProduct(req.params.id, req.body, tenantId)
     if (!updated) {
       return res.status(404).json({ error: 'Perfume no encontrado para actualizar' })
     }
@@ -132,7 +137,8 @@ router.put('/:id', requireAuth, async (req, res) => {
 // DELETE /api/products/:id - Delete product (protegido con requireAuth)
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
-    const deleted = await deleteProduct(req.params.id)
+    const tenantId = req.tenantId || 'gicca'
+    const deleted = await deleteProduct(req.params.id, tenantId)
     if (!deleted) {
       return res.status(404).json({ error: 'Perfume no encontrado para eliminar' })
     }

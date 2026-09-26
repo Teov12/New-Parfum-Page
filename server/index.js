@@ -10,6 +10,8 @@ import uploadRoutes from './routes/upload.js'
 import shippingRoutes from './routes/shipping.js'
 import orderRoutes from './routes/orders.js'
 import siteContentRoutes from './routes/siteContent.js'
+import tenantRoutes from './routes/tenants.js'
+import { tenantMiddleware } from './middleware/tenant.js'
 import { connectDatabase } from './dbConnection.js'
 import { getProducts } from './db.js'
 import swaggerUi from 'swagger-ui-express'
@@ -36,10 +38,14 @@ app.use(cors({
 app.use(express.json({ limit: '20mb' }))
 app.use(express.urlencoded({ extended: true, limit: '20mb' }))
 
+// Multi-tenant Middleware (detecta automáticamente la tienda según dominio o cabecera x-tenant-id)
+app.use(tenantMiddleware)
+
 // Static uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
 // API Routes
+app.use('/api/tenant', tenantRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/upload', uploadRoutes)
