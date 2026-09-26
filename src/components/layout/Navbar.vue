@@ -3,10 +3,12 @@ import { ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useWishlistStore } from '@/stores/wishlist'
+import { useTenantStore } from '@/stores/tenant'
 import SearchModal from '@/components/ui/SearchModal.vue'
 
 const cartStore = useCartStore()
 const wishlistStore = useWishlistStore()
+const tenantStore = useTenantStore()
 const route = useRoute()
 
 const isSearchOpen = ref(false)
@@ -47,10 +49,25 @@ const isActive = (path) => {
   <nav class="bg-surface sticky top-0 z-40 border-b border-outline-variant shadow-xs transition-all">
     <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-4 flex justify-between items-center">
       
-      <!-- Brand Logo -->
-      <RouterLink to="/" class="flex items-baseline gap-2 group">
+      <!-- Brand Logo & Store Icon -->
+      <RouterLink to="/" class="flex items-center gap-2.5 sm:gap-3 group">
+        <!-- Custom Image Icon -->
+        <img 
+          v-if="tenantStore.branding?.iconUrl || tenantStore.branding?.logoUrl" 
+          :src="tenantStore.branding?.iconUrl || tenantStore.branding?.logoUrl" 
+          :alt="tenantStore.storeName" 
+          class="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-xl shadow-2xs group-hover:scale-105 transition-transform" 
+        />
+        <!-- Material Symbol Icon Badge -->
+        <div 
+          v-else 
+          class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-primary to-primary-container text-amber-200 flex items-center justify-center shadow-xs border border-primary/20 group-hover:scale-105 transition-transform flex-shrink-0"
+        >
+          <span class="material-symbols-outlined text-lg sm:text-xl">{{ tenantStore.branding?.storeIcon || 'spa' }}</span>
+        </div>
+
         <span class="font-sans text-2xl sm:text-3xl text-primary font-normal tracking-tight group-hover:text-primary-container transition-colors">
-          Gicca Perfumes
+          {{ tenantStore.storeName || 'Gicca Perfumes' }}
         </span>
       </RouterLink>
 
@@ -174,7 +191,16 @@ const isActive = (path) => {
         </div>
 
         <div class="pt-4 border-t border-outline-variant flex justify-between items-center text-xs font-label text-secondary uppercase tracking-widest">
-          <span>Gicca Perfumes Boutique</span>
+          <div class="flex items-center gap-2">
+            <img 
+              v-if="tenantStore.branding?.iconUrl || tenantStore.branding?.logoUrl" 
+              :src="tenantStore.branding?.iconUrl || tenantStore.branding?.logoUrl" 
+              :alt="tenantStore.storeName"
+              class="w-5 h-5 object-contain rounded-xs" 
+            />
+            <span v-else class="material-symbols-outlined text-base text-primary">{{ tenantStore.branding?.storeIcon || 'spa' }}</span>
+            <span>{{ tenantStore.storeName || 'Gicca Perfumes' }}</span>
+          </div>
           <RouterLink to="/quiz" @click="isMobileMenuOpen = false" class="text-primary underline font-bold hover:text-primary-container transition-colors">
             Quiz Olfativo
           </RouterLink>

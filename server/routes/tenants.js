@@ -1,15 +1,50 @@
 import express from 'express'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import { Tenant } from '../models/Tenant.js'
 import { DEFAULT_TENANT_CONFIG, clearTenantCache } from '../middleware/tenant.js'
 import { isMongoConnected } from '../dbConnection.js'
 import { requireAuth } from '../middleware/auth.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const TENANT_FILE = path.join(__dirname, '..', 'data', 'tenant.json')
+
+function getStoredLocalTenant() {
+  try {
+    if (fs.existsSync(TENANT_FILE)) {
+      return JSON.parse(fs.readFileSync(TENANT_FILE, 'utf-8'))
+    }
+  } catch (e) {
+    console.warn('[Tenant] Error al leer tenant.json:', e.message)
+  }
+  return null
+}
+
+function persistLocalTenant(tenantData) {
+  try {
+    fs.writeFileSync(TENANT_FILE, JSON.stringify(tenantData, null, 2), 'utf-8')
+  } catch (e) {
+    console.warn('[Tenant] Error al guardar tenant.json:', e.message)
+  }
+}
 
 const router = express.Router()
 
 // GET /api/tenant/current - Obtener configuración pública de la perfumería actual
 router.get('/current', async (req, res) => {
   try {
-    const tenant = req.tenant || DEFAULT_TENANT_CONFIG
+    const local = getStoredLocalTenant()
+    const baseTenant = req.tenant || DEFAULT_TENANT_CONFIG
+    const tenant = local
+      ? {
+          ...baseTenant,
+          ...local,
+          branding: { ...baseTenant.branding, ...local.branding },
+          commercial: { ...baseTenant.commercial, ...local.commercial }
+        }
+      : baseTenant
     
     // Devolvemos solo información pública necesaria para el frontend (sin claves secretas de MP)
     res.json({
@@ -40,11 +75,24 @@ router.put('/settings', requireAuth, async (req, res) => {
     const tenantId = req.tenantId || 'gicca'
     const { name, branding, commercial } = req.body
 
+    // Persistir siempre localmente para garantizar disponibilidad inmediata
+    const existing = getStoredLocalTenant() || {}
+    const updatedLocal = {
+      tenantId,
+      name: name || existing.name || DEFAULT_TENANT_CONFIG.name,
+      branding: { ...(existing.branding || DEFAULT_TENANT_CONFIG.branding), ...branding },
+      commercial: { ...(existing.commercial || DEFAULT_TENANT_CONFIG.commercial), ...commercial }
+    }
+    persistLocalTenant(updatedLocal)
+    DEFAULT_TENANT_CONFIG.name = updatedLocal.name
+    DEFAULT_TENANT_CONFIG.branding = { ...DEFAULT_TENANT_CONFIG.branding, ...updatedLocal.branding }
+    DEFAULT_TENANT_CONFIG.commercial = { ...DEFAULT_TENANT_CONFIG.commercial, ...updatedLocal.commercial }
+
     if (!isMongoConnected()) {
       return res.json({ 
         success: true, 
-        message: 'Ajustes guardados (modo local)',
-        tenant: { tenantId, name, branding, commercial }
+        message: 'Ajustes guardados con éxito',
+        tenant: updatedLocal
       })
     }
 

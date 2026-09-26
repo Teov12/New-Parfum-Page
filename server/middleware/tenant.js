@@ -15,6 +15,9 @@ export const DEFAULT_TENANT_CONFIG = {
   plan: 'pro',
   branding: {
     logoUrl: '',
+    iconUrl: '',
+    storeIcon: 'spa',
+    faviconUrl: '',
     tagline: 'Atelier de Alta Perfumería',
     primaryColor: '#2E1911',
     instagramUrl: 'https://instagram.com/giccaparfum',

@@ -7,12 +7,29 @@ const tenantStore = useTenantStore()
 const toastStore = useToastStore()
 
 const isSaving = ref(false)
-const isTestingMp = ref(false)
+const isUploadingIcon = ref(false)
+
+const LUXURY_ICONS = [
+  { id: 'spa', label: 'Atelier / Loto', icon: 'spa' },
+  { id: 'diamond', label: 'Diamante / Joya', icon: 'diamond' },
+  { id: 'local_florist', label: 'Flor / Esencias', icon: 'local_florist' },
+  { id: 'auto_awesome', label: 'Destellos / Magia', icon: 'auto_awesome' },
+  { id: 'crown', label: 'Corona / Royal', icon: 'crown' },
+  { id: 'flare', label: 'Resplandor / Aura', icon: 'flare' },
+  { id: 'vital_signs', label: 'Línea de Vida', icon: 'vital_signs' },
+  { id: 'all_inclusive', label: 'Infinito / Firma', icon: 'all_inclusive' },
+  { id: 'verified', label: 'Garantía / Oficial', icon: 'verified' },
+  { id: 'favorite', label: 'Favorito / Pasión', icon: 'favorite' }
+]
 
 const form = ref({
   name: '',
   branding: {
     tagline: '',
+    logoUrl: '',
+    iconUrl: '',
+    storeIcon: 'spa',
+    faviconUrl: '',
     whatsappNumber: '',
     instagram: '',
     primaryColor: '#D4AF37'
@@ -35,6 +52,10 @@ onMounted(async () => {
   form.value.name = tenantStore.name || 'Gicca Perfumes'
   form.value.branding = {
     tagline: tenantStore.branding?.tagline || '',
+    logoUrl: tenantStore.branding?.logoUrl || '',
+    iconUrl: tenantStore.branding?.iconUrl || '',
+    storeIcon: tenantStore.branding?.storeIcon || 'spa',
+    faviconUrl: tenantStore.branding?.faviconUrl || '',
     whatsappNumber: tenantStore.branding?.whatsappNumber || '5493564622055',
     instagram: tenantStore.branding?.instagram || '@giccaparfum',
     primaryColor: tenantStore.branding?.primaryColor || '#D4AF37'
@@ -52,30 +73,38 @@ onMounted(async () => {
   }
 })
 
+const handleIconUpload = async (event) => {
+  const file = event.target.files?.[0]
+  if (!file) return
+  isUploadingIcon.value = true
+  try {
+    toastStore.show('Subiendo ícono de la tienda...', 'info')
+    const url = await tenantStore.uploadIcon(file)
+    form.value.branding.iconUrl = url
+    toastStore.show('¡Ícono subido con éxito! Presioná "Guardar Cambios" para aplicarlo.', 'success')
+  } catch (err) {
+    toastStore.show(err.message || 'Error al subir ícono', 'error')
+  } finally {
+    isUploadingIcon.value = false
+    event.target.value = ''
+  }
+}
+
+const clearCustomIcon = () => {
+  form.value.branding.iconUrl = ''
+  toastStore.show('Se eliminó la imagen del ícono. Usando símbolo predeterminado.', 'info')
+}
+
 const handleSave = async () => {
   isSaving.value = true
   try {
-    const token = localStorage.getItem('gicca_admin_token')
-    const res = await fetch('/api/tenant/settings', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        name: form.value.name,
-        branding: form.value.branding,
-        commercial: form.value.commercial
-      })
+    await tenantStore.updateSettings({
+      name: form.value.name,
+      branding: form.value.branding,
+      commercial: form.value.commercial
     })
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      throw new Error(err.error || 'Error al guardar configuración')
-    }
-
-    toastStore.show('¡Configuración de la perfumería y medios de pago guardada!', 'success')
-    await tenantStore.fetchCurrentTenant()
+    toastStore.show('¡Configuración de la tienda, ícono y medios de pago guardada!', 'success')
   } catch (err) {
     console.error(err)
     toastStore.show(err.message || 'Error al guardar cambios', 'error')
@@ -92,14 +121,14 @@ const handleSave = async () => {
       <div>
         <h1 class="font-sans text-2xl sm:text-3xl text-primary font-normal">Configuración de Tienda & Medios de Pago</h1>
         <p class="font-sans text-xs text-secondary mt-1">
-          Ajustá la identidad de tu perfumería, datos para transferencias bancarias y tu pasarela de Mercado Pago.
+          Ajustá el ícono de la marca, identidad visual, datos bancarios para transferencias y tu pasarela de Mercado Pago.
         </p>
       </div>
 
       <button
         @click="handleSave"
         :disabled="isSaving"
-        class="bg-primary-container text-on-primary hover:bg-inverse-surface font-label text-xs uppercase tracking-widest px-6 py-3 rounded-full transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-50 self-start sm:self-auto font-bold"
+        class="bg-primary-container text-on-primary hover:bg-inverse-surface font-label text-xs uppercase tracking-widest px-6 py-3 rounded-full transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-50 self-start sm:self-auto font-bold cursor-pointer"
       >
         <span class="material-symbols-outlined text-base">save</span>
         <span>{{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}</span>
@@ -109,9 +138,166 @@ const handleSave = async () => {
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
       
-      <!-- Columna Izquierda: Identidad & Branding (6 cols) -->
+      <!-- Columna Izquierda: Ícono & Identidad (6 cols) -->
       <div class="lg:col-span-6 space-y-6">
         
+        <!-- Tarjeta Ícono & Logotipo de la Tienda -->
+        <div class="bg-surface border border-outline-variant rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs">
+          <div class="flex items-center justify-between border-b border-outline-variant pb-3">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-xl text-primary">token</span>
+              <div>
+                <h2 class="font-sans text-base font-bold text-primary">Ícono & Logotipo de la Tienda</h2>
+                <p class="text-[11px] text-secondary">Visible en la barra de navegación, pie de página, favicon y panel admin.</p>
+              </div>
+            </div>
+            <span class="text-[10px] font-label uppercase tracking-widest px-2.5 py-1 rounded-full bg-amber-100/80 text-amber-950 font-bold border border-amber-300/60">
+              Ícono Tienda
+            </span>
+          </div>
+
+          <!-- 1. Imagen / Archivo Personalizado -->
+          <div class="space-y-4">
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-2">
+                1. Subir Imagen o Logo Personalizado (PNG, SVG, ICO, JPG)
+              </label>
+              
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <label 
+                  class="cursor-pointer bg-surface-container hover:bg-surface-container-high border border-dashed border-outline-variant hover:border-primary rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-xs font-label uppercase tracking-wider text-primary font-bold transition-all shadow-2xs group flex-grow"
+                  :class="isUploadingIcon ? 'opacity-50 pointer-events-none' : ''"
+                >
+                  <span class="material-symbols-outlined text-lg text-primary group-hover:scale-110 transition-transform">
+                    {{ isUploadingIcon ? 'hourglass_top' : 'cloud_upload' }}
+                  </span>
+                  <span>{{ isUploadingIcon ? 'Subiendo archivo...' : 'Seleccionar Archivo de Imagen' }}</span>
+                  <input 
+                    type="file" 
+                    accept="image/*,.ico,.svg" 
+                    class="hidden" 
+                    @change="handleIconUpload" 
+                  />
+                </label>
+
+                <button 
+                  v-if="form.branding.iconUrl"
+                  type="button"
+                  @click="clearCustomIcon"
+                  class="px-3.5 py-3 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 hover:bg-rose-100 text-xs font-label uppercase tracking-wider font-bold transition-colors flex items-center justify-center gap-1.5 flex-shrink-0 cursor-pointer"
+                  title="Eliminar imagen y volver a símbolo"
+                >
+                  <span class="material-symbols-outlined text-base">delete</span>
+                  <span>Quitar</span>
+                </button>
+              </div>
+
+              <!-- Input directo URL de imagen opcional -->
+              <div class="mt-2.5">
+                <input 
+                  v-model="form.branding.iconUrl" 
+                  type="text" 
+                  placeholder="O ingresá aquí el enlace directo a tu imagen (https://...)" 
+                  class="w-full bg-surface-container border border-outline-variant rounded-xl p-2.5 text-xs font-sans focus:border-primary focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <!-- 2. Símbolo Insignia de Alta Gama (Fallback / Vectorial) -->
+            <div class="pt-4 border-t border-outline-variant">
+              <div class="flex items-center justify-between mb-2">
+                <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold">
+                  2. O elegir Símbolo de Alta Gama
+                </label>
+                <span class="text-[10px] text-secondary font-sans">
+                  {{ form.branding.iconUrl ? '(Inactivo mientras haya imagen)' : 'Activo como ícono principal' }}
+                </span>
+              </div>
+
+              <!-- Presets Grid -->
+              <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                <button
+                  v-for="item in LUXURY_ICONS"
+                  :key="item.id"
+                  type="button"
+                  @click="form.branding.storeIcon = item.icon"
+                  class="p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer"
+                  :class="form.branding.storeIcon === item.icon && !form.branding.iconUrl
+                    ? 'bg-primary text-amber-200 border-primary font-bold shadow-xs scale-102 ring-2 ring-amber-400/40' 
+                    : 'bg-surface-container border-outline-variant/80 text-secondary hover:text-primary hover:border-primary/50'"
+                >
+                  <span class="material-symbols-outlined text-xl">{{ item.icon }}</span>
+                  <span class="text-[10px] font-label uppercase tracking-wider truncate w-full">{{ item.label }}</span>
+                </button>
+              </div>
+
+              <!-- Input para nombre libre de Material Symbol -->
+              <div class="mt-3 flex items-center gap-2">
+                <span class="text-[11px] text-secondary font-label uppercase tracking-wider flex-shrink-0">Nombre de símbolo:</span>
+                <input 
+                  v-model="form.branding.storeIcon" 
+                  type="text" 
+                  placeholder="spa, diamond, local_florist, auto_awesome..." 
+                  class="flex-grow bg-surface-container border border-outline-variant rounded-lg px-2.5 py-1.5 text-xs font-mono focus:border-primary focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <!-- 3. Previsualizaciones en Vivo (Live Preview) -->
+            <div class="pt-4 border-t border-outline-variant space-y-3">
+              <span class="block font-label text-xs uppercase tracking-widest text-secondary font-bold">
+                Previsualización en Vivo
+              </span>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <!-- Preview Navbar -->
+                <div class="bg-surface border border-outline-variant rounded-xl p-3 shadow-2xs space-y-1.5">
+                  <span class="text-[9px] font-label uppercase tracking-widest text-secondary font-semibold block">Navbar Público</span>
+                  <div class="flex items-center gap-2 p-2 bg-surface-container/50 rounded-lg border border-outline-variant/60">
+                    <img 
+                      v-if="form.branding.iconUrl" 
+                      :src="form.branding.iconUrl" 
+                      alt="Ícono" 
+                      class="w-7 h-7 object-contain rounded-md"
+                    />
+                    <div 
+                      v-else 
+                      class="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-container text-amber-200 flex items-center justify-center flex-shrink-0 shadow-2xs"
+                    >
+                      <span class="material-symbols-outlined text-base">{{ form.branding.storeIcon || 'spa' }}</span>
+                    </div>
+                    <span class="font-sans text-sm font-bold text-primary truncate">
+                      {{ form.name || 'Gicca Perfumes' }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Preview Favicon Browser Tab -->
+                <div class="bg-surface border border-outline-variant rounded-xl p-3 shadow-2xs space-y-1.5">
+                  <span class="text-[9px] font-label uppercase tracking-widest text-secondary font-semibold block">Pestaña del Navegador (Favicon)</span>
+                  <div class="flex items-center gap-2 p-2 bg-slate-100 rounded-lg border border-slate-300/80">
+                    <img 
+                      v-if="form.branding.iconUrl" 
+                      :src="form.branding.iconUrl" 
+                      alt="Favicon" 
+                      class="w-4 h-4 object-contain rounded-2xs"
+                    />
+                    <div 
+                      v-else 
+                      class="w-4 h-4 rounded-2xs bg-primary text-amber-300 flex items-center justify-center flex-shrink-0 text-[9px] font-serif font-bold"
+                    >
+                      {{ (form.name || 'G').charAt(0).toUpperCase() }}
+                    </div>
+                    <span class="text-xs text-slate-800 truncate font-sans">
+                      {{ form.name || 'Gicca Perfumes' }} | Boutique
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Tarjeta Identidad -->
         <div class="bg-surface border border-outline-variant rounded-2xl p-6 sm:p-8 space-y-5 shadow-xs">
           <div class="flex items-center gap-3 border-b border-outline-variant pb-3">
@@ -368,7 +554,7 @@ const handleSave = async () => {
       <button
         @click="handleSave"
         :disabled="isSaving"
-        class="w-full sm:w-auto bg-primary-container text-on-primary hover:bg-inverse-surface font-label text-xs uppercase tracking-widest px-8 py-3.5 rounded-full transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-50 font-bold"
+        class="w-full sm:w-auto bg-primary-container text-on-primary hover:bg-inverse-surface font-label text-xs uppercase tracking-widest px-8 py-3.5 rounded-full transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-50 font-bold cursor-pointer"
       >
         <span class="material-symbols-outlined text-base">save</span>
         <span>{{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}</span>

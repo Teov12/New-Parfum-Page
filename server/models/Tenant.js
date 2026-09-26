@@ -42,6 +42,9 @@ const tenantSchema = new mongoose.Schema({
   // Custom Branding per Perfumería
   branding: {
     logoUrl: { type: String, default: '' },
+    iconUrl: { type: String, default: '' },
+    storeIcon: { type: String, default: 'spa' },
+    faviconUrl: { type: String, default: '' },
     tagline: { type: String, default: 'Atelier de Alta Perfumería' },
     primaryColor: { type: String, default: '#2E1911' },
     instagramUrl: { type: String, default: 'https://instagram.com/giccaparfum' },

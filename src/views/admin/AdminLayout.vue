@@ -108,8 +108,14 @@ const closeMobileDrawer = () => {
         <!-- Store Brand Header -->
         <div class="p-5 border-b border-outline-variant flex items-center justify-between gap-3 h-20">
           <RouterLink to="/admin/ventas" class="flex items-center gap-3 min-w-0 group">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-container text-amber-200 flex items-center justify-center flex-shrink-0 shadow-xs border border-primary/20 group-hover:scale-105 transition-transform">
-              <span class="material-symbols-outlined text-xl">spa</span>
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-container text-amber-200 flex items-center justify-center flex-shrink-0 shadow-xs border border-primary/20 group-hover:scale-105 transition-transform overflow-hidden">
+              <img 
+                v-if="tenantStore.branding?.iconUrl || tenantStore.branding?.logoUrl" 
+                :src="tenantStore.branding?.iconUrl || tenantStore.branding?.logoUrl" 
+                :alt="tenantStore.storeName" 
+                class="w-full h-full object-contain p-1" 
+              />
+              <span v-else class="material-symbols-outlined text-xl">{{ tenantStore.branding?.storeIcon || 'spa' }}</span>
             </div>
             <div v-if="!isSidebarCollapsed" class="min-w-0 overflow-hidden transition-all">
               <div class="flex items-center gap-1.5">
@@ -401,8 +407,14 @@ const closeMobileDrawer = () => {
               <div>
                 <div class="flex items-center justify-between pb-5 border-b border-outline-variant mb-6">
                   <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-primary text-amber-200 flex items-center justify-center shadow-xs">
-                      <span class="material-symbols-outlined text-xl">spa</span>
+                    <div class="w-10 h-10 rounded-xl bg-primary text-amber-200 flex items-center justify-center shadow-xs overflow-hidden flex-shrink-0">
+                      <img 
+                        v-if="tenantStore.branding?.iconUrl || tenantStore.branding?.logoUrl" 
+                        :src="tenantStore.branding?.iconUrl || tenantStore.branding?.logoUrl" 
+                        :alt="tenantStore.storeName" 
+                        class="w-full h-full object-contain p-1" 
+                      />
+                      <span v-else class="material-symbols-outlined text-xl">{{ tenantStore.branding?.storeIcon || 'spa' }}</span>
                     </div>
                     <div>
                       <h3 class="font-serif font-bold text-base text-primary">

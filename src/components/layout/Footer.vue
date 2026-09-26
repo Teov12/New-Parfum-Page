@@ -2,8 +2,10 @@
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useToastStore } from '@/stores/toast'
+import { useTenantStore } from '@/stores/tenant'
 
 const toastStore = useToastStore()
+const tenantStore = useTenantStore()
 const emailInput = ref('')
 const isSubscribed = ref(false)
 
@@ -26,16 +28,30 @@ const handleSubscribe = () => {
       <!-- Brand Story Column (4 cols) -->
       <div class="lg:col-span-4 flex flex-col justify-between">
         <div>
-          <h3 class="font-sans text-3xl text-primary font-normal tracking-tight mb-4">
-            Gicca Perfumes
-          </h3>
+          <div class="flex items-center gap-3 mb-4">
+            <img 
+              v-if="tenantStore.branding?.iconUrl || tenantStore.branding?.logoUrl" 
+              :src="tenantStore.branding?.iconUrl || tenantStore.branding?.logoUrl" 
+              :alt="tenantStore.storeName" 
+              class="w-9 h-9 object-contain rounded-xl shadow-xs" 
+            />
+            <div 
+              v-else 
+              class="w-9 h-9 rounded-xl bg-primary text-amber-200 flex items-center justify-center shadow-xs border border-primary/20 flex-shrink-0"
+            >
+              <span class="material-symbols-outlined text-xl">{{ tenantStore.branding?.storeIcon || 'spa' }}</span>
+            </div>
+            <h3 class="font-sans text-3xl text-primary font-normal tracking-tight">
+              {{ tenantStore.storeName || 'Gicca Perfumes' }}
+            </h3>
+          </div>
           <p class="font-sans text-sm text-secondary leading-relaxed mb-6 max-w-sm">
-            Tu tienda de confianza en perfumes 100% originales. Las mejores marcas importadas de diseñador y perfumería árabe con envíos seguros a todo el país.
+            {{ tenantStore.branding?.tagline || 'Tu tienda de confianza en perfumes 100% originales. Las mejores marcas importadas de diseñador y perfumería árabe con envíos seguros a todo el país.' }}
           </p>
           <div class="space-y-1.5 text-xs font-label uppercase tracking-widest text-secondary">
             <p>Buenos Aires, Argentina</p>
             <p>contacto@giccaperfumes.com</p>
-            <p>Atención por WhatsApp: +54 9 3564 62-2055</p>
+            <p>Atención por WhatsApp: {{ tenantStore.branding?.whatsappNumber ? '+' + tenantStore.branding.whatsappNumber : '+54 9 3564 62-2055' }}</p>
           </div>
         </div>
 
@@ -177,7 +193,7 @@ const handleSubscribe = () => {
     <!-- Bottom Copyright Subfooter -->
     <div class="border-t border-outline-variant bg-surface py-6">
       <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-label text-secondary uppercase tracking-wider">
-        <p>© 2026 Gicca Perfumes Boutique. Todos los derechos reservados.</p>
+        <p>© {{ new Date().getFullYear() }} {{ tenantStore.storeName || 'Gicca Perfumes' }}. Todos los derechos reservados.</p>
         <div class="flex flex-wrap gap-4 sm:gap-6 items-center">
           <a href="#" class="hover:text-primary transition-colors">Términos y Condiciones</a>
           <a href="#" class="hover:text-primary transition-colors">Privacidad</a>
