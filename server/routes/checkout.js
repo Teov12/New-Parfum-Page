@@ -122,9 +122,13 @@ router.post('/create-preference', async (req, res) => {
     const client = new MercadoPagoConfig({ accessToken })
     const preference = new Preference(client)
 
+    const clientOrigin = req.headers.origin || (req.headers.referer ? new URL(req.headers.referer).origin : '')
     const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http'
     const host = req.get('host')
-    const origin = `${protocol}://${host}`
+    let origin = (clientOrigin || `${protocol}://${host}`).replace(/\/$/, '')
+
+    const isHttps = origin.startsWith('https://')
+    const isLocalhost = origin.includes('localhost') || origin.includes('127.0.0.1')
 
     // Mapear productos del carrito a ítems de Mercado Pago con precios válidos (> 0)
     let items = orderData.items.map(i => ({
@@ -181,10 +185,14 @@ router.post('/create-preference', async (req, res) => {
         failure: `${origin}/checkout/failure?orderNumber=${order.orderNumber}`,
         pending: `${origin}/checkout/pending?orderNumber=${order.orderNumber}`
       },
-      auto_return: 'approved',
       external_reference: order.orderNumber,
       statement_descriptor: (tenant?.name || 'GICCA PERFUMES').slice(0, 16),
       notification_url: `${origin}/api/checkout/webhook?tenant=${tenantId}`
+    }
+
+    // Mercado Pago exige HTTPS y prohíbe localhost para habilitar auto_return
+    if (isHttps && !isLocalhost) {
+      prefPayload.auto_return = 'approved'
     }
 
     const response = await preference.create({ body: prefPayload })
