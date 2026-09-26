@@ -151,16 +151,41 @@ const scoredResults = computed(() => {
       }
     }
 
-    // 4. Occasion (0 - 15 pts)
+    // 4. Occasion & Situations (0 - 15 pts)
+    const pSituations = (p.characteristics?.situations || []).map(s => s.toLowerCase())
+    const pTimeOfDay = (p.characteristics?.timeOfDay || '').toLowerCase()
+
     if (ansOccasion) {
-      if (pOccasion.includes('diario') && ansOccasion === 'diario') {
-        score += 15
-      } else if ((pOccasion.includes('especiales') || pOccasion.includes('noche')) && (ansOccasion === 'noche' || ansOccasion === 'eventos')) {
-        score += 15
-      } else if (ansOccasion === 'versatil' || pOccasion.includes('diario y ocasiones especiales')) {
-        score += 15
-      } else {
-        score += 10
+      if (ansOccasion === 'diario') {
+        if (pTimeOfDay.includes('diurno') || pSituations.some(s => s.includes('oficina') || s.includes('trabajo') || s.includes('casual') || s.includes('diario'))) {
+          score += 15
+        } else if (pOccasion.includes('diario') || pTimeOfDay.includes('versátil')) {
+          score += 12
+        } else {
+          score += 6
+        }
+      } else if (ansOccasion === 'noche') {
+        if (pTimeOfDay.includes('nocturno') || pSituations.some(s => s.includes('citas') || s.includes('romántico') || s.includes('noche'))) {
+          score += 15
+        } else if (pOccasion.includes('noche') || pTimeOfDay.includes('versátil')) {
+          score += 12
+        } else {
+          score += 6
+        }
+      } else if (ansOccasion === 'eventos') {
+        if (pSituations.some(s => s.includes('fiestas') || s.includes('eventos') || s.includes('salidas') || s.includes('boliche'))) {
+          score += 15
+        } else if (pTimeOfDay.includes('nocturno') || pTimeOfDay.includes('versátil')) {
+          score += 12
+        } else {
+          score += 6
+        }
+      } else if (ansOccasion === 'versatil') {
+        if (pTimeOfDay.includes('versátil') || pOccasion.includes('diario y ocasiones especiales')) {
+          score += 15
+        } else {
+          score += 10
+        }
       }
     }
 

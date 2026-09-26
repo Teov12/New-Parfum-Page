@@ -53,6 +53,21 @@ const seasonOptions = [
   'Invierno'
 ]
 
+const timeOfDayOptions = [
+  { label: 'Diurno (Día)', value: 'Diurno', icon: 'light_mode', desc: 'Luminoso, fresco, mañanas y tardes' },
+  { label: 'Nocturno (Noche)', value: 'Nocturno', icon: 'dark_mode', desc: 'Envolvente, seductor, salidas nocturnas' },
+  { label: 'Versátil (Día & Noche)', value: 'Versátil (Día y Noche)', icon: 'all_inclusive', desc: 'Equilibrado para las 24hs' }
+]
+
+const situationOptions = [
+  { label: 'Oficina & Trabajo', value: 'Oficina / Trabajo', icon: 'business_center' },
+  { label: 'Citas & Romántico', value: 'Citas / Romántico', icon: 'favorite' },
+  { label: 'Fiestas & Boliche', value: 'Fiestas / Salidas', icon: 'nightlife' },
+  { label: 'Eventos Formales', value: 'Eventos Formales', icon: 'diamond' },
+  { label: 'Casual & Diario', value: 'Casual / Diario', icon: 'coffee' },
+  { label: 'Deportivo / Gimnasio', value: 'Deportivo / Aire Libre', icon: 'fitness_center' }
+]
+
 const defaultForm = () => ({
   id: '',
   name: '',
@@ -86,7 +101,9 @@ const defaultForm = () => ({
     longevity: '8 a 12 horas (Muy Duradera)',
     sillage: 'Moderada (Radio de 1 metro)',
     season: ['Todo el año'],
-    occasion: ''
+    occasion: '',
+    timeOfDay: 'Versátil (Día y Noche)',
+    situations: ['Casual / Diario', 'Oficina / Trabajo']
   }
 })
 
@@ -150,7 +167,16 @@ watch(() => props.isOpen, (open) => {
           longevity: '8 a 12 horas (Muy Duradera)',
           sillage: 'Moderada (Radio de 1 metro)',
           season: ['Todo el año'],
-          occasion: ''
+          occasion: '',
+          timeOfDay: 'Versátil (Día y Noche)',
+          situations: ['Casual / Diario', 'Oficina / Trabajo']
+        }
+      } else {
+        if (!formData.value.characteristics.timeOfDay) {
+          formData.value.characteristics.timeOfDay = 'Versátil (Día y Noche)'
+        }
+        if (!Array.isArray(formData.value.characteristics.situations)) {
+          formData.value.characteristics.situations = []
         }
       }
     } else {
@@ -385,6 +411,18 @@ const toggleSeason = (seasonName) => {
   }
 }
 
+const toggleSituation = (sitValue) => {
+  if (!Array.isArray(formData.value.characteristics.situations)) {
+    formData.value.characteristics.situations = []
+  }
+  const idx = formData.value.characteristics.situations.indexOf(sitValue)
+  if (idx > -1) {
+    formData.value.characteristics.situations.splice(idx, 1)
+  } else {
+    formData.value.characteristics.situations.push(sitValue)
+  }
+}
+
 const handleSubmitProduct = async () => {
   isSubmitting.value = true
 
@@ -414,8 +452,24 @@ const handleSubmitProduct = async () => {
     const mainProfit = Math.max(0, mainTransferPrice - mainCost)
     const mainProfitMargin = mainTransferPrice > 0 ? Math.round((mainProfit / mainTransferPrice) * 100) : 0
 
+    // Synthesize human-friendly occasion string if situations are selected
+    const timeOfDay = formData.value.characteristics?.timeOfDay || 'Versátil (Día y Noche)'
+    const situations = formData.value.characteristics?.situations || []
+    let occasionSummary = formData.value.characteristics?.occasion || ''
+    if (situations.length > 0) {
+      occasionSummary = `${timeOfDay} • ${situations.join(', ')}`
+    } else if (!occasionSummary) {
+      occasionSummary = timeOfDay
+    }
+
     const payload = {
       ...formData.value,
+      characteristics: {
+        ...formData.value.characteristics,
+        timeOfDay,
+        situations,
+        occasion: occasionSummary
+      },
       price: mainPrice,
       transferPrice: mainTransferPrice,
       costPrice: mainCost,
@@ -819,6 +873,60 @@ const handleSubmitProduct = async () => {
                 <select v-model="formData.characteristics.sillage" class="w-full bg-surface-container/70 border border-outline-variant rounded-xl p-3 text-xs font-sans focus:border-primary focus:outline-none">
                   <option v-for="opt in sillageOptions" :key="opt" :value="opt">{{ opt }}</option>
                 </select>
+              </div>
+            </div>
+
+            <!-- Momento del Día (Diurno / Nocturno / Versátil) -->
+            <div class="bg-surface-container/40 p-4 rounded-xl border border-outline-variant space-y-2">
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold">
+                Momento de Uso (Diurno / Nocturno)
+              </label>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <button
+                  v-for="timeOpt in timeOfDayOptions"
+                  :key="timeOpt.value"
+                  type="button"
+                  @click="formData.characteristics.timeOfDay = timeOpt.value"
+                  class="p-3 rounded-xl border flex flex-col items-center text-center gap-1.5 transition-all cursor-pointer shadow-2xs active:scale-95"
+                  :class="formData.characteristics.timeOfDay === timeOpt.value 
+                    ? 'bg-primary text-on-primary border-primary font-bold shadow-xs !text-amber-200' 
+                    : 'bg-surface hover:bg-surface-container text-secondary border-outline-variant hover:border-primary/40'"
+                >
+                  <span class="material-symbols-outlined text-2xl" :class="formData.characteristics.timeOfDay === timeOpt.value ? 'text-amber-300' : 'text-primary'">
+                    {{ timeOpt.icon }}
+                  </span>
+                  <span class="text-xs font-sans font-bold leading-tight">{{ timeOpt.label }}</span>
+                  <span class="text-[10px] opacity-80 leading-tight hidden sm:block">{{ timeOpt.desc }}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Situaciones & Ocasiones Recomendadas -->
+            <div class="bg-surface-container/40 p-4 rounded-xl border border-outline-variant space-y-2.5">
+              <div class="flex justify-between items-center">
+                <label class="font-label text-xs uppercase tracking-widest text-primary font-bold">
+                  Situaciones Recomendadas (Multi-selección)
+                </label>
+                <span class="text-[10px] font-label uppercase px-2 py-0.5 rounded-full bg-surface border border-outline-variant font-bold text-secondary">
+                  {{ formData.characteristics.situations?.length || 0 }} seleccionadas
+                </span>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <button
+                  v-for="sit in situationOptions"
+                  :key="sit.value"
+                  type="button"
+                  @click="toggleSituation(sit.value)"
+                  class="p-2.5 rounded-xl border flex items-center gap-2 text-left transition-all cursor-pointer shadow-2xs active:scale-95"
+                  :class="formData.characteristics.situations?.includes(sit.value)
+                    ? 'bg-primary text-on-primary border-primary font-bold shadow-xs !text-amber-200'
+                    : 'bg-surface hover:bg-surface-container text-secondary border-outline-variant hover:border-primary/40'"
+                >
+                  <span class="material-symbols-outlined text-lg flex-shrink-0" :class="formData.characteristics.situations?.includes(sit.value) ? 'text-amber-300' : 'text-primary'">
+                    {{ sit.icon }}
+                  </span>
+                  <span class="text-xs font-sans truncate font-medium">{{ sit.label }}</span>
+                </button>
               </div>
             </div>
 

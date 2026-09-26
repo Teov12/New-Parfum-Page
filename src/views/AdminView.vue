@@ -1579,7 +1579,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
               class="bg-primary hover:bg-slate-800 text-on-primary font-label text-xs uppercase tracking-wider px-4 py-2.5 rounded-xs transition-all flex items-center justify-center gap-2 shadow-xs border border-primary/20 flex-shrink-0"
             >
               <span class="material-symbols-outlined text-base">add</span>
-              <span>+ Nuevo Perfume</span>
+              <span> Nuevo Perfume</span>
             </button>
           </div>
 

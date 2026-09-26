@@ -38,7 +38,9 @@ const productSchema = new mongoose.Schema({
     longevity: { type: String, default: '8 a 12 horas' },
     sillage: { type: String, default: 'Moderada' },
     season: { type: mongoose.Schema.Types.Mixed, default: 'Todo el año' },
-    occasion: { type: String, default: 'Uso diario y ocasiones especiales' }
+    occasion: { type: String, default: 'Uso diario y ocasiones especiales' },
+    timeOfDay: { type: String, default: 'Versátil (Día y Noche)' },
+    situations: { type: mongoose.Schema.Types.Mixed, default: () => [] }
   },
   usageTips: { type: String, default: 'Pulverizar en puntos de pulso (cuello y muñecas).' },
   stock: { type: Number, default: 10 }

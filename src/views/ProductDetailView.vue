@@ -505,6 +505,38 @@ const calculateShipping = async () => {
               {{ product.concentration }} • Familia
               {{ product.fragranceFamily }} • Importado Oficial
             </p>
+
+            <!-- Badges for Time of Day & Key Situations -->
+            <div 
+              v-if="product.characteristics?.timeOfDay || product.characteristics?.situations?.length" 
+              class="flex flex-wrap items-center gap-1.5 pt-2.5"
+            >
+              <!-- Time of Day Badge -->
+              <span 
+                v-if="product.characteristics?.timeOfDay" 
+                class="inline-flex items-center gap-1 text-[11px] font-label uppercase tracking-wider px-2.5 py-1 rounded-full font-bold shadow-2xs border"
+                :class="product.characteristics.timeOfDay === 'Nocturno' 
+                  ? 'bg-slate-900 text-amber-200 border-slate-800' 
+                  : (product.characteristics.timeOfDay === 'Diurno' 
+                    ? 'bg-amber-100 text-amber-950 border-amber-300/80' 
+                    : 'bg-surface-container border-outline-variant text-primary')"
+              >
+                <span class="material-symbols-outlined text-xs">
+                  {{ product.characteristics.timeOfDay === 'Nocturno' ? 'dark_mode' : (product.characteristics.timeOfDay === 'Diurno' ? 'light_mode' : 'all_inclusive') }}
+                </span>
+                <span>{{ product.characteristics.timeOfDay }}</span>
+              </span>
+
+              <!-- Key Situation Badges -->
+              <span 
+                v-for="sit in (product.characteristics?.situations || []).slice(0, 3)" 
+                :key="sit"
+                class="inline-flex items-center gap-1 text-[10px] font-label uppercase tracking-wider bg-surface px-2.5 py-1 rounded-full border border-outline-variant text-secondary shadow-2xs"
+              >
+                <span class="material-symbols-outlined text-xs text-amber-700">bookmark</span>
+                <span>{{ sit }}</span>
+              </span>
+            </div>
           </div>
 
           <!-- Price & Installments -->
@@ -923,58 +955,77 @@ const calculateShipping = async () => {
               key="characteristics"
               class="bg-surface-container border border-outline-variant rounded-xs p-6 sm:p-8 shadow-xs"
             >
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div
-                  class="p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs hover:border-primary transition-colors"
-                >
-                  <span
-                    class="font-label text-xs uppercase tracking-widest text-secondary block mb-1"
-                    >Duración en Piel</span
-                  >
-                  <p class="font-sans text-base text-primary font-medium">
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Duración -->
+                <div class="p-5 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:border-primary transition-colors">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="material-symbols-outlined text-base text-amber-700">timer</span>
+                    <span class="font-label text-xs uppercase tracking-widest text-secondary font-bold">Duración en Piel</span>
+                  </div>
+                  <p class="font-sans text-sm sm:text-base text-primary font-semibold">
                     {{ product.characteristics?.longevity || "8 a 12 horas" }}
                   </p>
                 </div>
-                <div
-                  class="p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs hover:border-primary transition-colors"
-                >
-                  <span
-                    class="font-label text-xs uppercase tracking-widest text-secondary block mb-1"
-                    >Estela / Proyección</span
-                  >
-                  <p class="font-sans text-base text-primary font-medium">
+
+                <!-- Estela / Proyección -->
+                <div class="p-5 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:border-primary transition-colors">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="material-symbols-outlined text-base text-amber-700">air</span>
+                    <span class="font-label text-xs uppercase tracking-widest text-secondary font-bold">Estela / Proyección</span>
+                  </div>
+                  <p class="font-sans text-sm sm:text-base text-primary font-semibold">
                     {{ product.characteristics?.sillage || "Moderada" }}
                   </p>
                 </div>
-                <div
-                  class="p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs hover:border-primary transition-colors"
-                >
-                  <span
-                    class="font-label text-xs uppercase tracking-widest text-secondary block mb-1.5"
-                    >Estación Ideal</span
-                  >
-                  <div class="flex flex-wrap gap-1.5 items-center">
+
+                <!-- Momento del Día -->
+                <div class="p-5 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:border-primary transition-colors">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="material-symbols-outlined text-base text-amber-700">
+                      {{ product.characteristics?.timeOfDay === 'Nocturno' ? 'dark_mode' : (product.characteristics?.timeOfDay === 'Diurno' ? 'light_mode' : 'all_inclusive') }}
+                    </span>
+                    <span class="font-label text-xs uppercase tracking-widest text-secondary font-bold">Momento de Uso</span>
+                  </div>
+                  <p class="font-sans text-sm sm:text-base text-primary font-semibold">
+                    {{ product.characteristics?.timeOfDay || "Versátil (Día y Noche)" }}
+                  </p>
+                </div>
+
+                <!-- Estación Ideal -->
+                <div class="p-5 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:border-primary transition-colors">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="material-symbols-outlined text-base text-amber-700">ac_unit</span>
+                    <span class="font-label text-xs uppercase tracking-widest text-secondary font-bold">Estación Ideal</span>
+                  </div>
+                  <div class="flex flex-wrap gap-1.5 items-center pt-0.5">
                     <span
                       v-for="season in seasonList"
                       :key="season"
-                      class="font-sans text-xs font-semibold text-primary bg-surface-container px-2.5 py-1 rounded-xs border border-outline-variant"
+                      class="font-sans text-xs font-semibold text-primary bg-surface-container px-2.5 py-1 rounded-md border border-outline-variant shadow-2xs"
                     >
                       {{ season }}
                     </span>
                   </div>
                 </div>
-                <div
-                  class="p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs hover:border-primary transition-colors"
-                >
-                  <span
-                    class="font-label text-xs uppercase tracking-widest text-secondary block mb-1"
-                    >Ocasión Sugerida</span
-                  >
-                  <p class="font-sans text-base text-primary font-medium">
-                    {{
-                      product.characteristics?.occasion ||
-                      "Uso diario y ocasiones especiales"
-                    }}
+
+                <!-- Situaciones Recomendadas (Col-span 2 on desktop) -->
+                <div class="p-5 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:border-primary transition-colors sm:col-span-2">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="material-symbols-outlined text-base text-amber-700">category</span>
+                    <span class="font-label text-xs uppercase tracking-widest text-secondary font-bold">Situaciones Recomendadas</span>
+                  </div>
+                  <div v-if="product.characteristics?.situations?.length" class="flex flex-wrap gap-1.5 pt-0.5">
+                    <span
+                      v-for="sit in product.characteristics.situations"
+                      :key="sit"
+                      class="font-sans text-xs font-semibold text-primary bg-surface-container px-3 py-1 rounded-md border border-outline-variant shadow-2xs flex items-center gap-1.5"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                      <span>{{ sit }}</span>
+                    </span>
+                  </div>
+                  <p v-else class="font-sans text-sm text-primary font-medium">
+                    {{ product.characteristics?.occasion || "Uso diario y ocasiones especiales" }}
                   </p>
                 </div>
               </div>

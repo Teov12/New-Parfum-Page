@@ -203,7 +203,9 @@ export const createProduct = async (productData, tenantId = 'gicca') => {
       longevity: productData.characteristics?.longevity || '8 a 12 horas',
       sillage: productData.characteristics?.sillage || 'Moderada',
       season: productData.characteristics?.season || 'Todo el año',
-      occasion: productData.characteristics?.occasion || 'Uso diario y ocasiones especiales'
+      occasion: productData.characteristics?.occasion || 'Uso diario y ocasiones especiales',
+      timeOfDay: productData.characteristics?.timeOfDay || 'Versátil (Día y Noche)',
+      situations: Array.isArray(productData.characteristics?.situations) ? productData.characteristics.situations : []
     },
     usageTips: productData.usageTips || 'Pulverizar en puntos de pulso (cuello y muñecas).',
     stock: Number(productData.stock) || 10,
