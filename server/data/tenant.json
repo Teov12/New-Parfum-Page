@@ -6,22 +6,24 @@
     "iconUrl": "/uploads/perfume_1790448931002_az0ndj.png",
     "storeIcon": "spa",
     "faviconUrl": "",
-    "tagline": "Atelier de Alta Perfumería",
+    "tagline": "",
     "primaryColor": "#2E1911",
     "instagramUrl": "https://instagram.com/giccaparfum",
     "whatsappNumber": "+5493564123456",
     "instagram": "@giccaparfum"
   },
   "commercial": {
-    "cbu": "",
-    "alias": "GICCA.PERFUMES",
+    "cbu": "0000003100010000000000",
+    "alias": "Teov12",
     "bankName": "Banco Galicia",
-    "accountHolder": "Gicca Perfumes S.A.",
-    "cuit": "20-12345678-9",
-    "mercadoPagoAccessToken": "",
-    "mercadoPagoPublicKey": "",
-    "cardFeeRate": 20,
+    "accountHolder": "Gicca Perfumes S.A.9",
+    "cuit": "20442956430",
+    "mercadoPagoAccessToken": "APP_USR-1477381506535310-092615-eca8dcca32f392ea1129e92b3a1c1186-291165541",
+    "mercadoPagoPublicKey": "APP_USR-79ca4533-c721-4be3-aba1-68a6eb590590",
+    "cardFeeRate": 28,
     "andreaniContractNumber": "",
-    "freeShippingThreshold": 250000
+    "freeShippingThreshold": 250000,
+    "mpAccessToken": "APP_USR-1477381506535310-092615-eca8dcca32f392ea1129e92b3a1c1186-291165541",
+    "mpPublicKey": "APP_USR-79ca4533-c721-4be3-aba1-68a6eb590590"
   }
 }

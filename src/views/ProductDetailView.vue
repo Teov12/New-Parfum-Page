@@ -65,7 +65,7 @@ const currentTransferPrice = computed(() => {
   if (selectedSize.value?.transferPrice)
     return selectedSize.value.transferPrice;
   if (product.value.transferPrice) return product.value.transferPrice;
-  return currentPrice.value > 0 ? Math.round(currentPrice.value * 0.8) : 0;
+  return currentPrice.value > 0 ? Math.round(currentPrice.value * 0.72) : 0;
 });
 
 const initProduct = () => {
@@ -558,7 +558,7 @@ const calculateShipping = async () => {
                 <span
                   class="text-xs font-bold uppercase bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-xs border border-emerald-200"
                 >
-                  20% OFF
+                  28% OFF
                 </span>
               </div>
             </div>
@@ -581,9 +581,9 @@ const calculateShipping = async () => {
                   >credit_card</span
                 >
                 <span
-                  >Hasta <strong>3 cuotas fijas sin interés</strong> de ${{
-                    Math.round(currentPrice / 3).toLocaleString("es-AR")
-                  }}</span
+                  >Hasta <strong>6 cuotas fijas sin interés</strong> de ${{
+                    Math.round(currentPrice / 6).toLocaleString("es-AR")
+                  }} (o 3 de ${{ Math.round(currentPrice / 3).toLocaleString("es-AR") }})</span
                 >
               </p>
             </div>

@@ -114,7 +114,7 @@ const topNoteInput = ref('')
 const heartNoteInput = ref('')
 const baseNoteInput = ref('')
 const targetTransferPrice = ref(null)
-const cardFeeRate = ref(20) // Recargo / Comisión bancaria / Mercado Pago (20% por defecto)
+const cardFeeRate = ref(28) // Recargo / Comisión bancaria / Mercado Pago (28% para 6 cuotas)
 
 watch(() => props.isOpen, (open) => {
   if (open) {
@@ -746,7 +746,7 @@ const handleSubmitProduct = async () => {
                   <span>Asistente Rápido: Fijar Precio de Transferencia y Calcular Lista</span>
                 </div>
                 <p class="text-[11px] text-secondary leading-relaxed">
-                  Ingresá tu precio en mano deseado por transferencia (ej: $55.500). Se calcula automáticamente el precio de lista para absorber el {{ cardFeeRate || 20 }}% de Mercado Pago (ej: $69.375), garantizando que te queden ${{ (targetTransferPrice || 55500).toLocaleString('es-AR') }} netos tanto en cuotas con tarjeta como por transferencia directa (20% OFF).
+                  Ingresá tu precio en mano deseado por transferencia (ej: $55.000). Se calcula automáticamente el precio de lista para absorber el {{ cardFeeRate || 28 }}% de Mercado Pago en hasta 6 cuotas (ej: $76.388), garantizando que te queden ${{ (targetTransferPrice || 55000).toLocaleString('es-AR') }} netos tanto en cuotas con tarjeta como por transferencia directa (28% OFF).
                 </p>
                 <div class="flex flex-col sm:flex-row gap-2.5 items-start sm:items-center pt-1">
                   <div class="relative w-full sm:w-56">

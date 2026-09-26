@@ -183,7 +183,7 @@ const handleSubscribe = () => {
           </div>
           <div class="p-3 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
             <span class="material-symbols-outlined text-lg text-primary mb-1">credit_card</span>
-            <p class="font-label text-[10px] uppercase text-secondary">3 Cuotas Sin Interés</p>
+            <p class="font-label text-[10px] uppercase text-secondary">3 y 6 Cuotas Sin Interés</p>
           </div>
         </div>
       </div>

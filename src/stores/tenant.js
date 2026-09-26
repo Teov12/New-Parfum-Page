@@ -50,7 +50,7 @@ export const useTenantStore = defineStore('tenant', {
       cbu: '0000003100010000000000',
       bankName: 'Mercado Pago',
       accountHolder: 'Gicca Perfumes S.A.',
-      cardFeeRate: 20,
+      cardFeeRate: 28,
       freeShippingThreshold: 250000
     },
     isLoaded: false,
@@ -72,7 +72,7 @@ export const useTenantStore = defineStore('tenant', {
       const handle = (state.branding?.instagram || '').replace('@', '').trim()
       return handle ? `https://instagram.com/${handle}` : 'https://instagram.com'
     },
-    cardFeeRate: (state) => Number(state.commercial?.cardFeeRate ?? 20),
+    cardFeeRate: (state) => Number(state.commercial?.cardFeeRate ?? 28),
     freeShippingThreshold: (state) => Number(state.commercial?.freeShippingThreshold ?? 250000),
     bankDetails: (state) => state.commercial || {}
   },

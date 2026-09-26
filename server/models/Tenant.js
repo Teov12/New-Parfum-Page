@@ -62,7 +62,7 @@ const tenantSchema = new mongoose.Schema({
     mercadoPagoPublicKey: { type: String, default: '' },
     mpAccessToken: { type: String, default: '' },
     mpPublicKey: { type: String, default: '' },
-    cardFeeRate: { type: Number, default: 20 }, // 20% de recargo por 3 cuotas
+    cardFeeRate: { type: Number, default: 28 }, // 28% de recargo para 6 cuotas sin interes
     andreaniContractNumber: { type: String, default: '' },
     freeShippingThreshold: { type: Number, default: 250000 }
   },

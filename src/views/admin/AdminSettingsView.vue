@@ -40,7 +40,7 @@ const form = ref({
     bankName: '',
     accountHolder: '',
     cuit: '',
-    cardFeeRate: 20,
+    cardFeeRate: 28,
     freeShippingThreshold: 250000,
     mpAccessToken: '',
     mpPublicKey: ''
@@ -81,7 +81,7 @@ onMounted(async () => {
             bankName: data.tenant.commercial.bankName || 'Mercado Pago',
             accountHolder: data.tenant.commercial.accountHolder || 'Gicca Perfumes S.A.',
             cuit: data.tenant.commercial.cuit || '30-71829401-9',
-            cardFeeRate: data.tenant.commercial.cardFeeRate ?? 20,
+            cardFeeRate: data.tenant.commercial.cardFeeRate ?? 28,
             freeShippingThreshold: data.tenant.commercial.freeShippingThreshold ?? 250000,
             mpAccessToken: data.tenant.commercial.mpAccessToken || '',
             mpPublicKey: data.tenant.commercial.mpPublicKey || ''
@@ -474,7 +474,7 @@ const handleSave = async () => {
                 />
                 <span class="absolute right-3 top-3 text-xs text-secondary font-bold">%</span>
               </div>
-              <p class="text-[10px] text-secondary mt-1">Recargo aplicado sobre el precio de transferencia.</p>
+              <p class="text-[10px] text-secondary mt-1">Porcentaje para absorber hasta 6 cuotas de Mercado Pago (Recomendado: 28%).</p>
             </div>
 
             <div>
@@ -504,7 +504,7 @@ const handleSave = async () => {
           <div class="flex items-center justify-between border-b border-outline-variant pb-3">
             <div class="flex items-center gap-3">
               <span class="material-symbols-outlined text-xl text-emerald-700">account_balance</span>
-              <h2 class="font-sans text-base font-bold text-primary">Transferencia Bancaria (20% OFF)</h2>
+              <h2 class="font-sans text-base font-bold text-primary">Transferencia Bancaria ({{ form.commercial.cardFeeRate || 28 }}% OFF)</h2>
             </div>
             <span class="text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">
               Activo

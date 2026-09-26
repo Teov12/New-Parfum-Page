@@ -51,7 +51,7 @@ export const DEFAULT_TENANT_CONFIG = {
     mercadoPagoPublicKey: '',
     mpAccessToken: '',
     mpPublicKey: '',
-    cardFeeRate: 20,
+    cardFeeRate: 28,
     andreaniContractNumber: '',
     freeShippingThreshold: 250000
   }

@@ -18,7 +18,7 @@ export const useCartStore = defineStore('cart', {
 
     transferSubtotal: (state) => {
       return state.items.reduce((acc, item) => {
-        const itemTransfer = Number(item.transferPrice) || (item.price > 0 ? Math.round(item.price * 0.80) : 0)
+        const itemTransfer = Number(item.transferPrice) || (item.price > 0 ? Math.round(item.price * 0.72) : 0)
         return acc + (itemTransfer * item.quantity)
       }, 0)
     },
@@ -26,7 +26,7 @@ export const useCartStore = defineStore('cart', {
     transferDiscount: (state) => {
       return Math.max(0, state.items.reduce((acc, item) => {
         const itemPrice = Number(item.price) || 0
-        const itemTransfer = Number(item.transferPrice) || (itemPrice > 0 ? Math.round(itemPrice * 0.80) : 0)
+        const itemTransfer = Number(item.transferPrice) || (itemPrice > 0 ? Math.round(itemPrice * 0.72) : 0)
         return acc + ((itemPrice - itemTransfer) * item.quantity)
       }, 0))
     },
@@ -82,7 +82,7 @@ export const useCartStore = defineStore('cart', {
       const sizePrice = typeof sizeObj === 'object' ? sizeObj.price : product.price
       const sizeTransferPrice = typeof sizeObj === 'object' && sizeObj.transferPrice !== undefined && sizeObj.transferPrice !== null
         ? Number(sizeObj.transferPrice)
-        : (product.transferPrice || (sizePrice > 0 ? Math.round(sizePrice * 0.80) : 0))
+        : (product.transferPrice || (sizePrice > 0 ? Math.round(sizePrice * 0.72) : 0))
 
       const existingIndex = this.items.findIndex(
         i => i.id === product.id && i.size === sizeLabel

@@ -170,10 +170,10 @@ const handleWishlist = () => {
           <!-- Precio exclusivo Transferencia -->
           <div>
             <span class="block text-[9px] font-bold uppercase tracking-wider text-emerald-800">
-              Transferencia (20% OFF)
+              Transferencia (28% OFF)
             </span>
             <span class="font-sans font-bold text-lg sm:text-xl text-primary leading-none">
-              ${{ (selectedSize.transferPrice || Math.round(selectedSize.price * 0.80)).toLocaleString('es-AR') }}
+              ${{ (selectedSize.transferPrice || Math.round(selectedSize.price * 0.72)).toLocaleString('es-AR') }}
             </span>
           </div>
 
@@ -184,7 +184,7 @@ const handleWishlist = () => {
             </p>
             <p class="text-amber-800 text-[10px] font-semibold flex items-center gap-1 mt-0.5">
               <span class="material-symbols-outlined text-[13px] leading-none">credit_card</span>
-              <span><strong>3 cuotas sin interés</strong> de ${{ Math.round(selectedSize.price / 3).toLocaleString('es-AR') }}</span>
+              <span>Hasta <strong>6 cuotas s/int</strong> de ${{ Math.round(selectedSize.price / 6).toLocaleString('es-AR') }}</span>
             </p>
           </div>
         </div>

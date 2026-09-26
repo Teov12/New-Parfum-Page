@@ -197,7 +197,7 @@ const goToCartPage = () => {
             <div class="flex justify-between items-baseline">
               <div>
                 <span class="font-sans text-base text-primary font-medium">Total con Transferencia</span>
-                <p class="text-[10px] font-bold text-emerald-800 uppercase">20% OFF Transferencia</p>
+                <p class="text-[10px] font-bold text-emerald-800 uppercase">28% OFF Transferencia</p>
               </div>
               <div class="text-right">
                 <span class="font-sans text-xl font-bold text-primary">
@@ -206,7 +206,7 @@ const goToCartPage = () => {
               </div>
             </div>
             <p class="text-[11px] text-secondary text-right">
-              Precio de lista: ${{ cartStore.total.toLocaleString('es-AR') }} en hasta <strong>3 cuotas sin interés</strong>
+              Precio de lista: ${{ cartStore.total.toLocaleString('es-AR') }} en hasta <strong>3 y 6 cuotas sin interés</strong>
             </p>
           </div>
 

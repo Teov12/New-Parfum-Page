@@ -198,7 +198,7 @@ const shippingCost = computed(() => {
 })
 
 const transferDiscount = computed(() => {
-  return paymentMethod.value === 'transfer' ? (cartStore.transferDiscount || Math.round(cartStore.subtotal * 0.20)) : 0
+  return paymentMethod.value === 'transfer' ? (cartStore.transferDiscount || Math.round(cartStore.subtotal * 0.28)) : 0
 })
 
 const finalTotal = computed(() => {
@@ -235,8 +235,8 @@ const buildWhatsAppMessage = (orderNumber) => {
     return `   ${idx + 1}. *${item.name}* (${item.brand})\n      • Medida: ${item.size}\n      • Cantidad: ${item.quantity} un.\n      • Subtotal: $${(item.price * item.quantity).toLocaleString('es-AR')}`
   }).join('\n\n')
 
-  let paymentMethodLabel = 'Transferencia Bancaria (20% OFF)'
-  if (paymentMethod.value === 'credit_card') paymentMethodLabel = 'Tarjeta de Crédito (3 Cuotas Sin Interés)'
+  let paymentMethodLabel = 'Transferencia Bancaria (28% OFF)'
+  if (paymentMethod.value === 'credit_card') paymentMethodLabel = 'Tarjeta de Crédito (3 y 6 Cuotas Sin Interés)'
 
   const storeNameUpper = (tenantStore.storeName || 'Gicca Perfumes').toUpperCase()
   let msg = `*NUEVO PEDIDO - ${storeNameUpper}*\n`
@@ -975,12 +975,12 @@ const handleMercadoPagoPayment = async () => {
                       <span class="font-sans text-xs text-primary font-bold">Transferencia Bancaria</span>
                     </div>
                     <span class="text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
-                      20% OFF
+                      28% OFF
                     </span>
                   </div>
-                  <p class="text-[11px] text-secondary">Abonás con 20% de descuento directo por CBU o Alias bancario.</p>
+                  <p class="text-[11px] text-secondary">Abonás con 28% de descuento directo por CBU o Alias bancario.</p>
                   <div class="pt-1 text-[11px] text-emerald-800 font-medium">
-                    Ahorrás ${{ Math.round(cartStore.subtotal * 0.2).toLocaleString('es-AR') }} en este pedido
+                    Ahorrás ${{ Math.round(cartStore.subtotal * 0.28).toLocaleString('es-AR') }} en este pedido
                   </div>
                 </div>
 
@@ -996,13 +996,13 @@ const handleMercadoPagoPayment = async () => {
                       <span class="font-sans text-xs text-primary font-bold">Tarjeta de Crédito</span>
                     </div>
                     <span class="text-[10px] font-bold uppercase bg-surface-container-high text-primary px-2 py-0.5 rounded-full border border-outline-variant">
-                      Sin Interés
+                      3 y 6 Cuotas
                     </span>
                   </div>
-                  <p class="text-[11px] text-secondary">Abonás el precio de lista en hasta 3 cuotas fijas sin interés.</p>
+                  <p class="text-[11px] text-secondary">Abonás el precio de lista en hasta 3 o 6 cuotas fijas sin interés.</p>
                   <div class="pt-1 text-[11px] text-amber-800 font-bold flex items-center gap-1">
                     <span class="material-symbols-outlined text-sm">credit_card</span>
-                    <span>3 cuotas de ${{ Math.round(cartStore.subtotal / 3).toLocaleString('es-AR') }} sin interés</span>
+                    <span>Hasta 6 cuotas de ${{ Math.round(cartStore.subtotal / 6).toLocaleString('es-AR') }} (o 3 de ${{ Math.round(cartStore.subtotal / 3).toLocaleString('es-AR') }}) sin interés</span>
                   </div>
                 </div>
               </div>
@@ -1019,7 +1019,7 @@ const handleMercadoPagoPayment = async () => {
                     <span class="font-sans font-bold text-xs text-primary uppercase tracking-wider">Datos para Transferencia Bancaria</span>
                   </div>
                   <span class="text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
-                    20% OFF Aplicado
+                    28% OFF Aplicado
                   </span>
                 </div>
 
@@ -1090,7 +1090,7 @@ const handleMercadoPagoPayment = async () => {
                     <span>Pasarela de Pago Segura Mercado Pago</span>
                   </div>
                   <span class="text-[10px] font-bold uppercase bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                    3 Cuotas Fijas
+                    3 y 6 Cuotas Sin Interés
                   </span>
                 </div>
                 <p class="text-secondary leading-relaxed">

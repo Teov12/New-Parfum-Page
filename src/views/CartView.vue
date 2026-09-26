@@ -290,7 +290,7 @@ const proceedToCheckout = () => {
               <div class="flex justify-between items-baseline">
                 <div>
                   <span class="font-sans text-lg text-primary font-normal">Total con Transferencia</span>
-                  <p class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">20% OFF Transferencia</p>
+                  <p class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">28% OFF Transferencia</p>
                 </div>
                 <div class="text-right">
                   <span class="font-sans text-2xl sm:text-3xl font-bold text-primary">
@@ -306,7 +306,7 @@ const proceedToCheckout = () => {
                 </div>
                 <p class="text-[11px] text-amber-800 font-medium flex items-center gap-1">
                   <span class="material-symbols-outlined text-sm">credit_card</span>
-                  <span>Hasta <strong>3 cuotas fijas sin interés</strong> de ${{ Math.round(cartStore.total / 3).toLocaleString('es-AR') }}</span>
+                  <span>Hasta <strong>6 cuotas fijas sin interés</strong> de ${{ Math.round(cartStore.total / 6).toLocaleString('es-AR') }} (o 3 de ${{ Math.round(cartStore.total / 3).toLocaleString('es-AR') }})</span>
                 </p>
               </div>
             </div>
