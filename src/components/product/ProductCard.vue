@@ -129,44 +129,34 @@ const handleWishlist = () => {
     </div>
 
     <!-- Product Info Content -->
-    <div class="p-4 sm:p-5 flex flex-col flex-grow justify-between gap-3 bg-surface">
-      <div>
+    <div class="p-4 sm:p-5 flex flex-col flex-grow justify-between gap-3 bg-surface text-center">
+      <div class="flex flex-col items-center">
         <!-- Brand, Category & Rating Row -->
-        <div class="flex justify-between items-center text-xs font-label text-secondary uppercase tracking-widest mb-1.5">
+        <div class="flex items-center justify-center gap-1.5 text-xs font-label text-secondary uppercase tracking-widest mb-1 w-full">
           <span class="font-bold text-primary">{{ product.brand }}</span>
           <span v-if="product.rating" class="flex items-center gap-1 font-bold text-primary lowercase tracking-normal">
+            <span class="text-secondary/40">•</span>
             <span class="material-symbols-outlined fill-icon text-amber-700 text-xs">star</span>
             <span>{{ product.rating }}</span>
           </span>
         </div>
 
         <!-- Product Name -->
-        <RouterLink :to="`/producto/${product.slug}`" class="block group/link">
+        <RouterLink :to="`/producto/${product.slug}`" class="block group/link w-full">
           <h3 class="font-serif text-base sm:text-lg font-normal text-primary leading-snug group-hover/link:text-primary-container transition-colors line-clamp-1">
             {{ product.name }}
           </h3>
         </RouterLink>
 
-        <!-- Concentration & Fragrance Family -->
-        <p class="font-sans text-xs text-secondary mt-0.5">
-          {{ product.concentration }} • {{ product.fragranceFamily }}
+        <!-- Concentration -->
+        <p v-if="product.concentration" class="font-sans text-xs text-secondary mt-0.5">
+          {{ product.concentration }}
         </p>
-
-        <!-- Top Notes Pills -->
-        <div class="flex flex-wrap gap-1.5 mt-3">
-          <span 
-            v-for="note in product.olfactoryPyramid.topNotes.slice(0, 2)" 
-            :key="note"
-            class="font-label text-[10px] font-semibold text-secondary bg-surface-container px-2 py-0.5 rounded-md border border-outline-variant/60"
-          >
-            {{ note }}
-          </span>
-        </div>
       </div>
 
       <!-- Price & Actions Row -->
-      <div class="pt-3 border-t border-outline-variant/70 flex justify-between items-end gap-2">
-        <div class="space-y-1 flex-1 min-w-0">
+      <div class="pt-3 border-t border-outline-variant/70 flex flex-col items-center gap-2.5">
+        <div class="space-y-1 w-full flex flex-col items-center">
           <!-- Precio exclusivo Transferencia -->
           <div>
             <span class="block text-[9px] font-bold uppercase tracking-wider text-emerald-800">
@@ -178,11 +168,11 @@ const handleWishlist = () => {
           </div>
 
           <!-- Precio de Lista & Cuotas Sin Interés -->
-          <div class="pt-1 border-t border-outline-variant/50 text-[11px] font-sans leading-tight">
+          <div class="pt-1 border-t border-outline-variant/50 text-[11px] font-sans leading-tight w-full flex flex-col items-center">
             <p class="text-secondary text-[11px]">
               Precio de lista: <strong class="text-primary font-semibold">${{ selectedSize.price.toLocaleString('es-AR') }}</strong>
             </p>
-            <p class="text-amber-800 text-[10px] font-semibold flex items-center gap-1 mt-0.5">
+            <p class="text-amber-800 text-[10px] font-semibold flex items-center justify-center gap-1 mt-0.5">
               <span class="material-symbols-outlined text-[13px] leading-none">credit_card</span>
               <span>Hasta <strong>6 cuotas s/int</strong> de ${{ Math.round(selectedSize.price / 6).toLocaleString('es-AR') }}</span>
             </p>
@@ -192,10 +182,11 @@ const handleWishlist = () => {
         <!-- Mobile Add Button -->
         <button 
           @click.stop="handleQuickAdd"
-          class="md:hidden p-2.5 bg-primary-container text-on-primary rounded-md hover:bg-inverse-surface transition-colors shadow-xs active:scale-95 flex items-center justify-center"
+          class="md:hidden w-full py-2 bg-primary-container text-on-primary rounded-md hover:bg-inverse-surface transition-colors shadow-xs active:scale-95 flex items-center justify-center gap-1.5 text-xs font-label uppercase tracking-wider font-bold"
           aria-label="Agregar a la bolsa"
         >
-          <span class="material-symbols-outlined text-lg">add_shopping_cart</span>
+          <span class="material-symbols-outlined text-sm">shopping_bag</span>
+          <span>Añadir</span>
         </button>
       </div>
 
