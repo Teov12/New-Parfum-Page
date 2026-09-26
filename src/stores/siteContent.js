@@ -20,7 +20,7 @@ const DEFAULT_SLIDES = [
   },
   {
     id: 'slide_2',
-    tag: 'Tendencia Mundial',
+    tag: 'Perfumería Oriental & Árabe',
     title: 'Perfumes Árabes &',
     highlight: 'estelas infinitas.',
     description: 'Las fragancias más virales de Dubai: notas especiadas, maderas y vainillas con fijación y duración increíble en piel.',

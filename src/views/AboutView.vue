@@ -61,7 +61,7 @@ const siteContentStore = useSiteContentStore()
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div v-reveal="{ delay: 100 }" class="bg-surface-container p-8 border border-outline-variant rounded-xs space-y-4 shadow-xs hover:border-primary transition-all duration-300">
+          <div v-reveal="{ delay: 100 }" class="bg-surface-container p-8 border border-outline-variant rounded-xl space-y-4 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-300">
             <div class="w-12 h-12 bg-surface rounded-full flex items-center justify-center border border-outline-variant text-primary font-sans text-xl font-bold shadow-2xs">
               ✓
             </div>
@@ -71,7 +71,7 @@ const siteContentStore = useSiteContentStore()
             </p>
           </div>
 
-          <div v-reveal="{ delay: 200 }" class="bg-surface-container p-8 border border-outline-variant rounded-xs space-y-4 shadow-xs hover:border-primary transition-all duration-300">
+          <div v-reveal="{ delay: 200 }" class="bg-surface-container p-8 border border-outline-variant rounded-xl space-y-4 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-300">
             <div class="w-12 h-12 bg-surface rounded-full flex items-center justify-center border border-outline-variant text-primary font-sans text-xl font-bold shadow-2xs">
               💬
             </div>
@@ -81,7 +81,7 @@ const siteContentStore = useSiteContentStore()
             </p>
           </div>
 
-          <div v-reveal="{ delay: 300 }" class="bg-surface-container p-8 border border-outline-variant rounded-xs space-y-4 shadow-xs hover:border-primary transition-all duration-300">
+          <div v-reveal="{ delay: 300 }" class="bg-surface-container p-8 border border-outline-variant rounded-xl space-y-4 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-300">
             <div class="w-12 h-12 bg-surface rounded-full flex items-center justify-center border border-outline-variant text-primary font-sans text-xl font-bold shadow-2xs">
               📦
             </div>

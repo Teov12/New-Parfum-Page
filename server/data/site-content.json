@@ -2,7 +2,7 @@
   "heroSlides": [
     {
       "id": "slide_1",
-      "tag": "100% Originales & Sellados",
+      "tag": "",
       "title": "Encontrá tu nueva",
       "highlight": "fragancia favorita.",
       "description": "Perfumes importados de diseñador y las últimas tendencias árabes. Encontrá tu fragancia favorita con envíos seguros a todo el país.",
@@ -19,7 +19,7 @@
     },
     {
       "id": "slide_2",
-      "tag": "Tendencia Mundial",
+      "tag": "Perfumería Oriental & Árabe",
       "title": "Perfumes Árabes &",
       "highlight": "estelas infinitas.",
       "description": "Las fragancias más virales de Dubai: notas especiadas, maderas y vainillas con fijación y duración increíble en piel.",
@@ -35,7 +35,7 @@
     },
     {
       "id": "slide_3",
-      "tag": "Test Rápido de Perfumes",
+      "tag": "",
       "title": "Descubrí tu aroma",
       "highlight": "para todos los días.",
       "description": "Respondé 4 preguntas simples sobre tus gustos y te recomendamos las mejores fragancias según tu estilo y ocasión.",
@@ -124,5 +124,6 @@
   ],
   "editorial": {
     "aboutImage": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85"
-  }
+  },
+  "updatedAt": "2026-09-26T00:15:18.551Z"
 }

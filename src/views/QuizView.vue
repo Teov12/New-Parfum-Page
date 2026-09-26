@@ -143,7 +143,7 @@ const handleAddRecommended = () => {
               v-for="opt in questions[currentStep].options"
               :key="opt.label"
               @click="selectOption(questions[currentStep].key, opt.value)"
-              class="p-6 bg-surface-container-low hover:bg-surface-container border border-outline-variant hover:border-primary rounded-xl flex flex-col items-center text-center gap-3 transition-all duration-300 group shadow-2xs hover:shadow-md hover:-translate-y-1 active:scale-98"
+              class="p-6 bg-surface-container-low hover:bg-surface-container border border-outline-variant rounded-xl flex flex-col items-center text-center gap-3 transition-all duration-300 group shadow-2xs hover:shadow-md hover:-translate-y-1 active:scale-98"
             >
               <span class="material-symbols-outlined text-3xl text-primary group-hover:scale-110 transition-transform duration-300">
                 {{ opt.icon }}

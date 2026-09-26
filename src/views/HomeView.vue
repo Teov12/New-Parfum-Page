@@ -225,10 +225,9 @@ const trustBadges = [
             <!-- Text Column (8 cols) -->
             <div class="lg:col-span-8 flex flex-col justify-center">
               
-              <div class="inline-flex items-center gap-2 mb-4">
-                <span class="font-label text-xs uppercase tracking-[0.25em] text-secondary font-bold bg-surface-container/95 px-3.5 py-1.5 rounded-full border border-outline-variant/80 shadow-xs flex items-center gap-1.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-primary-container animate-pulse"></span>
-                  <span>{{ currentSlideData.tag }}</span>
+              <div v-if="currentSlideData.tag" class="mb-4">
+                <span class="font-label text-xs sm:text-[13px] uppercase tracking-[0.25em] text-secondary font-semibold">
+                  {{ currentSlideData.tag }}
                 </span>
               </div>
 
@@ -241,19 +240,18 @@ const trustBadges = [
                 {{ currentSlideData.description }}
               </p>
 
-              <!-- CTAs: Píldoras Ergonómicas Elegantes -->
+              <!-- CTAs: Botones Elegantes -->
               <div class="flex flex-col sm:flex-row gap-4">
                 <RouterLink 
                   :to="currentSlideData.primaryCtaLink"
-                  class="group relative inline-flex items-center justify-center bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-4 px-9 rounded-full border border-primary-container hover:bg-inverse-surface transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 text-center overflow-hidden"
+                  class="inline-flex items-center justify-center bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-4 px-9 rounded-full border border-primary-container hover:bg-inverse-surface transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 text-center"
                 >
-                  <span class="relative z-10">{{ currentSlideData.primaryCtaText }}</span>
-                  <div class="absolute inset-0 -translate-x-full group-hover:translate-x-full duration-1000 transition-transform bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                  <span>{{ currentSlideData.primaryCtaText }}</span>
                 </RouterLink>
 
                 <RouterLink 
                   :to="currentSlideData.secondaryCtaLink"
-                  class="inline-flex items-center justify-center bg-surface text-primary font-label text-xs uppercase tracking-widest py-4 px-9 rounded-full border border-outline hover:border-primary hover:bg-surface-container transition-all duration-300 gap-2 shadow-xs hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 text-center"
+                  class="inline-flex items-center justify-center bg-surface text-primary font-label text-xs uppercase tracking-widest py-4 px-9 rounded-full border border-outline hover:bg-surface-container transition-all duration-300 gap-2 shadow-xs hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 text-center"
                 >
                   <span v-if="currentSlideData.secondaryCtaIcon" class="material-symbols-outlined text-sm">{{ currentSlideData.secondaryCtaIcon }}</span>
                   <span>{{ currentSlideData.secondaryCtaText }}</span>
@@ -278,12 +276,9 @@ const trustBadges = [
 
             </div>
 
-            <!-- Featured Showcase Bottle Column (4 cols) - Floating Editorial Card -->
+            <!-- Featured Showcase Bottle Column (4 cols) - Editorial Card -->
             <div class="hidden lg:flex lg:col-span-4 justify-center items-center relative">
-              <!-- Subtle ambient glow circle behind -->
-              <div class="absolute w-72 h-72 bg-primary-container/15 rounded-full blur-3xl pointer-events-none"></div>
-
-              <div class="relative w-72 rounded-2xl bg-surface/95 p-4 border border-outline-variant shadow-[0_20px_45px_-12px_rgba(46,25,17,0.12)] hover:shadow-[0_25px_50px_-10px_rgba(46,25,17,0.18)] transition-all duration-500 hover:scale-102 animate-float-slow">
+              <div class="relative w-72 rounded-2xl bg-surface/95 p-4 border border-outline-variant shadow-[0_20px_45px_-12px_rgba(46,25,17,0.08)] hover:shadow-[0_25px_50px_-10px_rgba(46,25,17,0.14)] transition-all duration-500 hover:scale-[1.02]">
                 <div class="relative aspect-[3/4] rounded-xl overflow-hidden mb-4 bg-surface-container group">
                   <img 
                     :src="currentSlideData.bottleImage" 
@@ -292,14 +287,16 @@ const trustBadges = [
                     decoding="async"
                     @error="(e) => e.target.src = 'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=800&q=85'"
                   />
-                  <div class="absolute top-3 left-3 bg-surface font-label text-[10px] font-bold px-2.5 py-1 rounded-full text-primary border border-outline-variant shadow-xs">
-                    {{ currentSlideData.featuredRating }}
-                  </div>
                 </div>
-                <div class="space-y-1">
-                  <span class="font-label text-[10px] font-semibold uppercase tracking-wider text-secondary">
-                    Selección de la Boutique
-                  </span>
+                <div class="space-y-1.5 pt-1">
+                  <div class="flex items-center justify-between text-secondary">
+                    <span class="font-label text-[10px] font-semibold uppercase tracking-wider">
+                      Selección de la Boutique
+                    </span>
+                    <span v-if="currentSlideData.featuredRating" class="font-label text-[11px] text-primary font-medium">
+                      {{ currentSlideData.featuredRating }}
+                    </span>
+                  </div>
                   <h4 class="font-serif text-lg text-primary font-normal line-clamp-1">
                     {{ currentSlideData.featuredTitle }}
                   </h4>
@@ -317,7 +314,7 @@ const trustBadges = [
       <!-- Carousel Navigation Arrows with Directional Tactile Response -->
       <button 
         @click="prevSlide(); resetAutoplay()"
-        class="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-surface/90 backdrop-blur-md border border-outline-variant hover:border-primary text-primary flex items-center justify-center shadow-md hover:shadow-xl hover:scale-110 active:-translate-x-1 active:scale-95 transition-all duration-300 group"
+        class="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-surface/90 backdrop-blur-md border border-outline-variant hover:bg-surface text-primary flex items-center justify-center shadow-md hover:shadow-xl hover:scale-110 active:-translate-x-1 active:scale-95 transition-all duration-300 group"
         aria-label="Diapositiva anterior"
       >
         <span class="material-symbols-outlined text-xl transition-transform duration-300 group-hover:-translate-x-0.5">chevron_left</span>
@@ -325,7 +322,7 @@ const trustBadges = [
 
       <button 
         @click="nextSlide(); resetAutoplay()"
-        class="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-surface/90 backdrop-blur-md border border-outline-variant hover:border-primary text-primary flex items-center justify-center shadow-md hover:shadow-xl hover:scale-110 active:translate-x-1 active:scale-95 transition-all duration-300 group"
+        class="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-surface/90 backdrop-blur-md border border-outline-variant hover:bg-surface text-primary flex items-center justify-center shadow-md hover:shadow-xl hover:scale-110 active:translate-x-1 active:scale-95 transition-all duration-300 group"
         aria-label="Siguiente diapositiva"
       >
         <span class="material-symbols-outlined text-xl transition-transform duration-300 group-hover:translate-x-0.5">chevron_right</span>
@@ -363,7 +360,7 @@ const trustBadges = [
           v-reveal="{ delay: idx * 100, direction: 'up' }"
           class="group flex items-start gap-4 p-4 rounded-xl bg-surface-container/60 hover:bg-surface-container border border-outline-variant/60 hover:border-outline-variant hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-default"
         >
-          <div class="w-11 h-11 bg-surface rounded-xl flex items-center justify-center flex-shrink-0 text-primary shadow-xs border border-outline-variant/60 group-hover:scale-110 group-hover:rotate-3 group-hover:border-primary transition-all duration-300">
+          <div class="w-11 h-11 bg-surface rounded-xl flex items-center justify-center flex-shrink-0 text-primary shadow-xs border border-outline-variant/60 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
             <span class="material-symbols-outlined text-xl">{{ badge.icon }}</span>
           </div>
           <div>
@@ -386,14 +383,14 @@ const trustBadges = [
         <div class="flex items-center gap-2">
           <button 
             @click="scrollCarousel('left')"
-            class="w-10 h-10 rounded-md bg-surface border border-outline-variant hover:border-primary text-primary flex items-center justify-center shadow-xs hover:scale-105 active:scale-95 transition-all"
+            class="w-10 h-10 rounded-md bg-surface border border-outline-variant hover:bg-surface-container text-primary flex items-center justify-center shadow-xs hover:scale-105 active:scale-95 transition-all"
             aria-label="Desplazar a la izquierda"
           >
             <span class="material-symbols-outlined text-lg">chevron_left</span>
           </button>
           <button 
             @click="scrollCarousel('right')"
-            class="w-10 h-10 rounded-md bg-surface border border-outline-variant hover:border-primary text-primary flex items-center justify-center shadow-xs hover:scale-105 active:scale-95 transition-all"
+            class="w-10 h-10 rounded-md bg-surface border border-outline-variant hover:bg-surface-container text-primary flex items-center justify-center shadow-xs hover:scale-105 active:scale-95 transition-all"
             aria-label="Desplazar a la derecha"
           >
             <span class="material-symbols-outlined text-lg">chevron_right</span>
@@ -440,7 +437,7 @@ const trustBadges = [
           :to="cat.link || '/catalogo'"
           v-reveal="{ delay: (idx % 4 + 1) * 100, direction: 'up' }"
           :class="[
-            'group relative overflow-hidden bg-primary rounded-xl border border-outline-variant hover:border-primary transition-all duration-500 flex flex-col justify-end p-8 shadow-md hover:shadow-2xl hover:-translate-y-1.5',
+            'group relative overflow-hidden bg-primary rounded-xl border border-outline-variant transition-all duration-500 flex flex-col justify-end p-8 shadow-md hover:shadow-2xl hover:-translate-y-1.5',
             cat.span === 12 ? 'col-span-12 aspect-[21/9] min-h-[300px]' : 'col-span-12 md:col-span-6 aspect-[4/3] md:aspect-[16/11]'
           ]"
         >
@@ -488,7 +485,7 @@ const trustBadges = [
             :key="family.id || family.name"
             :to="`/catalogo?family=${encodeURIComponent(family.name)}`"
             v-reveal="{ delay: idx * 100, direction: 'up' }"
-            class="group bg-surface border border-outline-variant hover:border-primary rounded-xl p-6 transition-all duration-300 flex flex-col justify-between shadow-2xs hover:shadow-xl hover:-translate-y-1.5"
+            class="group bg-surface border border-outline-variant rounded-xl p-6 transition-all duration-300 flex flex-col justify-between shadow-2xs hover:shadow-xl hover:-translate-y-1.5"
           >
             <div>
               <div class="aspect-square bg-surface-container rounded-lg mb-4 overflow-hidden border border-outline-variant">

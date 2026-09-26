@@ -6,7 +6,6 @@ import CartView from '../views/CartView.vue'
 import CheckoutView from '../views/CheckoutView.vue'
 import ContactView from '../views/ContactView.vue'
 import QuizView from '../views/QuizView.vue'
-import AdminView from '../views/AdminView.vue'
 
 const routes = [
   {
@@ -55,11 +54,48 @@ const routes = [
     component: QuizView,
     meta: { title: 'Encontrá tu Perfume Ideal | Gicca Perfumes' }
   },
+  // Admin Login (Standalone)
+  {
+    path: '/admin/login',
+    name: 'admin-login',
+    component: () => import('../views/admin/AdminLoginView.vue'),
+    meta: { title: 'Acceso Administración | Gicca Perfumes' }
+  },
+  // Admin Dashboard (Layout with Child Views)
   {
     path: '/admin',
-    name: 'admin',
-    component: AdminView,
-    meta: { title: 'Panel de Administración | Gicca Perfumes' }
+    component: () => import('../views/admin/AdminLayout.vue'),
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        redirect: { name: 'admin-sales' }
+      },
+      {
+        path: 'ventas',
+        name: 'admin-sales',
+        component: () => import('../views/admin/AdminSalesView.vue'),
+        meta: { title: 'Ventas & Pedidos | Admin Gicca', requiresAuth: true }
+      },
+      {
+        path: 'productos',
+        name: 'admin-products',
+        component: () => import('../views/admin/AdminProductsView.vue'),
+        meta: { title: 'Perfumes & Catálogo | Admin Gicca', requiresAuth: true }
+      },
+      {
+        path: 'finanzas',
+        name: 'admin-finances',
+        component: () => import('../views/admin/AdminFinancesView.vue'),
+        meta: { title: 'Finanzas & Rentabilidad | Admin Gicca', requiresAuth: true }
+      },
+      {
+        path: 'diseno',
+        name: 'admin-design',
+        component: () => import('../views/admin/AdminDesignView.vue'),
+        meta: { title: 'Diseño & Contenido | Admin Gicca', requiresAuth: true }
+      }
+    ]
   }
 ]
 
@@ -75,10 +111,31 @@ const router = createRouter({
   }
 })
 
+// Navigation Guards: Page Title & Auth Protection
 router.beforeEach((to, from, next) => {
   if (to.meta.title) {
     document.title = to.meta.title
   }
+
+  const token = localStorage.getItem('gicca_admin_token')
+
+  // Protect Admin Routes
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!token) {
+      next({
+        name: 'admin-login',
+        query: { redirect: to.fullPath }
+      })
+      return
+    }
+  }
+
+  // If already logged in and heading to login screen, redirect to sales
+  if (to.name === 'admin-login' && token) {
+    next({ name: 'admin-sales' })
+    return
+  }
+
   next()
 })
 

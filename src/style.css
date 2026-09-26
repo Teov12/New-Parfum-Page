@@ -524,4 +524,92 @@ html {
   }
 }
 
+/* ============================================================
+   ADMIN DASHBOARD FLUID ANIMATIONS & TRANSITIONS
+   ============================================================ */
+
+/* 1. Admin Route Fade & Slide Transition */
+.admin-fade-slide-enter-active,
+.admin-fade-slide-leave-active {
+  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.admin-fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(10px) scale(0.995);
+}
+
+.admin-fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.995);
+}
+
+/* 2. Admin List / Table Rows Stagger & Reorder FLIP Transitions */
+.admin-row-move,
+.admin-row-enter-active,
+.admin-row-leave-active {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.admin-row-enter-from {
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
+}
+
+.admin-row-leave-to {
+  opacity: 0;
+  transform: scale(0.96);
+}
+
+.admin-row-leave-active {
+  position: absolute;
+  width: 100%;
+}
+
+/* 3. Admin Subtab Transition */
+.admin-tab-fade-enter-active,
+.admin-tab-fade-leave-active {
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.admin-tab-fade-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.admin-tab-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+/* 4. Admin Modal Zoom & Backdrop Animations */
+.admin-modal-enter-active,
+.admin-modal-leave-active {
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.admin-modal-enter-active .admin-modal-dialog,
+.admin-modal-leave-active .admin-modal-dialog {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.admin-modal-enter-from {
+  opacity: 0;
+}
+
+.admin-modal-enter-from .admin-modal-dialog {
+  opacity: 0;
+  transform: scale(0.95) translateY(10px);
+}
+
+.admin-modal-leave-to {
+  opacity: 0;
+}
+
+.admin-modal-leave-to .admin-modal-dialog {
+  opacity: 0;
+  transform: scale(0.97) translateY(-6px);
+}
+
 

@@ -43,7 +43,7 @@ const handleWishlist = () => {
 
 <template>
   <!-- Modern Luxury Product Card with Lightened Warm Palette and Soft Shadows -->
-  <div class="group relative flex flex-col h-full bg-surface border border-outline-variant hover:border-primary rounded-xl overflow-hidden shadow-[0_10px_25px_-8px_rgba(46,25,17,0.05),0_4px_10px_-4px_rgba(46,25,17,0.02)] hover:shadow-[0_22px_45px_-10px_rgba(46,25,17,0.13),0_10px_20px_-4px_rgba(46,25,17,0.06)] hover:-translate-y-2 transition-all duration-400 ease-out will-change-transform">
+  <div class="group relative flex flex-col h-full bg-surface border border-outline-variant rounded-xl overflow-hidden shadow-[0_10px_25px_-8px_rgba(46,25,17,0.05),0_4px_10px_-4px_rgba(46,25,17,0.02)] hover:shadow-[0_22px_45px_-10px_rgba(46,25,17,0.13),0_10px_20px_-4px_rgba(46,25,17,0.06)] hover:-translate-y-2 transition-all duration-400 ease-out will-change-transform">
     
     <!-- Image & Floating Controls Container (3:4 ratio) -->
     <div class="relative aspect-[3/4] bg-surface-container overflow-hidden -mb-px">
@@ -69,7 +69,7 @@ const handleWishlist = () => {
       <!-- Wishlist Heart Button -->
       <button 
         @click.stop="handleWishlist"
-        class="absolute top-3 right-3 z-10 w-9 h-9 bg-surface/90 backdrop-blur-md hover:bg-surface border border-outline-variant hover:border-primary rounded-md flex items-center justify-center text-primary shadow-xs hover:scale-110 active:scale-95 transition-all duration-200"
+        class="absolute top-3 right-3 z-10 w-9 h-9 bg-surface/90 backdrop-blur-md hover:bg-surface border border-outline-variant rounded-md flex items-center justify-center text-primary shadow-xs hover:scale-110 active:scale-95 transition-all duration-200"
         :aria-label="wishlistStore.isInWishlist(product.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'"
       >
         <span 
@@ -95,7 +95,7 @@ const handleWishlist = () => {
               class="font-label text-[11px] font-bold px-3 py-1 uppercase tracking-wider rounded-md border transition-all duration-200 active:scale-95"
               :class="selectedSize.size === s.size 
                 ? 'bg-primary-container text-on-primary border-primary-container shadow-xs scale-105' 
-                : 'bg-surface text-primary border-outline-variant hover:border-primary'"
+                : 'bg-surface text-primary border-outline-variant hover:border-outline'"
             >
               {{ s.size }}
             </button>

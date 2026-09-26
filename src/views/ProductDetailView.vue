@@ -158,7 +158,7 @@ const calculateShipping = async () => {
             <!-- Wishlist Floating Button with Burst Animation -->
             <button 
               @click="handleToggleWishlist"
-              class="absolute top-4 right-4 z-10 w-11 h-11 bg-surface/90 backdrop-blur-xs border border-outline-variant hover:border-primary rounded-full flex items-center justify-center text-primary shadow-xs transition-all duration-200 hover:scale-110 active:scale-95"
+              class="absolute top-4 right-4 z-10 w-11 h-11 bg-surface/90 backdrop-blur-xs border border-outline-variant hover:bg-surface rounded-full flex items-center justify-center text-primary shadow-xs transition-all duration-200 hover:scale-110 active:scale-95"
               :aria-label="wishlistStore.isInWishlist(product.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'"
             >
               <span 
@@ -255,7 +255,7 @@ const calculateShipping = async () => {
                 class="font-label text-xs tracking-wider py-1.5 px-2 rounded-full border text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-2xs"
                 :class="selectedSize?.size === s.size 
                   ? 'bg-primary-container text-on-primary border-primary-container shadow-xs' 
-                  : 'bg-surface text-primary border-outline-variant hover:border-primary'"
+                  : 'bg-surface text-primary border-outline-variant hover:border-outline'"
               >
                 <span class="font-bold text-xs">{{ s.size }}</span>
                 <span class="text-[10px] opacity-85">${{ s.price.toLocaleString('es-AR') }}</span>
@@ -347,7 +347,7 @@ const calculateShipping = async () => {
               <div 
                 v-for="opt in shippingEstimate.options" 
                 :key="opt.id"
-                class="flex justify-between items-center p-2.5 rounded-xs bg-surface border border-outline-variant/60 hover:border-primary transition-colors"
+                class="flex justify-between items-center p-2.5 rounded-xs bg-surface border border-outline-variant/60 hover:bg-surface-container transition-colors"
               >
                 <div>
                   <div class="flex items-center gap-2">
@@ -432,13 +432,13 @@ const calculateShipping = async () => {
                 {{ product.usageTips }}
               </p>
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 font-label text-xs uppercase tracking-wider text-secondary">
-                <div class="p-4 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:border-primary transition-colors">
+                <div class="p-4 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:bg-surface-container transition-colors">
                   <strong>1. Puntos de Pulso:</strong> Muñecas, clavículas y cuello.
                 </div>
-                <div class="p-4 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:border-primary transition-colors">
+                <div class="p-4 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:bg-surface-container transition-colors">
                   <strong>2. No Frotar:</strong> Deja secar al aire para no romper las notas.
                 </div>
-                <div class="p-4 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:border-primary transition-colors">
+                <div class="p-4 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:bg-surface-container transition-colors">
                   <strong>3. Hidratación:</strong> Aplica sobre piel hidratada para mayor fijación.
                 </div>
               </div>
@@ -448,19 +448,19 @@ const calculateShipping = async () => {
           <!-- Tab 3: Technical Specifications -->
           <div v-else-if="activeTab === 'characteristics'" key="characteristics" class="bg-surface-container border border-outline-variant rounded-2xl p-8 shadow-xs transition-all duration-300">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div class="p-5 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:border-primary transition-all hover:-translate-y-0.5">
+              <div class="p-5 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:shadow-md transition-all hover:-translate-y-0.5">
                 <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Duración en Piel</span>
                 <p class="font-sans text-lg text-primary font-medium">{{ product.characteristics.longevity }}</p>
               </div>
-              <div class="p-5 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:border-primary transition-all hover:-translate-y-0.5">
+              <div class="p-5 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:shadow-md transition-all hover:-translate-y-0.5">
                 <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Estela / Proyección</span>
                 <p class="font-sans text-lg text-primary font-medium">{{ product.characteristics.sillage }}</p>
               </div>
-              <div class="p-5 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:border-primary transition-all hover:-translate-y-0.5">
+              <div class="p-5 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:shadow-md transition-all hover:-translate-y-0.5">
                 <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Estación Ideal</span>
                 <p class="font-sans text-lg text-primary font-medium">{{ product.characteristics.season }}</p>
               </div>
-              <div class="p-5 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:border-primary transition-all hover:-translate-y-0.5">
+              <div class="p-5 bg-surface rounded-xl border border-outline-variant shadow-2xs hover:shadow-md transition-all hover:-translate-y-0.5">
                 <span class="font-label text-xs uppercase tracking-widest text-secondary block mb-1">Ocasión Sugerida</span>
                 <p class="font-sans text-lg text-primary font-medium">{{ product.characteristics.occasion }}</p>
               </div>
