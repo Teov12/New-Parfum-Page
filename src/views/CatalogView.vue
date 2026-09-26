@@ -433,31 +433,6 @@ const activeFiltersCount = computed(() => {
             </div>
           </div>
 
-          <!-- Decants Spotlight Card -->
-          <div class="p-3.5 bg-amber-50/80 border border-amber-200/90 rounded-xl space-y-2">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-1.5 font-bold text-xs text-amber-950 font-label uppercase tracking-wider">
-                <span class="material-symbols-outlined text-base text-amber-800">science</span>
-                <span>Decants & Muestras</span>
-              </div>
-              <span class="text-[10px] font-bold bg-amber-200/60 text-amber-900 px-2 py-0.5 rounded-full">
-                {{ totalDecantsCount }}
-              </span>
-            </div>
-            <p class="text-[11px] text-amber-900/80 leading-snug">
-              Fracciones de 2ml, 5ml y 10ml para probar antes de comprar frascos completos.
-            </p>
-            <button
-              type="button"
-              @click="onlyDecants = !onlyDecants"
-              class="w-full py-2 px-3 rounded-lg text-xs font-label uppercase tracking-wider font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-              :class="onlyDecants ? 'bg-amber-800 text-white shadow-xs' : 'bg-surface hover:bg-amber-100/80 text-amber-950 border border-amber-300/80'"
-            >
-              <span class="material-symbols-outlined text-sm">{{ onlyDecants ? 'check_circle' : 'filter_alt' }}</span>
-              <span>{{ onlyDecants ? 'Filtrando Decants' : 'Ver Sólo Decants' }}</span>
-            </button>
-          </div>
-
           <!-- Gender Filter -->
           <div class="border-b border-outline-variant pb-5">
             <h3 class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-3">Género</h3>
@@ -718,30 +693,6 @@ const activeFiltersCount = computed(() => {
 
                 <!-- Quick Filters in Mobile -->
                 <div class="space-y-6">
-                  <!-- Decants Spotlight Mobile Card -->
-                  <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-xl space-y-2">
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-1.5 font-bold text-xs text-amber-950 font-label uppercase tracking-wider">
-                        <span class="material-symbols-outlined text-base text-amber-800">science</span>
-                        <span>Decants & Muestras</span>
-                      </div>
-                      <span class="text-[10px] font-bold bg-amber-200/60 text-amber-900 px-2 py-0.5 rounded-full">
-                        {{ totalDecantsCount }}
-                      </span>
-                    </div>
-                    <p class="text-[11px] text-amber-900/80 leading-snug">
-                      Fracciones de 2ml, 5ml y 10ml en atomizador.
-                    </p>
-                    <button
-                      type="button"
-                      @click="onlyDecants = !onlyDecants"
-                      class="w-full py-2 px-3 rounded-lg text-xs font-label uppercase tracking-wider font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                      :class="onlyDecants ? 'bg-amber-800 text-white shadow-xs' : 'bg-surface hover:bg-amber-100 text-amber-950 border border-amber-300'"
-                    >
-                      <span class="material-symbols-outlined text-sm">{{ onlyDecants ? 'check_circle' : 'filter_alt' }}</span>
-                      <span>{{ onlyDecants ? 'Filtrando Decants' : 'Ver Sólo Decants' }}</span>
-                    </button>
-                  </div>
 
                   <div>
                     <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-3">Género</h4>
