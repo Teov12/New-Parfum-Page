@@ -55,7 +55,7 @@ const isActive = (path) => {
       </RouterLink>
 
       <!-- Desktop Navigation Links -->
-      <div class="hidden lg:flex items-center gap-7">
+      <div class="hidden lg:flex items-center gap-6">
         <RouterLink
           v-for="link in navLinks"
           :key="link.name"
@@ -66,6 +66,17 @@ const isActive = (path) => {
             : 'text-secondary hover:text-primary hover:bg-surface-container/50'"
         >
           {{ link.name }}
+        </RouterLink>
+
+        <!-- Quiz Olfativo Button -->
+        <RouterLink
+          to="/quiz"
+          class="font-label text-label-sm uppercase tracking-wider transition-all duration-200 py-1.5 px-3.5 rounded-full flex items-center gap-1.5 border border-primary/20 bg-amber-50/70 hover:bg-amber-100/90 text-primary font-bold shadow-2xs group hover:scale-105 active:scale-95"
+          :class="isActive('/quiz') ? '!bg-primary !text-amber-200' : ''"
+          title="Descubrí tu perfume ideal en 60 segundos"
+        >
+          <span class="material-symbols-outlined text-sm text-amber-700 group-hover:rotate-12 transition-transform">auto_awesome</span>
+          <span>Quiz Olfativo</span>
         </RouterLink>
       </div>
 
