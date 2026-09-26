@@ -8,7 +8,7 @@
     "gender": "hombre",
     "category": "arabe",
     "fragranceFamily": "Amaderada",
-    "price": 68750,
+    "price": 76400,
     "transferPrice": 55000,
     "costPrice": 35075,
     "originalPrice": 82500,
@@ -25,7 +25,7 @@
     "sizes": [
       {
         "size": "100 ml",
-        "price": 68750,
+        "price": 76400,
         "transferPrice": 55000,
         "costPrice": 35075,
         "profit": 19925,
@@ -34,7 +34,7 @@
       },
       {
         "size": "5 ml (Decant)",
-        "price": 11000,
+        "price": 12200,
         "transferPrice": 8800,
         "costPrice": 4200,
         "profit": 4600,
@@ -43,11 +43,11 @@
       },
       {
         "size": "10 ml (Decant)",
-        "price": 19000,
+        "price": 21100,
         "transferPrice": 15200,
         "costPrice": 7500,
         "profit": 7700,
-        "profitMargin": 50,
+        "profitMargin": 51,
         "default": false
       }
     ],
@@ -80,9 +80,9 @@
       "occasion": "Uso diario y ocasiones especiales"
     },
     "usageTips": "Pulverizar en puntos de pulso (cuello y muñecas).",
-    "stock": 9,
+    "stock": 5,
     "createdAt": "2026-09-26T01:34:11.776Z",
-    "updatedAt": "2026-09-26T01:35:45.004Z",
+    "updatedAt": "2026-09-26T20:30:53.019Z",
     "profit": 19925,
     "profitMargin": 36
   },
@@ -96,7 +96,7 @@
     "gender": "hombre",
     "category": "arabe",
     "fragranceFamily": "Amaderada",
-    "price": 76375,
+    "price": 84850,
     "costPrice": 42700,
     "originalPrice": 0,
     "discountPercentage": 0,
@@ -112,7 +112,7 @@
     "sizes": [
       {
         "size": "100 ml",
-        "price": 76375,
+        "price": 84850,
         "transferPrice": 61100,
         "costPrice": 42700,
         "profit": 18400,
@@ -121,7 +121,7 @@
       },
       {
         "size": "5 ml (Decant)",
-        "price": 12250,
+        "price": 13600,
         "transferPrice": 9800,
         "costPrice": 4800,
         "profit": 5000,
@@ -156,7 +156,7 @@
     },
     "usageTips": "Para una estela envolvente, pulverizá sobre los puntos de pulso: cuello y muñecas.",
     "stock": 10,
-    "updatedAt": "2026-09-26T01:42:04.851Z",
+    "updatedAt": "2026-09-26T20:30:53.020Z",
     "__v": 0,
     "profit": 18400,
     "profitMargin": 30,
@@ -172,7 +172,7 @@
     "gender": "unisex",
     "category": "arabe",
     "fragranceFamily": "Amaderada",
-    "price": 79000,
+    "price": 87800,
     "costPrice": 43463,
     "originalPrice": 0,
     "discountPercentage": 0,
@@ -188,7 +188,7 @@
     "sizes": [
       {
         "size": "100 ml",
-        "price": 79000,
+        "price": 87800,
         "transferPrice": 63200,
         "costPrice": 43463,
         "profit": 19737,
@@ -221,7 +221,7 @@
     },
     "usageTips": "Pulverizar en puntos de pulso (cuello y muñecas).",
     "stock": 7,
-    "updatedAt": "2026-09-26T01:46:30.345Z",
+    "updatedAt": "2026-09-26T20:30:53.020Z",
     "__v": 0,
     "profit": 19737,
     "profitMargin": 31,

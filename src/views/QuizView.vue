@@ -362,13 +362,13 @@ const whatsappSommelierUrl = computed(() => {
                 <!-- Price Box -->
                 <div class="pt-2 border-t border-outline-variant/60 flex flex-wrap items-baseline gap-2.5">
                   <span class="font-sans font-bold text-2xl text-emerald-850">
-                    ${{ (matchResult.transferPrice || Math.round((matchResult.price || 0) * 0.8)).toLocaleString('es-AR') }}
+                    ${{ (matchResult.transferPrice || Math.round((matchResult.price || 0) * 0.72)).toLocaleString('es-AR') }}
                   </span>
                   <span class="font-label text-[10px] uppercase font-bold text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200">
-                    20% OFF Transferencia
+                    28% OFF Transferencia
                   </span>
                   <span class="text-xs text-secondary w-full block">
-                    o ${{ (matchResult.price || 0).toLocaleString('es-AR') }} en 3 cuotas fijas sin interés
+                    o ${{ (matchResult.price || 0).toLocaleString('es-AR') }} en hasta 6 cuotas fijas sin interés
                   </span>
                 </div>
 
@@ -441,7 +441,7 @@ const whatsappSommelierUrl = computed(() => {
                     <h4 class="font-serif font-bold text-primary text-sm line-clamp-1 group-hover:text-primary-container transition-colors">{{ alt.name }}</h4>
                     <p class="text-[11px] text-secondary mt-0.5 capitalize">{{ alt.fragranceFamily || 'Amaderada' }} • {{ alt.concentration }}</p>
                     <span class="font-bold text-xs text-emerald-850 block mt-1">
-                      ${{ (alt.transferPrice || Math.round((alt.price || 0) * 0.8)).toLocaleString('es-AR') }}
+                      ${{ (alt.transferPrice || Math.round((alt.price || 0) * 0.72)).toLocaleString('es-AR') }}
                     </span>
                   </div>
                 </div>

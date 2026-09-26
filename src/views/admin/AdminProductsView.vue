@@ -44,7 +44,7 @@ const catalogStats = computed(() => {
     const stock = Number(p.stock ?? 10);
     totalStock += stock;
     const effectivePrice = Number(
-      p.transferPrice || Math.round((p.price || 0) * 0.8),
+      p.transferPrice || Math.round((p.price || 0) * 0.72),
     );
     totalInventoryValue += stock * effectivePrice;
     if (
@@ -357,7 +357,7 @@ const handleDeleteProduct = async () => {
             <span class="font-bold text-sm text-emerald-850">
               ${{
                 (
-                  p.transferPrice || Math.round((p.price || 0) * 0.8)
+                  p.transferPrice || Math.round((p.price || 0) * 0.72)
                 ).toLocaleString("es-AR")
               }}
             </span>
@@ -398,7 +398,7 @@ const handleDeleteProduct = async () => {
                   p.profit ||
                   Math.max(
                     0,
-                    (p.transferPrice || Math.round((p.price || 0) * 0.8)) -
+                    (p.transferPrice || Math.round((p.price || 0) * 0.72)) -
                       (p.costPrice ||
                         Math.round((p.transferPrice || p.price || 0) * 0.45)),
                   )
@@ -410,11 +410,11 @@ const handleDeleteProduct = async () => {
                 {{
                   p.profitMargin ||
                   Math.round(
-                    (((p.transferPrice || Math.round((p.price || 0) * 0.8)) -
+                    (((p.transferPrice || Math.round((p.price || 0) * 0.72)) -
                       (p.costPrice || 0)) /
                       Math.max(
                         1,
-                        p.transferPrice || Math.round((p.price || 0) * 0.8),
+                        p.transferPrice || Math.round((p.price || 0) * 0.72),
                       )) *
                       100,
                   )
@@ -521,7 +521,7 @@ const handleDeleteProduct = async () => {
                     >
                     ${{
                       (
-                        p.transferPrice || Math.round((p.price || 0) * 0.8)
+                        p.transferPrice || Math.round((p.price || 0) * 0.72)
                       ).toLocaleString("es-AR")
                     }}
                   </span>
@@ -553,7 +553,7 @@ const handleDeleteProduct = async () => {
                       p.profit ||
                       Math.max(
                         0,
-                        (p.transferPrice || Math.round((p.price || 0) * 0.8)) -
+                        (p.transferPrice || Math.round((p.price || 0) * 0.72)) -
                           (p.costPrice ||
                             Math.round(
                               (p.transferPrice || p.price || 0) * 0.45,
@@ -568,11 +568,11 @@ const handleDeleteProduct = async () => {
                   {{
                     p.profitMargin ||
                     Math.round(
-                      (((p.transferPrice || Math.round((p.price || 0) * 0.8)) -
+                      (((p.transferPrice || Math.round((p.price || 0) * 0.72)) -
                         (p.costPrice || 0)) /
                         Math.max(
                           1,
-                          p.transferPrice || Math.round((p.price || 0) * 0.8),
+                          p.transferPrice || Math.round((p.price || 0) * 0.72),
                         )) *
                         100,
                     )
