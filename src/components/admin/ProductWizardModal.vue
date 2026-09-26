@@ -61,6 +61,7 @@ const defaultForm = () => ({
   gender: 'unisex',
   category: 'disenador',
   fragranceFamily: 'Amaderada',
+  transferPrice: null,
   price: null,
   costPrice: null,
   originalPrice: 0,
@@ -74,7 +75,7 @@ const defaultForm = () => ({
   stock: 10,
   images: [],
   sizes: [
-    { size: 100, price: null, costPrice: null, default: true }
+    { size: 100, transferPrice: null, price: null, costPrice: null, default: true }
   ],
   olfactoryPyramid: {
     topNotes: [],
@@ -96,6 +97,7 @@ const topNoteInput = ref('')
 const heartNoteInput = ref('')
 const baseNoteInput = ref('')
 const targetTransferPrice = ref(null)
+const cardFeeRate = ref(20) // Recargo / Comisión bancaria / Mercado Pago (20% por defecto)
 
 watch(() => props.isOpen, (open) => {
   if (open) {
@@ -109,7 +111,17 @@ watch(() => props.isOpen, (open) => {
       formData.value = JSON.parse(JSON.stringify(props.product))
 
       if (!formData.value.sizes || formData.value.sizes.length === 0) {
-        formData.value.sizes = [{ size: 100, price: formData.value.price || null, costPrice: formData.value.costPrice || null, default: true }]
+        const transfer = formData.value.transferPrice !== undefined && formData.value.transferPrice !== null
+          ? formData.value.transferPrice
+          : (formData.value.price ? Math.round(Number(formData.value.price) * 0.8) : null)
+
+        formData.value.sizes = [{ 
+          size: 100, 
+          transferPrice: transfer,
+          price: formData.value.price || null, 
+          costPrice: formData.value.costPrice || null, 
+          default: true 
+        }]
       } else {
         formData.value.sizes = formData.value.sizes.map((s, idx) => {
           let num = s.size
@@ -117,10 +129,15 @@ watch(() => props.isOpen, (open) => {
             const parsed = parseInt(num.replace(/\D/g, ''), 10)
             num = !isNaN(parsed) ? parsed : 100
           }
+          const transfer = s.transferPrice !== undefined && s.transferPrice !== null
+            ? Number(s.transferPrice)
+            : (s.price ? Math.round(Number(s.price) * 0.8) : null)
+
           return {
             size: num || 100,
+            transferPrice: transfer,
             price: s.price || null,
-            costPrice: s.costPrice !== undefined ? s.costPrice : Math.round((s.price || 0) * 0.45),
+            costPrice: s.costPrice !== undefined ? s.costPrice : Math.round(((transfer || s.price) || 0) * 0.45),
             default: idx === 0 || s.default === true
           }
         })
@@ -142,25 +159,64 @@ watch(() => props.isOpen, (open) => {
   }
 })
 
-// Unit Profit calculations
+// Cálculo de Precio Lista a partir de Transferencia (absorbe recargo de Mercado Pago)
+// Fórmula: Para que al vender con tarjeta y descontar el fee te quede el precio de transferencia:
+// Precio_Lista = Transferencia / (1 - (comision / 100))
+const onTransferPriceChange = (sizeObj) => {
+  const transfer = Number(sizeObj.transferPrice) || 0
+  const fee = Number(cardFeeRate.value) || 20
+  if (transfer > 0) {
+    const factor = Math.max(0.01, 1 - (fee / 100))
+    sizeObj.price = Math.round(transfer / factor)
+  } else {
+    sizeObj.price = null
+  }
+}
+
+// Si se edita manualmente el precio de lista, actualizamos el precio transferencia equivalente
+const onPriceChange = (sizeObj) => {
+  const price = Number(sizeObj.price) || 0
+  const fee = Number(cardFeeRate.value) || 20
+  if (price > 0 && (!sizeObj.transferPrice || sizeObj.transferPrice <= 0)) {
+    const factor = Math.max(0.01, 1 - (fee / 100))
+    sizeObj.transferPrice = Math.round(price * factor)
+  }
+}
+
+// Si el usuario cambia la tasa de comisión, recalcula los tamaños con precio de transferencia
+const onFeeRateChange = () => {
+  formData.value.sizes.forEach(s => {
+    if (s.transferPrice && Number(s.transferPrice) > 0) {
+      onTransferPriceChange(s)
+    }
+  })
+}
+
+// Rentabilidad neta real por frasco (basada en el dinero que efectivamente te queda en mano)
 const productUnitProfit = computed(() => {
-  const price = Number(formData.value.sizes[0]?.price) || 0
-  const cost = Number(formData.value.sizes[0]?.costPrice) || 0
-  return Math.max(0, price - cost)
+  const mainSize = formData.value.sizes[0]
+  const netInHand = Number(mainSize?.transferPrice) || (Number(mainSize?.price) ? Math.round(Number(mainSize?.price) * 0.8) : 0)
+  const cost = Number(mainSize?.costPrice) || 0
+  return Math.max(0, netInHand - cost)
 })
 
 const productProfitMargin = computed(() => {
-  const price = Number(formData.value.sizes[0]?.price) || 0
-  const cost = Number(formData.value.sizes[0]?.costPrice) || 0
-  if (price <= 0) return 0
-  return Math.round(((price - cost) / price) * 100)
+  const mainSize = formData.value.sizes[0]
+  const netInHand = Number(mainSize?.transferPrice) || (Number(mainSize?.price) ? Math.round(Number(mainSize?.price) * 0.8) : 0)
+  const cost = Number(mainSize?.costPrice) || 0
+  if (netInHand <= 0) return 0
+  return Math.round(((netInHand - cost) / netInHand) * 100)
 })
 
 const calculateListPriceFromTransfer = () => {
   const target = Number(targetTransferPrice.value) || 0
+  const fee = Number(cardFeeRate.value) || 20
+  const factor = Math.max(0.01, 1 - (fee / 100))
   if (target > 0 && formData.value.sizes[0]) {
-    const calculatedListPrice = Math.round(target / 0.8)
+    formData.value.sizes[0].transferPrice = target
+    const calculatedListPrice = Math.round(target / factor)
     formData.value.sizes[0].price = calculatedListPrice
+    if (formData.value.transferPrice !== undefined) formData.value.transferPrice = target
     if (formData.value.price !== undefined) formData.value.price = calculatedListPrice
   }
 }
@@ -184,8 +240,15 @@ const goToNextStep = () => {
       toastStore.show('Debes especificar al menos un tamaño en ml.', 'error')
       return
     }
-    if (!mainSize.price || Number(mainSize.price) <= 0) {
-      toastStore.show('El precio de venta debe ser mayor a $0.', 'error')
+
+    if (mainSize.transferPrice && (!mainSize.price || Number(mainSize.price) <= 0)) {
+      onTransferPriceChange(mainSize)
+    } else if (mainSize.price && (!mainSize.transferPrice || Number(mainSize.transferPrice) <= 0)) {
+      onPriceChange(mainSize)
+    }
+
+    if ((!mainSize.transferPrice || Number(mainSize.transferPrice) <= 0) && (!mainSize.price || Number(mainSize.price) <= 0)) {
+      toastStore.show('Ingresá el precio de transferencia o lista (mayor a $0).', 'error')
       return
     }
     if (mainSize.costPrice === null || mainSize.costPrice === undefined || Number(mainSize.costPrice) < 0) {
@@ -206,7 +269,7 @@ const goToPrevStep = () => {
 }
 
 const addSize = () => {
-  formData.value.sizes.push({ size: 50, price: null, costPrice: null, default: false })
+  formData.value.sizes.push({ size: 50, transferPrice: null, price: null, costPrice: null, default: false })
 }
 
 const removeSize = (index) => {
@@ -295,20 +358,37 @@ const handleSubmitProduct = async () => {
   isSubmitting.value = true
 
   try {
-    const validSizes = formData.value.sizes.filter(s => s.size && s.price).map((s, idx) => ({
-      size: `${s.size} ml`,
-      price: Number(s.price),
-      costPrice: Number(s.costPrice) || Math.round(Number(s.price) * 0.45),
-      default: idx === 0
-    }))
+    const fee = Number(cardFeeRate.value) || 20
+    const factor = Math.max(0.01, 1 - (fee / 100))
+
+    const validSizes = formData.value.sizes
+      .filter(s => s.size && (s.transferPrice || s.price))
+      .map((s, idx) => {
+        const transfer = Number(s.transferPrice) || (s.price ? Math.round(Number(s.price) * factor) : 0)
+        const listPrice = Number(s.price) || (transfer ? Math.round(transfer / factor) : 0)
+        const cost = Number(s.costPrice) || Math.round(((transfer || listPrice) || 0) * 0.45)
+        return {
+          size: `${s.size} ml`,
+          price: listPrice,
+          transferPrice: transfer,
+          costPrice: cost,
+          default: idx === 0
+        }
+      })
 
     const mainPrice = validSizes[0]?.price || 0
-    const mainCost = validSizes[0]?.costPrice || Math.round(mainPrice * 0.45)
+    const mainTransferPrice = validSizes[0]?.transferPrice || Math.round(mainPrice * factor)
+    const mainCost = validSizes[0]?.costPrice || Math.round((mainTransferPrice || mainPrice) * 0.45)
+    const mainProfit = Math.max(0, mainTransferPrice - mainCost)
+    const mainProfitMargin = mainTransferPrice > 0 ? Math.round((mainProfit / mainTransferPrice) * 100) : 0
 
     const payload = {
       ...formData.value,
       price: mainPrice,
+      transferPrice: mainTransferPrice,
       costPrice: mainCost,
+      profit: mainProfit,
+      profitMargin: mainProfitMargin,
       sizes: validSizes,
       images: formData.value.images.length > 0 
         ? formData.value.images 
@@ -428,42 +508,102 @@ const handleSubmitProduct = async () => {
                 <button @click="addSize" type="button" class="text-xs font-label uppercase tracking-wider text-primary hover:text-primary-container underline transition-colors">+ Agregar otra medida</button>
               </div>
 
+              <!-- Configuración de Comisión Mercado Pago y Explicación -->
+              <div class="bg-surface-container/60 p-4 rounded-xl border border-outline-variant flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div class="space-y-0.5">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-base">credit_card</span>
+                    <span class="font-label text-xs uppercase tracking-wider text-primary font-bold">Cálculo de Precios con Recargo Mercado Pago (3 Cuotas)</span>
+                  </div>
+                  <p class="text-[11px] text-secondary leading-relaxed">
+                    Ingresá el <strong>Precio de Transferencia</strong> (lo que querés que te quede limpio en mano). El sistema calcula el <strong>Precio de Lista</strong> para que cuando el cliente compre en 3 cuotas con tarjeta, tras la retención de Mercado Pago te quede exactamente el importe de transferencia.
+                  </p>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0 bg-surface px-3 py-2 rounded-xl border border-outline-variant shadow-2xs">
+                  <label class="text-[10px] font-label uppercase text-secondary font-bold">Recargo MP:</label>
+                  <input 
+                    v-model.number="cardFeeRate" 
+                    @input="onFeeRateChange"
+                    type="number" 
+                    min="1" 
+                    max="50" 
+                    step="1"
+                    class="w-12 text-center font-bold text-xs bg-surface-container/70 border border-outline-variant rounded-lg p-1 text-primary focus:outline-none focus:border-primary"
+                  />
+                  <span class="text-xs font-bold text-primary">%</span>
+                </div>
+              </div>
+
               <div 
                 v-for="(sizeObj, idx) in formData.sizes" 
                 :key="idx"
-                class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center bg-surface p-4 rounded-xl border border-outline-variant shadow-2xs"
+                class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start bg-surface p-4 rounded-xl border border-outline-variant shadow-2xs"
               >
-                <!-- Size input -->
-                <div class="sm:col-span-3">
-                  <label class="block text-[10px] font-label uppercase tracking-wider text-secondary mb-1">Volumen (ml)</label>
+                <!-- Volumen (ml) -->
+                <div class="sm:col-span-2">
+                  <label class="block text-[10px] font-label uppercase tracking-wider text-secondary mb-1">Volumen</label>
                   <div class="flex items-center gap-1.5">
                     <input v-model.number="sizeObj.size" type="number" placeholder="100" class="w-full bg-surface-container/70 border border-outline-variant rounded-xl p-2.5 text-xs font-sans text-center focus:border-primary focus:outline-none" />
                     <span class="text-xs text-secondary font-bold">ml</span>
                   </div>
                 </div>
 
-                <!-- Sale price -->
+                <!-- PRECIO TRANSFERENCIA (En mano / Efectivo) - Principal -->
                 <div class="sm:col-span-4">
-                  <label class="block text-[10px] font-label uppercase tracking-wider text-secondary mb-1">Precio Lista / Cuotas ($ ARS) *</label>
-                  <input v-model.number="sizeObj.price" type="number" placeholder="87500" class="w-full bg-surface-container/70 border border-outline-variant rounded-xl p-2.5 text-xs font-sans font-bold text-primary focus:border-primary focus:outline-none" />
-                  <div class="mt-1.5 space-y-0.5 text-[10px]">
-                    <span class="text-emerald-800 font-semibold block">
-                      🏦 Transferencia (-20%): ${{ Math.round((sizeObj.price || 0) * 0.8).toLocaleString('es-AR') }}
-                    </span>
+                  <label class="block text-[10px] font-label uppercase tracking-wider text-primary font-bold mb-1">
+                    🏦 Precio Transferencia ($ ARS) *
+                  </label>
+                  <div class="relative">
+                    <span class="absolute left-3 top-2.5 text-xs text-secondary font-bold">$</span>
+                    <input 
+                      v-model.number="sizeObj.transferPrice" 
+                      @input="onTransferPriceChange(sizeObj)" 
+                      type="number" 
+                      placeholder="Ej. 55500" 
+                      class="w-full bg-surface-container/70 border-2 border-primary/40 focus:border-primary rounded-xl pl-7 pr-3 py-2.5 text-xs font-sans font-bold text-primary focus:bg-surface focus:outline-none transition-all shadow-2xs" 
+                    />
+                  </div>
+                  <span class="text-[10px] text-emerald-800 font-semibold block mt-1">
+                    ✨ Dinero neto que recibís en mano
+                  </span>
+                </div>
+
+                <!-- PRECIO LISTA (Tarjetas / Cuotas) - Calculado automáticamente -->
+                <div class="sm:col-span-3">
+                  <label class="block text-[10px] font-label uppercase tracking-wider text-secondary font-bold mb-1">
+                    💳 Precio Lista (Tarjetas) *
+                  </label>
+                  <div class="relative">
+                    <span class="absolute left-3 top-2.5 text-xs text-secondary font-bold">$</span>
+                    <input 
+                      v-model.number="sizeObj.price" 
+                      @input="onPriceChange(sizeObj)" 
+                      type="number" 
+                      placeholder="Ej. 69375" 
+                      class="w-full bg-surface-container/70 border border-outline-variant focus:border-primary rounded-xl pl-7 pr-3 py-2.5 text-xs font-sans font-bold text-secondary focus:bg-surface focus:outline-none transition-all shadow-2xs" 
+                    />
+                  </div>
+                  <div class="mt-1 space-y-0.5 text-[10px]">
                     <span class="text-secondary block">
-                      💳 3 cuotas s/int: ${{ Math.round((sizeObj.price || 0) / 3).toLocaleString('es-AR') }}
+                      3 cuotas s/int: ${{ Math.round((sizeObj.price || 0) / 3).toLocaleString('es-AR') }}
+                    </span>
+                    <span class="text-emerald-800 font-semibold block" v-if="sizeObj.price">
+                      MP te acredita: ${{ Math.round((sizeObj.price || 0) * (1 - (cardFeeRate || 20) / 100)).toLocaleString('es-AR') }}
                     </span>
                   </div>
                 </div>
 
                 <!-- Cost price -->
-                <div class="sm:col-span-4">
+                <div class="sm:col-span-2">
                   <label class="block text-[10px] font-label uppercase tracking-wider text-secondary mb-1">Precio Costo ($ ARS) *</label>
-                  <input v-model.number="sizeObj.costPrice" type="number" placeholder="82000" class="w-full bg-surface-container/70 border border-outline-variant rounded-xl p-2.5 text-xs font-sans text-secondary focus:border-primary focus:outline-none" />
+                  <div class="relative">
+                    <span class="absolute left-3 top-2.5 text-xs text-secondary font-bold">$</span>
+                    <input v-model.number="sizeObj.costPrice" type="number" placeholder="Ej. 35000" class="w-full bg-surface-container/70 border border-outline-variant rounded-xl pl-7 pr-3 py-2.5 text-xs font-sans text-secondary focus:border-primary focus:outline-none" />
+                  </div>
                 </div>
 
                 <!-- Remove button -->
-                <div class="sm:col-span-1 text-right">
+                <div class="sm:col-span-1 text-right pt-7">
                   <button v-if="formData.sizes.length > 1" @click="removeSize(idx)" type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-secondary hover:text-red-700 hover:bg-red-50 transition-colors">
                     <span class="material-symbols-outlined text-base">delete</span>
                   </button>
@@ -474,10 +614,10 @@ const handleSubmitProduct = async () => {
               <div class="p-4 bg-surface-container/70 rounded-xl border border-outline-variant space-y-2.5 mt-2">
                 <div class="flex items-center gap-2 text-xs text-primary font-bold">
                   <span class="material-symbols-outlined text-base text-primary">calculate</span>
-                  <span>Asistente de Precios: ¿Cuánto querés cobrar por Transferencia?</span>
+                  <span>Asistente Rápido: Fijar Precio de Transferencia y Calcular Lista</span>
                 </div>
                 <p class="text-[11px] text-secondary leading-relaxed">
-                  Ingresá tu precio deseado en transferencia (ej: $70.000). Se calculará automáticamente el precio de lista ($87.500) para ofrecer cuotas sin interés y que en transferencia quede en tu precio objetivo.
+                  Ingresá tu precio en mano deseado por transferencia (ej: $55.500). Se calcula automáticamente el precio de lista para absorber el {{ cardFeeRate || 20 }}% de Mercado Pago (ej: $69.375), garantizando que te queden ${{ (targetTransferPrice || 55500).toLocaleString('es-AR') }} netos tanto en cuotas con tarjeta como por transferencia directa (20% OFF).
                 </p>
                 <div class="flex flex-col sm:flex-row gap-2.5 items-start sm:items-center pt-1">
                   <div class="relative w-full sm:w-56">
@@ -485,7 +625,7 @@ const handleSubmitProduct = async () => {
                     <input 
                       v-model.number="targetTransferPrice" 
                       type="number" 
-                      placeholder="Ej. 70000" 
+                      placeholder="Ej. 55500" 
                       class="w-full bg-surface border border-outline-variant rounded-xl pl-7 pr-3 py-2 text-xs font-sans text-primary font-bold focus:border-primary focus:outline-none"
                       @keyup.enter="calculateListPriceFromTransfer"
                     />
@@ -495,7 +635,7 @@ const handleSubmitProduct = async () => {
                     @click="calculateListPriceFromTransfer" 
                     class="bg-primary hover:bg-primary-container text-on-primary font-label text-[11px] uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all flex-shrink-0 border border-primary/20 shadow-xs active:scale-95"
                   >
-                    Fijar Precio de Lista ({{ targetTransferPrice ? `$${Math.round(targetTransferPrice / 0.8).toLocaleString('es-AR')}` : '...' }})
+                    Aplicar a Medida Principal (Lista: {{ targetTransferPrice ? `$${Math.round(targetTransferPrice / (1 - (cardFeeRate || 20) / 100)).toLocaleString('es-AR')}` : '...' }})
                   </button>
                 </div>
               </div>
@@ -503,8 +643,8 @@ const handleSubmitProduct = async () => {
               <!-- Live Profit Preview Widget -->
               <div class="bg-emerald-50/90 border border-emerald-200/80 p-4 rounded-xl flex justify-between items-center mt-3 shadow-2xs">
                 <div>
-                  <span class="font-label text-xs uppercase font-bold text-emerald-900 block">Rentabilidad por Frasco:</span>
-                  <span class="text-xs text-emerald-800 font-medium">Ganancia calculada automáticamente por unidad vendida.</span>
+                  <span class="font-label text-xs uppercase font-bold text-emerald-900 block">Rentabilidad Real en Mano:</span>
+                  <span class="text-xs text-emerald-800 font-medium">Ganancia neta recibida por unidad vendida (descontada comisión MP y costo).</span>
                 </div>
                 <div class="text-right">
                   <span class="font-bold text-lg text-emerald-900 block">+${{ productUnitProfit.toLocaleString('es-AR') }}</span>

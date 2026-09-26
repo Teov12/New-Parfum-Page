@@ -4,6 +4,7 @@ import { useProductStore } from '@/stores/products'
 import { useToastStore } from '@/stores/toast'
 import ProductWizardModal from '@/components/admin/ProductWizardModal.vue'
 import DeleteConfirmModal from '@/components/admin/DeleteConfirmModal.vue'
+import { normalizeGender, normalizeCategory } from '@/utils/normalize'
 
 const productStore = useProductStore()
 const toastStore = useToastStore()
@@ -24,8 +25,8 @@ const isDeleting = ref(false)
 // Filtered Products
 const filteredProducts = computed(() => {
   return productStore.items.filter(p => {
-    if (filterGender.value !== 'all' && p.gender !== filterGender.value) return false
-    if (filterCategory.value !== 'all' && p.category !== filterCategory.value) return false
+    if (filterGender.value !== 'all' && normalizeGender(p.gender) !== normalizeGender(filterGender.value)) return false
+    if (filterCategory.value !== 'all' && normalizeCategory(p.category) !== normalizeCategory(filterCategory.value)) return false
     if (searchQuery.value.trim()) {
       const q = searchQuery.value.toLowerCase().trim()
       return (
@@ -122,9 +123,9 @@ const handleDeleteProduct = async () => {
             <tr>
               <th class="py-4 px-5">Fragancia</th>
               <th class="py-4 px-5">Marca & Tipo</th>
-              <th class="py-4 px-5">Precio Venta</th>
+              <th class="py-4 px-5">Precios (Transf. / Lista)</th>
               <th class="py-4 px-5">Precio Costo</th>
-              <th class="py-4 px-5">Ganancia Unitaria</th>
+              <th class="py-4 px-5">Ganancia Neta en Mano</th>
               <th class="py-4 px-5">Stock</th>
               <th class="py-4 px-5 text-right">Acciones</th>
             </tr>
@@ -166,20 +167,29 @@ const handleDeleteProduct = async () => {
                 <span class="text-[11px] text-secondary capitalize mt-0.5 block">{{ p.category }} • {{ p.concentration }}</span>
               </td>
 
-              <td class="py-4 px-5 font-bold text-sm text-primary">
-                ${{ (p.price || 0).toLocaleString('es-AR') }}
+              <td class="py-4 px-5">
+                <div class="space-y-0.5">
+                  <span class="font-bold text-sm text-emerald-850 flex items-center gap-1.5">
+                    <span class="text-[9px] uppercase font-label tracking-wider bg-emerald-100 text-emerald-900 px-1.5 py-0.5 rounded-xs font-bold">Transf.</span>
+                    ${{ (p.transferPrice || Math.round((p.price || 0) * 0.8)).toLocaleString('es-AR') }}
+                  </span>
+                  <span class="text-xs text-secondary flex items-center gap-1.5">
+                    <span class="text-[9px] uppercase font-label tracking-wider bg-surface-container-high text-secondary px-1.5 py-0.5 rounded-xs font-semibold">Lista</span>
+                    ${{ (p.price || 0).toLocaleString('es-AR') }}
+                  </span>
+                </div>
               </td>
 
               <td class="py-4 px-5 text-secondary font-medium">
-                ${{ (p.costPrice || Math.round((p.price || 0) * 0.45)).toLocaleString('es-AR') }}
+                ${{ (p.costPrice || Math.round((p.transferPrice || p.price || 0) * 0.45)).toLocaleString('es-AR') }}
               </td>
 
               <td class="py-4 px-5">
                 <span class="font-bold text-emerald-800 block text-sm">
-                  +${{ (p.profit || Math.max(0, (p.price || 0) - (p.costPrice || Math.round((p.price || 0) * 0.45)))).toLocaleString('es-AR') }}
+                  +${{ (p.profit || Math.max(0, (p.transferPrice || Math.round((p.price || 0) * 0.8)) - (p.costPrice || Math.round((p.transferPrice || p.price || 0) * 0.45)))).toLocaleString('es-AR') }}
                 </span>
                 <span class="text-[10px] text-emerald-850 bg-emerald-100/90 border border-emerald-200 px-2 py-0.5 rounded-full font-bold inline-block mt-1 shadow-2xs">
-                  {{ p.profitMargin || 55 }}% Margen
+                  {{ p.profitMargin || Math.round((((p.transferPrice || Math.round((p.price || 0) * 0.8)) - (p.costPrice || 0)) / Math.max(1, (p.transferPrice || Math.round((p.price || 0) * 0.8)))) * 100) }}% Margen
                 </span>
               </td>
 

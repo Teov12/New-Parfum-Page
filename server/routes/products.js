@@ -10,6 +10,24 @@ import { requireAuth } from '../middleware/auth.js'
 
 const router = express.Router()
 
+const normalizeGender = (g) => {
+  if (!g) return ''
+  const val = String(g).toLowerCase().trim()
+  if (['woman', 'mujer', 'femenino', 'mujeres', 'female', 'f'].includes(val)) return 'woman'
+  if (['man', 'hombre', 'masculino', 'hombres', 'male', 'm'].includes(val)) return 'man'
+  if (['unisex', 'ambos', 'todos', 'all'].includes(val)) return 'unisex'
+  return val
+}
+
+const normalizeCategory = (c) => {
+  if (!c) return ''
+  const val = String(c).toLowerCase().trim()
+  if (['arabe', 'arabes', 'árabe', 'árabes'].includes(val)) return 'arabe'
+  if (['disenador', 'diseñador', 'designer', 'diseñadores'].includes(val)) return 'disenador'
+  if (['nicho', 'niche'].includes(val)) return 'nicho'
+  return val
+}
+
 // GET /api/products - List all products with optional filters (público)
 router.get('/', async (req, res) => {
   try {
@@ -17,10 +35,12 @@ router.get('/', async (req, res) => {
     const { gender, category, family, brand, q } = req.query
 
     if (gender) {
-      list = list.filter(p => p.gender === gender)
+      const gNorm = normalizeGender(gender)
+      list = list.filter(p => normalizeGender(p.gender) === gNorm)
     }
     if (category) {
-      list = list.filter(p => p.category === category)
+      const cNorm = normalizeCategory(category)
+      list = list.filter(p => normalizeCategory(p.category) === cNorm)
     }
     if (family) {
       list = list.filter(p => p.fragranceFamily?.toLowerCase() === family.toLowerCase())

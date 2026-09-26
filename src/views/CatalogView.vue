@@ -6,6 +6,12 @@ import { useWishlistStore } from '@/stores/wishlist'
 import { useProductStore } from '@/stores/products'
 import { useSiteContentStore } from '@/stores/siteContent'
 import ProductCard from '@/components/product/ProductCard.vue'
+import { 
+  normalizeGender, 
+  normalizeCategory, 
+  formatGenderLabel, 
+  formatCategoryLabel 
+} from '@/utils/normalize'
 
 const route = useRoute()
 const router = useRouter()
@@ -37,13 +43,13 @@ const availableBrands = computed(() => {
 // Initialize filters from query params
 const initFromQuery = () => {
   if (route.query.gender) {
-    selectedGenders.value = [route.query.gender]
+    selectedGenders.value = [normalizeGender(route.query.gender)]
   } else {
     selectedGenders.value = []
   }
 
   if (route.query.category) {
-    selectedCategories.value = [route.query.category]
+    selectedCategories.value = [normalizeCategory(route.query.category)]
   } else {
     selectedCategories.value = []
   }
@@ -77,19 +83,28 @@ const updateCatalogSeo = () => {
   let title = 'Catálogo de Perfumes Importados y Árabes | Gicca Perfumes Argentina'
   let desc = 'Explorá nuestro catálogo de perfumes importados y árabes 100% originales en Argentina. Lattafa, Afnan, Armaf, Dior, Chanel y más. Envíos a todo el país y cuotas.'
 
+  const normCat = normalizeCategory(route.query.category)
+  const normGen = normalizeGender(route.query.gender)
+
   if (route.query.brand) {
     title = `Perfumes ${route.query.brand} Originales en Argentina | Catálogo Gicca`
     desc = `Comprá perfumes ${route.query.brand} 100% originales en cuotas sin interés. Catálogo oficial con envíos a todo el país y garantía de autenticidad.`
-  } else if (route.query.category === 'arabes') {
+  } else if (normCat === 'arabe') {
     title = 'Perfumes Árabes Originales en Argentina - Lattafa, Afnan, Armaf | Gicca'
     desc = 'Los mejores perfumes árabes originales en Argentina. Descubrí fragancias virales de larga duración como Khamrah, Asad, Yara y Club de Nuit.'
-  } else if (route.query.gender === 'Hombre' || route.query.gender === 'man') {
+  } else if (normCat === 'disenador') {
+    title = 'Perfumes de Diseñador Originales en Argentina | Gicca Perfumes'
+    desc = 'Colección de perfumes importados de grandes marcas de diseñador 100% originales en Argentina con cuotas sin interés.'
+  } else if (normCat === 'nicho') {
+    title = 'Perfumes de Nicho Originales en Argentina | Gicca Perfumes'
+    desc = 'Perfumes de autor y alta perfumería de nicho 100% originales en Argentina con cuotas y envíos.'
+  } else if (normGen === 'man') {
     title = 'Perfumes Importados para Hombre | Fragancias Masculinas - Gicca'
     desc = 'Perfumes importados masculinos 100% originales en Argentina. Amaderados, especiados y frescos con cuotas sin interés y envíos rápidos.'
-  } else if (route.query.gender === 'Mujer' || route.query.gender === 'woman') {
+  } else if (normGen === 'woman') {
     title = 'Perfumes Importados para Mujer | Fragancias Femeninas - Gicca'
     desc = 'Perfumes importados femeninos originales en Argentina. Florales, orientales y dulces de las mejores casas perfumistas del mundo.'
-  } else if (route.query.gender === 'Unisex' || route.query.gender === 'unisex') {
+  } else if (normGen === 'unisex') {
     title = 'Perfumes Unisex Importados y Árabes | Gicca Perfumes'
     desc = 'Colección de perfumes unisex de nicho y árabes originales. Aromas sofisticados para compartir con cuotas sin interés.'
   } else if (route.query.family) {
@@ -146,23 +161,27 @@ const filteredProducts = computed(() => {
     if (searchQuery.value.trim()) {
       const q = searchQuery.value.toLowerCase().trim()
       const matchesSearch = 
-        p.name.toLowerCase().includes(q) ||
-        p.brand.toLowerCase().includes(q) ||
-        p.fragranceFamily.toLowerCase().includes(q) ||
-        p.olfactoryPyramid.topNotes.some(n => n.toLowerCase().includes(q)) ||
-        p.olfactoryPyramid.heartNotes.some(n => n.toLowerCase().includes(q)) ||
-        p.olfactoryPyramid.baseNotes.some(n => n.toLowerCase().includes(q))
+        p.name?.toLowerCase().includes(q) ||
+        p.brand?.toLowerCase().includes(q) ||
+        p.fragranceFamily?.toLowerCase().includes(q) ||
+        p.olfactoryPyramid?.topNotes?.some(n => n.toLowerCase().includes(q)) ||
+        p.olfactoryPyramid?.heartNotes?.some(n => n.toLowerCase().includes(q)) ||
+        p.olfactoryPyramid?.baseNotes?.some(n => n.toLowerCase().includes(q))
       if (!matchesSearch) return false
     }
 
-    // Gender
-    if (selectedGenders.value.length > 0 && !selectedGenders.value.includes(p.gender)) {
-      return false
+    // Gender (normalizado: soporta 'woman'/'mujer', 'man'/'hombre', 'unisex')
+    if (selectedGenders.value.length > 0) {
+      const pGender = normalizeGender(p.gender)
+      const matchesGender = selectedGenders.value.some(g => normalizeGender(g) === pGender)
+      if (!matchesGender) return false
     }
 
-    // Category
-    if (selectedCategories.value.length > 0 && (!p.category || !selectedCategories.value.includes(p.category))) {
-      return false
+    // Category (normalizado: soporta 'arabe'/'arabes', 'disenador', 'nicho')
+    if (selectedCategories.value.length > 0) {
+      const pCat = normalizeCategory(p.category)
+      const matchesCategory = selectedCategories.value.some(c => normalizeCategory(c) === pCat)
+      if (!matchesCategory) return false
     }
 
     // Brands
@@ -347,8 +366,12 @@ const activeFiltersCount = computed(() => {
                 <span>Diseñador</span>
               </label>
               <label class="flex items-center gap-2.5 cursor-pointer hover:text-primary">
-                <input type="checkbox" value="arabes" v-model="selectedCategories" class="accent-primary w-4 h-4 rounded-xs cursor-pointer" />
+                <input type="checkbox" value="arabe" v-model="selectedCategories" class="accent-primary w-4 h-4 rounded-xs cursor-pointer" />
                 <span>Perfumería Árabe</span>
+              </label>
+              <label class="flex items-center gap-2.5 cursor-pointer hover:text-primary">
+                <input type="checkbox" value="nicho" v-model="selectedCategories" class="accent-primary w-4 h-4 rounded-xs cursor-pointer" />
+                <span>Perfumería de Nicho</span>
               </label>
             </div>
           </div>
@@ -459,7 +482,7 @@ const activeFiltersCount = computed(() => {
               :key="g" 
               class="inline-flex items-center gap-1.5 bg-neutral-100 text-xs font-sans font-medium px-3 py-1 rounded-full border border-neutral-200"
             >
-              {{ g === 'woman' ? 'Mujer' : g === 'man' ? 'Hombre' : 'Unisex' }}
+              {{ formatGenderLabel(g) }}
               <button @click="selectedGenders = selectedGenders.filter(x => x !== g)" class="hover:text-rose-600 text-xs">✕</button>
             </span>
 
@@ -468,7 +491,7 @@ const activeFiltersCount = computed(() => {
               :key="c" 
               class="inline-flex items-center gap-1.5 bg-neutral-100 text-xs font-sans font-medium px-3 py-1 rounded-full border border-neutral-200"
             >
-              {{ c === 'disenador' ? 'Diseñador' : 'Perfumes Árabes' }}
+              {{ formatCategoryLabel(c) }}
               <button @click="selectedCategories = selectedCategories.filter(x => x !== c)" class="hover:text-rose-600 text-xs">✕</button>
             </span>
 
@@ -568,7 +591,8 @@ const activeFiltersCount = computed(() => {
                     <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-3">Categoría</h4>
                     <div class="space-y-2 font-sans text-sm text-secondary">
                       <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="disenador" v-model="selectedCategories" class="accent-primary rounded-xs" /> Diseñador</label>
-                      <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="arabes" v-model="selectedCategories" class="accent-primary rounded-xs" /> Perfumes Árabes</label>
+                      <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="arabe" v-model="selectedCategories" class="accent-primary rounded-xs" /> Perfumes Árabes</label>
+                      <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="nicho" v-model="selectedCategories" class="accent-primary rounded-xs" /> Perfumería de Nicho</label>
                     </div>
                   </div>
 

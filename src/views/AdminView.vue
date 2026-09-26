@@ -6,6 +6,7 @@ import { useProductStore } from '@/stores/products'
 import { useOrdersStore } from '@/stores/orders'
 import { useToastStore } from '@/stores/toast'
 import { useSiteContentStore } from '@/stores/siteContent'
+import { normalizeGender, normalizeCategory } from '@/utils/normalize'
 
 const productStore = useProductStore()
 const ordersStore = useOrdersStore()
@@ -145,32 +146,48 @@ const productProfitMargin = computed(() => {
   return Math.round(((transfer - cost) / transfer) * 100)
 })
 
-// Al agregar precio de transferencia deseado en mano, calcular precio de lista dividiendo por 0.80 (absorbe el 20% del banco)
+const cardFeeRate = ref(20) // Recargo / Comisión bancaria / Mercado Pago (20% por defecto)
+
+// Al agregar precio de transferencia deseado en mano, calcular precio de lista dividiendo por (1 - comision) para absorber el recargo
 const onTransferPriceChange = (sizeObj) => {
   const transfer = Number(sizeObj.transferPrice) || 0
+  const fee = Number(cardFeeRate.value) || 20
   if (transfer > 0) {
-    sizeObj.price = Math.round(transfer / 0.80)
+    const factor = Math.max(0.01, 1 - (fee / 100))
+    sizeObj.price = Math.round(transfer / factor)
   } else {
     sizeObj.price = null
   }
 }
 
-// Si se ajusta manualmente el precio de lista, calcular precio transferencia con 20% OFF (* 0.80)
+// Si se ajusta manualmente el precio de lista, calcular precio transferencia equivalente
 const onListPriceChange = (sizeObj) => {
   const price = Number(sizeObj.price) || 0
+  const fee = Number(cardFeeRate.value) || 20
   if (price > 0 && (!sizeObj.transferPrice || sizeObj.transferPrice <= 0)) {
-    sizeObj.transferPrice = Math.round(price * 0.80)
+    const factor = Math.max(0.01, 1 - (fee / 100))
+    sizeObj.transferPrice = Math.round(price * factor)
   }
 }
 
-// Calculadora rápida: Precio en Transferencia deseado -> Precio de Lista a Publicar (/ 0.80)
+const onFeeRateChange = () => {
+  formData.value.sizes.forEach(s => {
+    if (s.transferPrice && Number(s.transferPrice) > 0) {
+      onTransferPriceChange(s)
+    }
+  })
+}
+
+// Calculadora rápida: Precio en Transferencia deseado -> Precio de Lista a Publicar
 const targetTransferPrice = ref(null)
 
 const calculateListPriceFromTransfer = () => {
   const target = Number(targetTransferPrice.value) || 0
+  const fee = Number(cardFeeRate.value) || 20
+  const factor = Math.max(0.01, 1 - (fee / 100))
   if (target > 0 && formData.value.sizes[0]) {
     formData.value.sizes[0].transferPrice = target
-    const calculatedListPrice = Math.round(target / 0.80)
+    const calculatedListPrice = Math.round(target / factor)
     formData.value.sizes[0].price = calculatedListPrice
     if (formData.value.price !== undefined) formData.value.price = calculatedListPrice
     if (formData.value.transferPrice !== undefined) formData.value.transferPrice = target
@@ -317,8 +334,8 @@ const loadData = async () => {
 // Filtered list for the products table
 const filteredProducts = computed(() => {
   return productStore.items.filter(p => {
-    if (filterGender.value !== 'all' && p.gender !== filterGender.value) return false
-    if (filterCategory.value !== 'all' && p.category !== filterCategory.value) return false
+    if (filterGender.value !== 'all' && normalizeGender(p.gender) !== normalizeGender(filterGender.value)) return false
+    if (filterCategory.value !== 'all' && normalizeCategory(p.category) !== normalizeCategory(filterCategory.value)) return false
     if (searchQuery.value.trim()) {
       const q = searchQuery.value.toLowerCase().trim()
       return (
@@ -2588,14 +2605,14 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
               </div>
             </div>
 
-            <!-- Asistente de Precios: Transferencia -> Precio Lista Cuotas (/ 0.80) -->
+            <!-- Asistente de Precios: Transferencia -> Precio Lista Cuotas -->
             <div class="p-3.5 bg-surface-container rounded-xs border border-outline-variant space-y-2 mt-2">
               <div class="flex items-center gap-1.5 text-xs text-primary font-bold">
                 <span class="material-symbols-outlined text-sm text-primary">calculate</span>
                 <span>Asistente Rápido: Fijar Precio de Transferencia (Cálculo automático de Lista)</span>
               </div>
               <p class="text-[11px] text-secondary leading-relaxed">
-                Ingresá tu precio deseado en mano por transferencia (ej: $55.000). Se calcula automáticamente el precio de lista para absorber el 20% bancario ($68.750), garantizando que te queden $55.000 limpios tanto en cuotas como por transferencia (20% OFF).
+                Ingresá tu precio deseado en mano por transferencia (ej: $55.500). Se calcula automáticamente el precio de lista para absorber el {{ cardFeeRate || 20 }}% de Mercado Pago en 3 cuotas ($69.375), garantizando que te queden ${{ (targetTransferPrice || 55500).toLocaleString('es-AR') }} limpios tanto en cuotas como por transferencia directa.
               </p>
               <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center pt-1">
                 <div class="relative w-full sm:w-56">
@@ -2603,7 +2620,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                   <input 
                     v-model.number="targetTransferPrice" 
                     type="number" 
-                    placeholder="Ej. 55000" 
+                    placeholder="Ej. 55500" 
                     class="w-full bg-surface border border-outline-variant rounded-xs pl-6 pr-2 py-2 text-xs font-sans text-primary font-bold focus:border-primary focus:outline-none"
                     @keyup.enter="calculateListPriceFromTransfer"
                   />
@@ -2613,7 +2630,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                   @click="calculateListPriceFromTransfer" 
                   class="bg-primary hover:bg-slate-800 text-on-primary font-label text-[11px] uppercase tracking-wider px-4 py-2 rounded-xs transition-colors flex-shrink-0 border border-primary/20 shadow-xs"
                 >
-                  Aplicar (Precio Lista): {{ targetTransferPrice ? `$${Math.round(targetTransferPrice / 0.80).toLocaleString('es-AR')}` : '...' }}
+                  Aplicar (Precio Lista): {{ targetTransferPrice ? `$${Math.round(targetTransferPrice / (1 - (cardFeeRate || 20) / 100)).toLocaleString('es-AR')}` : '...' }}
                 </button>
               </div>
             </div>

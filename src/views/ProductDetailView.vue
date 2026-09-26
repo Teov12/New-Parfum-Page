@@ -38,6 +38,21 @@ const postalCode = ref("");
 const isCalculatingShipping = ref(false);
 const shippingEstimate = ref(null);
 
+const currentPrice = computed(() => {
+  if (!product.value) return 0;
+  return selectedSize.value
+    ? selectedSize.value.price
+    : product.value.price || 0;
+});
+
+const currentTransferPrice = computed(() => {
+  if (!product.value) return 0;
+  if (selectedSize.value?.transferPrice)
+    return selectedSize.value.transferPrice;
+  if (product.value.transferPrice) return product.value.transferPrice;
+  return currentPrice.value > 0 ? Math.round(currentPrice.value * 0.8) : 0;
+});
+
 const initProduct = () => {
   if (product.value && product.value.sizes && product.value.sizes.length > 0) {
     selectedSize.value =
@@ -228,21 +243,6 @@ watch(
     updateSeoMetadata();
   },
 );
-
-const currentPrice = computed(() => {
-  if (!product.value) return 0;
-  return selectedSize.value
-    ? selectedSize.value.price
-    : product.value.price || 0;
-});
-
-const currentTransferPrice = computed(() => {
-  if (!product.value) return 0;
-  if (selectedSize.value?.transferPrice)
-    return selectedSize.value.transferPrice;
-  if (product.value.transferPrice) return product.value.transferPrice;
-  return currentPrice.value > 0 ? Math.round(currentPrice.value * 0.8) : 0;
-});
 
 const seasonList = computed(() => {
   const s = product.value?.characteristics?.season;

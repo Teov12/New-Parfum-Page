@@ -1,127 +1,201 @@
 [
   {
-    "_id": "6aa9e2cf29a9982146c6e1aa",
-    "id": "prod_1787879815888_az3922",
-    "slug": "asdad",
-    "brand": "asdasd",
-    "name": "ASdad",
+    "id": "prod_1790386451776_vcv5dz",
+    "slug": "9-pm",
+    "brand": "Afnan",
+    "name": "9 PM",
     "concentration": "Eau de Parfum",
-    "gender": "unisex",
-    "category": "disenador",
-    "fragranceFamily": "Amaderada",
-    "price": 215000,
-    "costPrice": 96750,
-    "originalPrice": 0,
-    "discountPercentage": 0,
-    "isFeatured": false,
-    "isNew": false,
-    "isBestSeller": false,
-    "badge": "",
-    "shortDescription": "",
-    "description": "Updated test description 1789762522272",
-    "images": [
-      "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1000&q=85"
-    ],
-    "sizes": [
-      {
-        "size": "100 ml",
-        "price": 215000,
-        "costPrice": 96750,
-        "profit": 118250,
-        "profitMargin": 55,
-        "default": true
-      }
-    ],
-    "olfactoryPyramid": {
-      "topNotes": [
-        "Mandarina",
-        "Bergamota"
-      ],
-      "heartNotes": [
-        "Jazmín",
-        "Rosa"
-      ],
-      "baseNotes": [
-        "Vainilla",
-        "Cedro"
-      ]
-    },
-    "characteristics": {
-      "longevity": "8 a 12 horas",
-      "sillage": "Moderada / Alta",
-      "season": "Todo el año",
-      "occasion": "Uso Diario & Ocasiones Especiales"
-    },
-    "usageTips": "Para una estela envolvente, pulverizá sobre los puntos de pulso: cuello y muñecas.",
-    "stock": 10,
-    "updatedAt": "2026-09-18T20:15:22.272Z",
-    "__v": 0,
-    "profit": 118250,
-    "profitMargin": 55
-  },
-  {
-    "_id": "6aa9e2cf29a9982146c6e1a8",
-    "id": "prod_1787880385005_odb29z",
-    "slug": "asdasd",
-    "brand": "Lattafa Perfumes",
-    "name": "Mayar Cherry Intense",
-    "concentration": "Eau de Parfum",
-    "gender": "mujer",
+    "gender": "hombre",
     "category": "arabe",
     "fragranceFamily": "Amaderada",
-    "price": 60000,
-    "costPrice": 21600,
-    "originalPrice": 0,
+    "price": 68750,
+    "transferPrice": 55000,
+    "costPrice": 35075,
+    "originalPrice": 82500,
     "discountPercentage": 0,
     "isFeatured": false,
     "isNew": false,
     "isBestSeller": false,
     "badge": "",
     "shortDescription": "",
-    "description": "",
+    "description": "Afnan 9pm es una fragancia masculina de la familia olfativa Oriental Vainilla, famosa mundialmente por ser una de las mejores y más potentes alternativas (inspiración directa) a Ultra Male de Jean Paul Gaultier.",
     "images": [
-      "/uploads/perfume_1787880338088_l5xa2h.png"
+      "/uploads/perfume_1790386300828_qlu348.jpeg"
     ],
     "sizes": [
       {
         "size": "100 ml",
-        "price": 60000,
-        "costPrice": 21600,
-        "profit": 38400,
-        "profitMargin": 64,
+        "price": 68750,
+        "transferPrice": 55000,
+        "costPrice": 35075,
+        "profit": 19925,
+        "profitMargin": 36,
         "default": true
       }
     ],
     "olfactoryPyramid": {
       "topNotes": [
-        "Fresa",
+        "Manzana",
+        "Canela",
+        "Lavanda silvestre",
         "Bergamota"
       ],
       "heartNotes": [
-        "Mermelada de cereza",
-        "Cacao"
+        "Flor de azahar del naranjo",
+        "Lirio de los valles"
       ],
       "baseNotes": [
         "Vainilla",
+        "Haba tonka",
         "Ámbar",
-        "Panchulí"
+        "Pachulí"
       ]
     },
     "characteristics": {
-      "longevity": "6 a 8 horas (Duradera)",
+      "longevity": "8 a 12 horas (Muy Duradera)",
       "sillage": "Pesada (De gran estela)",
       "season": [
-        "Invierno",
         "Otoño",
+        "Invierno",
         "Primavera"
       ],
       "occasion": "Uso diario y ocasiones especiales"
     },
     "usageTips": "Pulverizar en puntos de pulso (cuello y muñecas).",
-    "stock": 8,
-    "updatedAt": "2026-09-18T20:12:38.636Z",
+    "stock": 10,
+    "createdAt": "2026-09-26T01:34:11.776Z",
+    "updatedAt": "2026-09-26T01:35:45.004Z",
+    "profit": 19925,
+    "profitMargin": 36
+  },
+  {
+    "_id": "6aa9e2cf29a9982146c6e1aa",
+    "id": "prod_1787879815888_az3922",
+    "slug": "asdad",
+    "brand": "Armaf",
+    "name": "Odyssey Aqua",
+    "concentration": "Eau de Parfum",
+    "gender": "hombre",
+    "category": "arabe",
+    "fragranceFamily": "Amaderada",
+    "price": 76375,
+    "costPrice": 42700,
+    "originalPrice": 0,
+    "discountPercentage": 0,
+    "isFeatured": false,
+    "isNew": false,
+    "isBestSeller": false,
+    "badge": "",
+    "shortDescription": "",
+    "description": "Armaf Odyssey Aqua Edition es un Eau de Parfum masculino lanzado en 2023 que se destaca por su carácter fresco, verde y ultra-limpio. La comunidad de entusiastas en portales como Fragrantica destaca su gran versatilidad y su asombroso parecido con Invictus Platinum de Paco Rabanne.",
+    "images": [
+      "/uploads/perfume_1790386844030_nvcwhf.jpeg"
+    ],
+    "sizes": [
+      {
+        "size": "100 ml",
+        "price": 76375,
+        "transferPrice": 61100,
+        "costPrice": 42700,
+        "profit": 18400,
+        "profitMargin": 30,
+        "default": true
+      }
+    ],
+    "olfactoryPyramid": {
+      "topNotes": [
+        "Naranja",
+        "Toronja (Pomelo)",
+        "Abrótano"
+      ],
+      "heartNotes": [
+        "Menta",
+        "Lavanda"
+      ],
+      "baseNotes": [
+        "Ambroxan",
+        "Ciprés",
+        "Pachulí"
+      ]
+    },
+    "characteristics": {
+      "longevity": "8 a 12 horas (Muy Duradera)",
+      "sillage": "Moderada (Radio de 1 metro)",
+      "season": [
+        "Primavera",
+        "Verano"
+      ],
+      "occasion": "Uso Diario & Ocasiones Especiales"
+    },
+    "usageTips": "Para una estela envolvente, pulverizá sobre los puntos de pulso: cuello y muñecas.",
+    "stock": 10,
+    "updatedAt": "2026-09-26T01:42:04.851Z",
     "__v": 0,
-    "profit": 38400,
-    "profitMargin": 64
+    "profit": 18400,
+    "profitMargin": 30,
+    "transferPrice": 61100
+  },
+  {
+    "_id": "6aa9e2cf29a9982146c6e1a8",
+    "id": "prod_1787880385005_odb29z",
+    "slug": "asdasd",
+    "brand": "Rayhaan",
+    "name": "Jungle vibe",
+    "concentration": "Eau de Parfum",
+    "gender": "unisex",
+    "category": "arabe",
+    "fragranceFamily": "Amaderada",
+    "price": 79000,
+    "costPrice": 43463,
+    "originalPrice": 0,
+    "discountPercentage": 0,
+    "isFeatured": false,
+    "isNew": false,
+    "isBestSeller": false,
+    "badge": "",
+    "shortDescription": "",
+    "description": "Rayhaan Jungle Vibe es una fragancia unisex lanzada en 2025, que se destaca por ofrecer una propuesta fresca, verde, acuática y amaderada. Rompe con el molde de los clásicos perfumes \"azules\" de verano para evocar la atmósfera natural y limpia de un bosque húmedo o una selva tropical. En la comunidad de entusiastas se le reconoce frecuentemente por estar fuertemente inspirado en el exclusivo Santal Greenery de la casa de nicho Dries Van Noten.",
+    "images": [
+      "/uploads/perfume_1790387007620_ary1yz.jpeg"
+    ],
+    "sizes": [
+      {
+        "size": "100 ml",
+        "price": 79000,
+        "transferPrice": 63200,
+        "costPrice": 43463,
+        "default": true
+      }
+    ],
+    "olfactoryPyramid": {
+      "topNotes": [
+        "Higo",
+        "Bergamota",
+        "Toronja (pomelo)"
+      ],
+      "heartNotes": [
+        "Notas verdes",
+        "Notas acuáticas"
+      ],
+      "baseNotes": [
+        "Sándalo"
+      ]
+    },
+    "characteristics": {
+      "longevity": "8 a 12 horas (Muy Duradera)",
+      "sillage": "Moderada (Radio de 1 metro)",
+      "season": [
+        "Primavera",
+        "Verano"
+      ],
+      "occasion": "Uso diario y ocasiones especiales"
+    },
+    "usageTips": "Pulverizar en puntos de pulso (cuello y muñecas).",
+    "stock": 8,
+    "updatedAt": "2026-09-26T01:46:30.345Z",
+    "__v": 0,
+    "profit": 26400,
+    "profitMargin": 55,
+    "transferPrice": 63200
   }
 ]

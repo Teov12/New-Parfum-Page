@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import { useProductStore } from '@/stores/products'
 import { useCartStore } from '@/stores/cart'
 import { useToastStore } from '@/stores/toast'
+import { normalizeGender } from '@/utils/normalize'
 
 const productStore = useProductStore()
 const cartStore = useCartStore()
@@ -81,13 +82,25 @@ const selectOption = (key, val) => {
 
 const matchResult = computed(() => {
   if (!productStore.items || productStore.items.length === 0) return null
-  // Return matching product
-  let matched = productStore.items.find(p => p.gender === answers.value.gender && p.fragranceFamily === answers.value.family)
-  if (!matched) {
-    matched = productStore.items.find(p => p.fragranceFamily === answers.value.family)
+  const ansGender = normalizeGender(answers.value.gender)
+  const ansFamily = answers.value.family?.toLowerCase().trim()
+
+  // 1. Exact match on gender & fragrance family
+  let matched = productStore.items.find(p => 
+    normalizeGender(p.gender) === ansGender && 
+    p.fragranceFamily?.toLowerCase().trim() === ansFamily
+  )
+  // 2. Match on family
+  if (!matched && ansFamily) {
+    matched = productStore.items.find(p => 
+      p.fragranceFamily?.toLowerCase().trim() === ansFamily
+    )
   }
-  if (!matched) {
-    matched = productStore.items.find(p => p.gender === answers.value.gender)
+  // 3. Match on gender
+  if (!matched && ansGender) {
+    matched = productStore.items.find(p => 
+      normalizeGender(p.gender) === ansGender
+    )
   }
   return matched || productStore.items[0] || null
 })

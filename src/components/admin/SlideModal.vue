@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { useSiteContentStore } from '@/stores/siteContent'
 import { useToastStore } from '@/stores/toast'
+import { useProductStore } from '@/stores/products'
 
 const props = defineProps({
   isOpen: {
@@ -18,6 +19,7 @@ const emit = defineEmits(['close', 'saved'])
 
 const siteContentStore = useSiteContentStore()
 const toastStore = useToastStore()
+const productStore = useProductStore()
 
 const isSubmittingSlide = ref(false)
 const slideForm = ref({
@@ -42,18 +44,23 @@ const isEditingSlide = computed(() => !!slideForm.value.id)
 watch(() => props.isOpen, (open) => {
   if (open) {
     if (props.slide) {
-      slideForm.value = { ...props.slide }
+      slideForm.value = {
+        ...props.slide,
+        featuredTitle: props.slide.featuredTitle || '',
+        featuredSub: props.slide.featuredSub || '',
+        featuredRating: props.slide.featuredRating || '5.0 ★ Destacado'
+      }
     } else {
       slideForm.value = {
         id: `slide_${Date.now()}`,
-        tag: 'NUEVA COLECCIÓN',
+        tag: '',
         title: 'Nueva Fragancia',
         highlight: 'exclusiva.',
         description: 'Descripción cautivadora del perfume o promoción.',
         image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=2000&q=85',
         bottleImage: 'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=800&q=85',
-        featuredTitle: 'Perfume Destacado',
-        featuredSub: 'Notas de Lujo & Duración',
+        featuredTitle: 'YSL Libre Eau de Parfum',
+        featuredSub: 'Notas de Lavanda, Azahar & Vainilla',
         featuredRating: '5.0 ★ Exclusivo',
         primaryCtaText: 'Explorar Catálogo',
         primaryCtaLink: '/catalogo',
@@ -63,6 +70,21 @@ watch(() => props.isOpen, (open) => {
     }
   }
 })
+
+const onSelectProductForSlide = (event) => {
+  const prodId = event.target.value
+  if (!prodId) return
+  const prod = productStore.items.find(p => p.id === prodId || p._id === prodId)
+  if (prod) {
+    slideForm.value.featuredTitle = `${prod.brand ? prod.brand + ' ' : ''}${prod.name}`.trim()
+    if (prod.fragranceFamily) {
+      slideForm.value.featuredSub = `Familia ${prod.fragranceFamily} • ${prod.concentration || 'Eau de Parfum'}`
+    }
+    if (prod.images && prod.images.length > 0 && !slideForm.value.bottleImage) {
+      slideForm.value.bottleImage = prod.images[0]
+    }
+  }
+}
 
 const handleModalImageUpload = async (targetObj, fieldKey, event) => {
   const file = event.target.files?.[0]
@@ -152,6 +174,59 @@ const handleSaveSlide = async () => {
             <div>
               <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">Bajada / Descripción</label>
               <textarea v-model="slideForm.description" rows="2" class="w-full bg-surface-container/70 border border-outline-variant rounded-xl p-3 text-xs font-sans focus:border-primary focus:outline-none focus:bg-surface transition-all"></textarea>
+            </div>
+
+            <!-- Perfume Destacado en la Tarjeta Flotante (Showcase Card) -->
+            <div class="bg-surface-container/60 p-4 sm:p-5 rounded-2xl border border-outline-variant space-y-3">
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div>
+                  <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold">
+                    Tarjeta del Frasco Destacado (Card del Banner)
+                  </label>
+                  <p class="text-[11px] text-secondary font-sans mt-0.5">
+                    Modificá el título y notas que aparecen en la tarjeta del perfume (ej: YSL Libre, Bleu de Chanel).
+                  </p>
+                </div>
+                <div v-if="productStore.items && productStore.items.length > 0" class="flex items-center gap-1.5 flex-shrink-0">
+                  <span class="text-[10px] font-label uppercase text-secondary font-bold">Catálogo:</span>
+                  <select 
+                    @change="onSelectProductForSlide($event)" 
+                    class="bg-surface border border-outline-variant rounded-xl px-2.5 py-1.5 text-xs font-sans text-primary focus:border-primary focus:outline-none cursor-pointer"
+                  >
+                    <option value="">-- Autocompletar desde producto --</option>
+                    <option v-for="prod in productStore.items" :key="prod.id || prod._id" :value="prod.id || prod._id">
+                      {{ prod.name }} ({{ prod.brand }})
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                <div>
+                  <label class="block font-label text-[11px] uppercase tracking-wider text-primary font-bold mb-1">
+                    Título de la Card (Nombre del Perfume) *
+                  </label>
+                  <input 
+                    v-model="slideForm.featuredTitle" 
+                    type="text" 
+                    required 
+                    placeholder="Ej. YSL Libre Eau de Parfum / Bleu de Chanel" 
+                    class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-xs font-sans text-primary font-bold focus:border-primary focus:outline-none shadow-2xs" 
+                  />
+                </div>
+
+                <div>
+                  <label class="block font-label text-[11px] uppercase tracking-wider text-secondary font-semibold mb-1">
+                    Subtítulo / Notas Aromáticas de la Card
+                  </label>
+                  <input 
+                    v-model="slideForm.featuredSub" 
+                    type="text" 
+                    placeholder="Ej. Notas de Lavanda, Azahar & Vainilla" 
+                    class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-xs font-sans text-primary focus:border-primary focus:outline-none shadow-2xs" 
+                  />
+                </div>
+              </div>
             </div>
 
             <!-- Slide Images (Background & Bottle) -->
