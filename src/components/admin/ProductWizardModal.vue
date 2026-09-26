@@ -425,13 +425,13 @@ const handleSubmitProduct = async () => {
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/60 backdrop-blur-sm"
         @click.self="emit('close')"
       >
-        <div class="admin-modal-dialog bg-surface border border-outline-variant rounded-2xl max-w-3xl w-full max-h-[92vh] overflow-y-auto shadow-[0_25px_60px_-15px_rgba(46,25,17,0.25)] p-6 sm:p-8 space-y-6">
+        <div class="admin-modal-dialog bg-surface border border-outline-variant rounded-2xl max-w-3xl w-full max-h-[96vh] overflow-y-auto shadow-[0_25px_60px_-15px_rgba(46,25,17,0.25)] p-4 sm:p-8 space-y-5 sm:space-y-6">
           
           <!-- Header -->
           <div class="flex justify-between items-center border-b border-outline-variant pb-4">
             <div>
               <span class="font-label text-[10px] uppercase tracking-[0.25em] text-secondary font-bold block mb-0.5">Gestión de Catálogo</span>
-              <h2 class="font-serif text-2xl text-primary font-bold">
+              <h2 class="font-serif text-xl sm:text-2xl text-primary font-bold">
                 {{ isEditing ? 'Editar Fragancia' : 'Crear Nueva Fragancia' }}
               </h2>
               <p class="font-sans text-xs text-secondary mt-0.5">Paso {{ currentFormStep }} de {{ steps.length }}: {{ steps[currentFormStep - 1]?.subtitle }}</p>
@@ -442,15 +442,15 @@ const handleSubmitProduct = async () => {
           </div>
 
           <!-- Wizard Stepper Indicators -->
-          <div class="grid grid-cols-5 gap-2 py-1">
+          <div class="flex overflow-x-auto no-scrollbar gap-1.5 sm:grid sm:grid-cols-5 py-1">
             <div 
               v-for="st in steps" 
               :key="st.number"
-              class="p-2.5 rounded-xl border text-center transition-all cursor-pointer"
+              class="p-2 sm:p-2.5 rounded-xl border text-center transition-all cursor-pointer flex-shrink-0 min-w-[70px] sm:min-w-0 flex-1"
               :class="currentFormStep === st.number ? 'bg-primary text-on-primary border-primary font-bold shadow-xs' : (currentFormStep > st.number ? 'bg-surface-container text-primary border-outline-variant font-medium' : 'bg-surface text-secondary/60 border-outline-variant/60')"
               @click="currentFormStep = st.number"
             >
-              <span class="text-[10px] font-label uppercase block tracking-wider">{{ st.title }}</span>
+              <span class="text-[9px] sm:text-[10px] font-label uppercase block tracking-wider whitespace-nowrap">{{ st.title }}</span>
             </div>
           </div>
 
@@ -603,8 +603,8 @@ const handleSubmitProduct = async () => {
                 </div>
 
                 <!-- Remove button -->
-                <div class="sm:col-span-1 text-right pt-7">
-                  <button v-if="formData.sizes.length > 1" @click="removeSize(idx)" type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-secondary hover:text-red-700 hover:bg-red-50 transition-colors">
+                <div class="sm:col-span-1 text-right pt-0 sm:pt-7">
+                  <button v-if="formData.sizes.length > 1" @click="removeSize(idx)" type="button" class="w-8 h-8 rounded-full inline-flex items-center justify-center text-secondary hover:text-red-700 hover:bg-red-50 transition-colors">
                     <span class="material-symbols-outlined text-base">delete</span>
                   </button>
                 </div>

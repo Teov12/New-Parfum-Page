@@ -126,7 +126,7 @@ const handleSaveEditorial = async () => {
   <div class="space-y-6 animate-in fade-in duration-300">
     
     <!-- Sub-header & Subtabs Navigation -->
-    <div class="bg-surface border border-outline-variant rounded-2xl p-6 sm:p-7 shadow-[0_4px_18px_-4px_rgba(46,25,17,0.04)] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div class="bg-surface border border-outline-variant rounded-2xl p-4 sm:p-7 shadow-[0_4px_18px_-4px_rgba(46,25,17,0.04)] flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
       <div>
         <span class="font-label text-[10px] uppercase tracking-[0.25em] text-secondary font-bold block mb-1">Personalización Visual</span>
         <h2 class="font-serif text-2xl sm:text-3xl text-primary font-normal">Diseño & Contenido de la Boutique</h2>
@@ -136,15 +136,15 @@ const handleSaveEditorial = async () => {
       </div>
 
       <!-- Subtabs Segmented Control -->
-      <div class="flex flex-wrap items-center gap-1.5 bg-surface-container/80 p-1.5 rounded-xl border border-outline-variant/80 text-xs font-label uppercase">
+      <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 bg-surface-container/80 p-1.5 rounded-xl border border-outline-variant/80 text-xs font-label uppercase w-full md:w-auto">
         <button 
           @click="activeDesignSubtab = 'categorias'"
-          class="px-4 py-2 rounded-lg transition-all flex items-center gap-2"
+          class="px-3 sm:px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 sm:gap-2 text-center"
           :class="activeDesignSubtab === 'categorias' ? 'bg-primary text-on-primary font-bold shadow-xs' : 'text-secondary hover:text-primary hover:bg-surface/80'"
         >
           <span>Categorías</span>
           <span 
-            class="px-2 py-0.5 text-[10px] rounded-full font-mono font-bold border"
+            class="px-1.5 sm:px-2 py-0.5 text-[10px] rounded-full font-mono font-bold border"
             :class="activeDesignSubtab === 'categorias' ? 'bg-white/20 text-white border-white/20' : 'bg-surface text-primary border-outline-variant/70'"
           >
             {{ siteContentStore.mainCategories.length }}
@@ -153,12 +153,12 @@ const handleSaveEditorial = async () => {
 
         <button 
           @click="activeDesignSubtab = 'familias'"
-          class="px-4 py-2 rounded-lg transition-all flex items-center gap-2"
+          class="px-3 sm:px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 sm:gap-2 text-center"
           :class="activeDesignSubtab === 'familias' ? 'bg-primary text-on-primary font-bold shadow-xs' : 'text-secondary hover:text-primary hover:bg-surface/80'"
         >
-          <span>Familias Olfativas</span>
+          <span>Familias</span>
           <span 
-            class="px-2 py-0.5 text-[10px] rounded-full font-mono font-bold border"
+            class="px-1.5 sm:px-2 py-0.5 text-[10px] rounded-full font-mono font-bold border"
             :class="activeDesignSubtab === 'familias' ? 'bg-white/20 text-white border-white/20' : 'bg-surface text-primary border-outline-variant/70'"
           >
             {{ siteContentStore.olfactiveFamilies.length }}
@@ -167,12 +167,12 @@ const handleSaveEditorial = async () => {
 
         <button 
           @click="activeDesignSubtab = 'banners'"
-          class="px-4 py-2 rounded-lg transition-all flex items-center gap-2"
+          class="px-3 sm:px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 sm:gap-2 text-center"
           :class="activeDesignSubtab === 'banners' ? 'bg-primary text-on-primary font-bold shadow-xs' : 'text-secondary hover:text-primary hover:bg-surface/80'"
         >
-          <span>Banners Portada</span>
+          <span>Banners</span>
           <span 
-            class="px-2 py-0.5 text-[10px] rounded-full font-mono font-bold border"
+            class="px-1.5 sm:px-2 py-0.5 text-[10px] rounded-full font-mono font-bold border"
             :class="activeDesignSubtab === 'banners' ? 'bg-white/20 text-white border-white/20' : 'bg-surface text-primary border-outline-variant/70'"
           >
             {{ siteContentStore.heroSlides.length }}
@@ -181,10 +181,10 @@ const handleSaveEditorial = async () => {
 
         <button 
           @click="activeDesignSubtab = 'editorial'"
-          class="px-4 py-2 rounded-lg transition-all flex items-center gap-2"
+          class="px-3 sm:px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 sm:gap-2 text-center"
           :class="activeDesignSubtab === 'editorial' ? 'bg-primary text-on-primary font-bold shadow-xs' : 'text-secondary hover:text-primary hover:bg-surface/80'"
         >
-          <span>Sobre Nosotros</span>
+          <span>Nosotros</span>
         </button>
       </div>
     </div>
@@ -204,7 +204,7 @@ const handleSaveEditorial = async () => {
 
           <button 
             @click="openCreateCategory"
-            class="bg-primary hover:bg-primary-container text-on-primary font-label text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl flex items-center gap-2 shadow-xs hover:shadow-md active:scale-95 border border-primary/20 transition-all flex-shrink-0"
+            class="w-full sm:w-auto bg-primary hover:bg-primary-container text-on-primary font-label text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-xs hover:shadow-md active:scale-95 border border-primary/20 transition-all flex-shrink-0"
           >
             <span class="material-symbols-outlined text-base">add</span>
             <span>Nueva Categoría</span>
@@ -302,7 +302,7 @@ const handleSaveEditorial = async () => {
 
           <button 
             @click="openCreateFamily"
-            class="bg-primary hover:bg-primary-container text-on-primary font-label text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl flex items-center gap-2 shadow-xs hover:shadow-md active:scale-95 border border-primary/20 transition-all flex-shrink-0"
+            class="w-full sm:w-auto bg-primary hover:bg-primary-container text-on-primary font-label text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-xs hover:shadow-md active:scale-95 border border-primary/20 transition-all flex-shrink-0"
           >
             <span class="material-symbols-outlined text-base">add</span>
             <span>Nueva Familia Olfativa</span>
@@ -387,7 +387,7 @@ const handleSaveEditorial = async () => {
 
           <button 
             @click="openCreateSlide"
-            class="bg-primary hover:bg-primary-container text-on-primary font-label text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl flex items-center gap-2 shadow-xs hover:shadow-md active:scale-95 border border-primary/20 transition-all flex-shrink-0"
+            class="w-full sm:w-auto bg-primary hover:bg-primary-container text-on-primary font-label text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-xs hover:shadow-md active:scale-95 border border-primary/20 transition-all flex-shrink-0"
           >
             <span class="material-symbols-outlined text-base">add</span>
             <span>Nuevo Slide</span>

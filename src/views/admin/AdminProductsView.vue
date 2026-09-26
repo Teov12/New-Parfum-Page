@@ -74,8 +74,8 @@ const handleDeleteProduct = async () => {
     
     <!-- Header Actions for Products -->
     <div class="bg-surface border border-outline-variant rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 shadow-[0_4px_18px_-4px_rgba(46,25,17,0.04)]">
-      <div class="flex flex-wrap items-center gap-3 flex-grow">
-        <div class="relative min-w-[260px] flex-grow sm:flex-grow-0">
+      <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3 flex-grow">
+        <div class="relative w-full sm:w-auto sm:min-w-[260px] flex-grow">
           <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary text-base">search</span>
           <input 
             v-model="searchQuery"
@@ -85,38 +85,121 @@ const handleDeleteProduct = async () => {
           />
         </div>
 
-        <select 
-          v-model="filterGender"
-          class="bg-surface-container/70 border border-outline-variant rounded-xl px-3.5 py-2.5 text-xs font-sans text-primary focus:border-primary focus:bg-surface focus:outline-none transition-all shadow-2xs cursor-pointer"
-        >
-          <option value="all">Todos los Géneros</option>
-          <option value="hombre">Hombre</option>
-          <option value="mujer">Mujer</option>
-          <option value="unisex">Unisex</option>
-        </select>
+        <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+          <select 
+            v-model="filterGender"
+            class="w-full sm:w-auto bg-surface-container/70 border border-outline-variant rounded-xl px-3 py-2.5 text-xs font-sans text-primary focus:border-primary focus:bg-surface focus:outline-none transition-all shadow-2xs cursor-pointer"
+          >
+            <option value="all">Todos los Géneros</option>
+            <option value="hombre">Hombre</option>
+            <option value="mujer">Mujer</option>
+            <option value="unisex">Unisex</option>
+          </select>
 
-        <select 
-          v-model="filterCategory"
-          class="bg-surface-container/70 border border-outline-variant rounded-xl px-3.5 py-2.5 text-xs font-sans text-primary focus:border-primary focus:bg-surface focus:outline-none transition-all shadow-2xs cursor-pointer"
-        >
-          <option value="all">Todas las Categorías</option>
-          <option value="disenador">Diseñador</option>
-          <option value="nicho">Nicho</option>
-          <option value="arabe">Árabe</option>
-        </select>
+          <select 
+            v-model="filterCategory"
+            class="w-full sm:w-auto bg-surface-container/70 border border-outline-variant rounded-xl px-3 py-2.5 text-xs font-sans text-primary focus:border-primary focus:bg-surface focus:outline-none transition-all shadow-2xs cursor-pointer"
+          >
+            <option value="all">Todas las Categorías</option>
+            <option value="disenador">Diseñador</option>
+            <option value="nicho">Nicho</option>
+            <option value="arabe">Árabe</option>
+          </select>
+        </div>
       </div>
 
       <button 
         @click="openCreateModal"
-        class="bg-primary hover:bg-primary-container text-on-primary font-label text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs hover:shadow-md active:scale-95 border border-primary/20 flex-shrink-0"
+        class="w-full sm:w-auto bg-primary hover:bg-primary-container text-on-primary font-label text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs hover:shadow-md active:scale-95 border border-primary/20 flex-shrink-0"
       >
         <span class="material-symbols-outlined text-base">add</span>
         <span>+ Nuevo Perfume</span>
       </button>
     </div>
 
-    <!-- Products Table with Cost and Profit (Fluid Row FLIP Animation) -->
-    <div class="bg-surface border border-outline-variant rounded-2xl overflow-hidden shadow-[0_8px_30px_-10px_rgba(46,25,17,0.06)]">
+    <!-- Mobile Product Cards View (< md) -->
+    <div class="md:hidden space-y-3">
+      <div v-if="filteredProducts.length === 0" class="bg-surface border border-outline-variant rounded-2xl p-8 text-center text-secondary text-xs">
+        No se encontraron perfumes en el catálogo con los filtros seleccionados.
+      </div>
+
+      <div 
+        v-for="p in filteredProducts" 
+        :key="p.id"
+        class="bg-surface border border-outline-variant rounded-2xl p-4 shadow-sm space-y-3"
+      >
+        <!-- Top row: Image, Name, Brand, Size, Stock -->
+        <div class="flex items-start gap-3">
+          <img 
+            :src="p.images?.[0] || 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80'" 
+            :alt="p.name"
+            class="w-14 h-16 object-cover rounded-xl border border-outline-variant flex-shrink-0 bg-surface-container shadow-2xs"
+          />
+          <div class="flex-grow min-w-0">
+            <div class="flex items-center justify-between gap-1">
+              <span class="text-[10px] font-label uppercase tracking-wider text-secondary truncate">{{ p.brand }}</span>
+              <span class="bg-surface-container px-2 py-0.5 rounded-full border border-outline-variant text-[10px] font-mono font-bold text-primary flex-shrink-0">
+                {{ p.stock ?? 10 }} un.
+              </span>
+            </div>
+            <h4 class="font-serif font-bold text-primary text-sm line-clamp-1 mt-0.5">{{ p.name }}</h4>
+            <p class="text-[11px] text-secondary capitalize mt-0.5">{{ p.sizes?.[0]?.size || '100 ml' }} • {{ p.category }} • {{ p.concentration }}</p>
+          </div>
+        </div>
+
+        <!-- Middle row: Prices & Cost Grid -->
+        <div class="grid grid-cols-2 gap-2 bg-surface-container/50 p-2.5 rounded-xl border border-outline-variant/60 text-xs">
+          <div>
+            <span class="text-[9px] uppercase font-label tracking-wider text-emerald-850 font-bold block">Precio Transferencia</span>
+            <span class="font-bold text-sm text-emerald-850">
+              ${{ (p.transferPrice || Math.round((p.price || 0) * 0.8)).toLocaleString('es-AR') }}
+            </span>
+          </div>
+          <div>
+            <span class="text-[9px] uppercase font-label tracking-wider text-secondary font-semibold block">Precio Lista (Tarjetas)</span>
+            <span class="text-xs text-secondary font-medium">
+              ${{ (p.price || 0).toLocaleString('es-AR') }}
+            </span>
+          </div>
+          <div class="pt-1.5 border-t border-outline-variant/40">
+            <span class="text-[9px] uppercase font-label tracking-wider text-secondary block">Costo Reposición</span>
+            <span class="text-xs text-secondary font-medium">
+              ${{ (p.costPrice || Math.round((p.transferPrice || p.price || 0) * 0.45)).toLocaleString('es-AR') }}
+            </span>
+          </div>
+          <div class="pt-1.5 border-t border-outline-variant/40">
+            <span class="text-[9px] uppercase font-label tracking-wider text-emerald-800 font-bold block">Ganancia en Mano</span>
+            <span class="font-bold text-xs text-emerald-800 flex items-center gap-1">
+              +${{ (p.profit || Math.max(0, (p.transferPrice || Math.round((p.price || 0) * 0.8)) - (p.costPrice || Math.round((p.transferPrice || p.price || 0) * 0.45)))).toLocaleString('es-AR') }}
+              <span class="text-[9px] font-normal text-emerald-850 bg-emerald-100/90 border border-emerald-200 px-1.5 py-0.5 rounded-full">
+                {{ p.profitMargin || Math.round((((p.transferPrice || Math.round((p.price || 0) * 0.8)) - (p.costPrice || 0)) / Math.max(1, (p.transferPrice || Math.round((p.price || 0) * 0.8)))) * 100) }}%
+              </span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Bottom row: Actions -->
+        <div class="flex items-center gap-2 pt-1">
+          <button 
+            @click="openEditModal(p)"
+            class="flex-1 py-2 px-3 bg-surface-container hover:bg-surface-container-high border border-outline-variant rounded-xl text-primary font-label text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-2xs active:scale-95"
+          >
+            <span class="material-symbols-outlined text-sm">edit</span>
+            <span>Editar</span>
+          </button>
+          <button 
+            @click="confirmDeleteProduct(p)"
+            class="py-2 px-3 text-secondary hover:text-rose-700 bg-surface-container/60 hover:bg-rose-50 border border-outline-variant hover:border-rose-200 rounded-xl font-label text-xs uppercase tracking-wider flex items-center justify-center gap-1 transition-all shadow-2xs active:scale-95"
+            title="Eliminar perfume"
+          >
+            <span class="material-symbols-outlined text-sm">delete</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop Products Table with Cost and Profit (>= md) -->
+    <div class="hidden md:block bg-surface border border-outline-variant rounded-2xl overflow-hidden shadow-[0_8px_30px_-10px_rgba(46,25,17,0.06)]">
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs font-sans">
           <thead class="bg-surface-container-high/80 border-b border-outline-variant text-[11px] font-label uppercase tracking-widest text-secondary font-bold">

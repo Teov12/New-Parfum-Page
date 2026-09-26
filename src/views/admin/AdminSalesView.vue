@@ -85,12 +85,12 @@ const handleDeleteOrder = async () => {
   <div class="space-y-6 animate-in fade-in duration-300">
     
     <!-- Sales Financial Summary Cards with Fluid Hover Animation -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
       <!-- Facturación -->
-      <div class="bg-surface border border-outline-variant rounded-2xl p-6 shadow-[0_10px_25px_-8px_rgba(46,25,17,0.05)] hover:shadow-[0_18px_35px_-10px_rgba(46,25,17,0.1)] hover:-translate-y-1 transition-all duration-300 group">
-        <div class="flex justify-between items-start mb-3">
+      <div class="bg-surface border border-outline-variant rounded-2xl p-4 sm:p-6 shadow-[0_10px_25px_-8px_rgba(46,25,17,0.05)] hover:shadow-[0_18px_35px_-10px_rgba(46,25,17,0.1)] hover:-translate-y-1 transition-all duration-300 group">
+        <div class="flex justify-between items-start mb-2 sm:mb-3">
           <span class="font-label text-xs uppercase tracking-widest text-secondary font-semibold">Facturación Bruta</span>
-          <div class="w-11 h-11 bg-surface-container rounded-xl border border-outline-variant/70 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300 shadow-2xs">
+          <div class="w-10 h-10 sm:w-11 sm:h-11 bg-surface-container rounded-xl border border-outline-variant/70 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300 shadow-2xs">
             <span class="material-symbols-outlined text-xl">payments</span>
           </div>
         </div>
@@ -104,10 +104,10 @@ const handleDeleteOrder = async () => {
       </div>
 
       <!-- Costo de Mercadería -->
-      <div class="bg-surface border border-outline-variant rounded-2xl p-6 shadow-[0_10px_25px_-8px_rgba(46,25,17,0.05)] hover:shadow-[0_18px_35px_-10px_rgba(46,25,17,0.1)] hover:-translate-y-1 transition-all duration-300 group">
-        <div class="flex justify-between items-start mb-3">
+      <div class="bg-surface border border-outline-variant rounded-2xl p-4 sm:p-6 shadow-[0_10px_25px_-8px_rgba(46,25,17,0.05)] hover:shadow-[0_18px_35px_-10px_rgba(46,25,17,0.1)] hover:-translate-y-1 transition-all duration-300 group">
+        <div class="flex justify-between items-start mb-2 sm:mb-3">
           <span class="font-label text-xs uppercase tracking-widest text-secondary font-semibold">Costo de Mercadería</span>
-          <div class="w-11 h-11 bg-surface-container rounded-xl border border-outline-variant/70 flex items-center justify-center text-secondary group-hover:scale-110 transition-transform duration-300 shadow-2xs">
+          <div class="w-10 h-10 sm:w-11 sm:h-11 bg-surface-container rounded-xl border border-outline-variant/70 flex items-center justify-center text-secondary group-hover:scale-110 transition-transform duration-300 shadow-2xs">
             <span class="material-symbols-outlined text-xl">inventory</span>
           </div>
         </div>
@@ -118,10 +118,10 @@ const handleDeleteOrder = async () => {
       </div>
 
       <!-- Ganancia Neta Real -->
-      <div class="bg-emerald-50/70 border border-emerald-200/90 rounded-2xl p-6 shadow-[0_10px_25px_-8px_rgba(16,185,129,0.08)] hover:shadow-[0_18px_35px_-10px_rgba(16,185,129,0.14)] hover:-translate-y-1 transition-all duration-300 group">
-        <div class="flex justify-between items-start mb-3">
+      <div class="bg-emerald-50/70 border border-emerald-200/90 rounded-2xl p-4 sm:p-6 shadow-[0_10px_25px_-8px_rgba(16,185,129,0.08)] hover:shadow-[0_18px_35px_-10px_rgba(16,185,129,0.14)] hover:-translate-y-1 transition-all duration-300 group">
+        <div class="flex justify-between items-start mb-2 sm:mb-3">
           <span class="font-label text-xs uppercase tracking-widest text-emerald-900 font-bold">Ganancia Neta Real</span>
-          <div class="w-11 h-11 bg-emerald-100/90 rounded-xl border border-emerald-200 flex items-center justify-center text-emerald-800 group-hover:scale-110 transition-transform duration-300 shadow-2xs">
+          <div class="w-10 h-10 sm:w-11 sm:h-11 bg-emerald-100/90 rounded-xl border border-emerald-200 flex items-center justify-center text-emerald-800 group-hover:scale-110 transition-transform duration-300 shadow-2xs">
             <span class="material-symbols-outlined text-xl">savings</span>
           </div>
         </div>
@@ -135,10 +135,10 @@ const handleDeleteOrder = async () => {
       </div>
 
       <!-- Ticket Promedio & Despachos -->
-      <div class="bg-surface border border-outline-variant rounded-2xl p-6 shadow-[0_10px_25px_-8px_rgba(46,25,17,0.05)] hover:shadow-[0_18px_35px_-10px_rgba(46,25,17,0.1)] hover:-translate-y-1 transition-all duration-300 group">
-        <div class="flex justify-between items-start mb-3">
+      <div class="bg-surface border border-outline-variant rounded-2xl p-4 sm:p-6 shadow-[0_10px_25px_-8px_rgba(46,25,17,0.05)] hover:shadow-[0_18px_35px_-10px_rgba(46,25,17,0.1)] hover:-translate-y-1 transition-all duration-300 group">
+        <div class="flex justify-between items-start mb-2 sm:mb-3">
           <span class="font-label text-xs uppercase tracking-widest text-secondary font-semibold">Ticket Promedio</span>
-          <div class="w-11 h-11 bg-surface-container rounded-xl border border-outline-variant/70 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300 shadow-2xs">
+          <div class="w-10 h-10 sm:w-11 sm:h-11 bg-surface-container rounded-xl border border-outline-variant/70 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300 shadow-2xs">
             <span class="material-symbols-outlined text-xl">local_shipping</span>
           </div>
         </div>
@@ -151,9 +151,9 @@ const handleDeleteOrder = async () => {
 
     <!-- Sales Filter & Action Bar -->
     <div class="bg-surface border border-outline-variant rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 shadow-[0_4px_18px_-4px_rgba(46,25,17,0.04)]">
-      <div class="flex flex-wrap items-center gap-3 flex-grow">
+      <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3 flex-grow">
         <!-- Search -->
-        <div class="relative min-w-[260px] flex-grow sm:flex-grow-0">
+        <div class="relative w-full sm:w-auto sm:min-w-[260px] flex-grow">
           <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary text-base">search</span>
           <input 
             v-model="orderSearchQuery"
@@ -163,42 +163,169 @@ const handleDeleteOrder = async () => {
           />
         </div>
 
-        <!-- Payment Filter -->
-        <select 
-          v-model="orderPaymentFilter"
-          class="bg-surface-container/70 border border-outline-variant rounded-xl px-3.5 py-2.5 text-xs font-sans text-primary focus:border-primary focus:bg-surface focus:outline-none transition-all shadow-2xs cursor-pointer"
-        >
-          <option value="all">Todos los Pagos</option>
-          <option value="paid">Pagados</option>
-          <option value="pending">Pendientes de Pago</option>
-          <option value="cancelled">Cancelados</option>
-        </select>
+        <!-- Filters in 2-col on mobile, flex on desktop -->
+        <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+          <!-- Payment Filter -->
+          <select 
+            v-model="orderPaymentFilter"
+            class="w-full sm:w-auto bg-surface-container/70 border border-outline-variant rounded-xl px-3 py-2.5 text-xs font-sans text-primary focus:border-primary focus:bg-surface focus:outline-none transition-all shadow-2xs cursor-pointer"
+          >
+            <option value="all">Todos los Pagos</option>
+            <option value="paid">Pagados</option>
+            <option value="pending">Pendientes de Pago</option>
+            <option value="cancelled">Cancelados</option>
+          </select>
 
-        <!-- Fulfillment Filter -->
-        <select 
-          v-model="orderFulfillmentFilter"
-          class="bg-surface-container/70 border border-outline-variant rounded-xl px-3.5 py-2.5 text-xs font-sans text-primary focus:border-primary focus:bg-surface focus:outline-none transition-all shadow-2xs cursor-pointer"
-        >
-          <option value="all">Todos los Despachos</option>
-          <option value="unfulfilled">Sin empaquetar</option>
-          <option value="packing">En preparación</option>
-          <option value="shipped">Despachado Andreani</option>
-          <option value="delivered">Entregado</option>
-        </select>
+          <!-- Fulfillment Filter -->
+          <select 
+            v-model="orderFulfillmentFilter"
+            class="w-full sm:w-auto bg-surface-container/70 border border-outline-variant rounded-xl px-3 py-2.5 text-xs font-sans text-primary focus:border-primary focus:bg-surface focus:outline-none transition-all shadow-2xs cursor-pointer"
+          >
+            <option value="all">Todos los Despachos</option>
+            <option value="unfulfilled">Sin empaquetar</option>
+            <option value="packing">En preparación</option>
+            <option value="shipped">Despachado Andreani</option>
+            <option value="delivered">Entregado</option>
+          </select>
+        </div>
       </div>
 
       <!-- Main Button: Nueva Venta Manual -->
       <button 
         @click="isManualOrderModalOpen = true"
-        class="bg-primary hover:bg-primary-container text-on-primary font-label text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs hover:shadow-md active:scale-95 border border-primary/20 flex-shrink-0"
+        class="w-full sm:w-auto bg-primary hover:bg-primary-container text-on-primary font-label text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs hover:shadow-md active:scale-95 border border-primary/20 flex-shrink-0"
       >
         <span class="material-symbols-outlined text-base">add_circle</span>
         <span>+ Cargar Venta Manual</span>
       </button>
     </div>
 
-    <!-- Sales Table with Fluid Row FLIP Reordering Transitions -->
-    <div class="bg-surface border border-outline-variant rounded-2xl overflow-hidden shadow-[0_8px_30px_-10px_rgba(46,25,17,0.06)]">
+    <!-- Mobile Orders Card List (< md) -->
+    <div class="md:hidden space-y-3">
+      <div v-if="filteredOrders.length === 0" class="bg-surface border border-outline-variant rounded-2xl p-8 text-center text-secondary text-xs">
+        No se encontraron ventas con los filtros seleccionados.
+      </div>
+
+      <div 
+        v-for="order in filteredOrders" 
+        :key="order.id"
+        class="bg-surface border border-outline-variant rounded-2xl p-4 shadow-sm space-y-3"
+      >
+        <!-- Top row: Order Number, Date, Source, and Delete button -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="font-mono font-bold text-primary text-sm">#{{ order.orderNumber }}</span>
+            <span class="text-[11px] text-secondary">{{ new Date(order.date).toLocaleDateString('es-AR') }}</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-[9px] font-label uppercase tracking-wider px-2 py-0.5 rounded-full bg-surface-container border border-outline-variant/70 font-bold text-primary">
+              {{ order.source === 'web' ? 'Web' : (order.source === 'whatsapp' ? 'WhatsApp' : 'Manual') }}
+            </span>
+            <button 
+              @click="confirmDeleteOrder(order)"
+              class="w-7 h-7 inline-flex items-center justify-center text-secondary hover:text-rose-700 rounded-lg hover:bg-rose-50 transition-colors"
+              title="Eliminar Pedido"
+            >
+              <span class="material-symbols-outlined text-sm">delete</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Customer & Contact -->
+        <div class="bg-surface-container/40 p-2.5 rounded-xl border border-outline-variant/60 space-y-1">
+          <div class="flex items-baseline justify-between">
+            <p class="font-medium text-primary text-xs">{{ order.customer?.firstName }} {{ order.customer?.lastName }}</p>
+            <p class="text-[11px] text-secondary truncate">{{ order.customer?.city }}, {{ order.customer?.province }}</p>
+          </div>
+          <div class="pt-1">
+            <button 
+              @click="sendWhatsAppTracking(order)"
+              class="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 px-2.5 py-1 rounded-full transition-colors shadow-2xs"
+              title="Abrir chat de WhatsApp"
+            >
+              <span class="material-symbols-outlined text-xs">chat</span>
+              <span>WhatsApp: {{ order.customer?.phone }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Items preview -->
+        <div class="text-xs space-y-0.5 text-secondary pl-1">
+          <div 
+            v-for="item in order.items" 
+            :key="item.id"
+            class="flex items-center gap-1.5"
+          >
+            <span class="font-bold text-primary">{{ item.quantity }}x</span>
+            <span class="truncate">{{ item.name }} ({{ item.size }})</span>
+          </div>
+        </div>
+
+        <!-- Financial Summary Row -->
+        <div class="grid grid-cols-2 gap-2 bg-surface-container/50 p-2.5 rounded-xl border border-outline-variant/60 text-xs">
+          <div>
+            <span class="text-[9px] uppercase font-label tracking-wider text-secondary block">Total Venta</span>
+            <span class="font-bold text-sm text-primary">
+              ${{ order.total.toLocaleString('es-AR') }}
+            </span>
+            <span class="text-[10px] text-secondary block">Costo: ${{ order.totalCost.toLocaleString('es-AR') }}</span>
+          </div>
+          <div>
+            <span class="text-[9px] uppercase font-label tracking-wider text-emerald-800 font-bold block">Ganancia Neta</span>
+            <span class="font-bold text-xs text-emerald-800 flex items-center gap-1">
+              +${{ order.profit.toLocaleString('es-AR') }}
+              <span class="text-[9px] font-normal text-emerald-850 bg-emerald-100/90 border border-emerald-200 px-1.5 py-0.5 rounded-full">
+                {{ order.profitMargin }}%
+              </span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Status selectors (Payment & Fulfillment) -->
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[9px] font-label uppercase text-secondary font-bold block mb-1">Pago</label>
+            <select 
+              :value="order.paymentStatus" 
+              @change="updateOrderStatus(order, 'paymentStatus', $event.target.value)"
+              class="w-full text-[11px] font-label uppercase font-bold px-2.5 py-2 rounded-xl border border-outline-variant focus:outline-none transition-all shadow-2xs cursor-pointer"
+              :class="order.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-900 border-emerald-200' : 'bg-amber-50 text-amber-900 border-amber-200'"
+            >
+              <option value="paid">Pagado</option>
+              <option value="pending">Pendiente</option>
+              <option value="cancelled">Cancelado</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-[9px] font-label uppercase text-secondary font-bold block mb-1">Despacho</label>
+            <select 
+              :value="order.fulfillmentStatus" 
+              @change="updateOrderStatus(order, 'fulfillmentStatus', $event.target.value)"
+              class="w-full text-[11px] font-label uppercase font-bold px-2.5 py-2 rounded-xl border border-outline-variant focus:outline-none transition-all shadow-2xs cursor-pointer"
+              :class="order.fulfillmentStatus === 'delivered' ? 'bg-emerald-50 text-emerald-900 border-emerald-200' : (order.fulfillmentStatus === 'shipped' ? 'bg-indigo-50 text-indigo-900 border-indigo-200' : 'bg-surface-container text-secondary')"
+            >
+              <option value="unfulfilled">Sin Empaque</option>
+              <option value="packing">Preparando</option>
+              <option value="shipped">Despachado</option>
+              <option value="delivered">Entregado</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Action: Ver Remito / Detalle -->
+        <button 
+          @click="viewOrderDetail(order)"
+          class="w-full py-2.5 px-3 bg-surface-container hover:bg-surface-container-high border border-outline-variant rounded-xl text-primary font-label text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-2xs active:scale-95"
+        >
+          <span class="material-symbols-outlined text-sm">receipt_long</span>
+          <span>Ver Remito Completo</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Desktop Sales Table (>= md) -->
+    <div class="hidden md:block bg-surface border border-outline-variant rounded-2xl overflow-hidden shadow-[0_8px_30px_-10px_rgba(46,25,17,0.06)]">
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs font-sans">
           <thead class="bg-surface-container-high/80 border-b border-outline-variant text-[11px] font-label uppercase tracking-widest text-secondary font-bold">

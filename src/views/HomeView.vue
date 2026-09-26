@@ -231,7 +231,7 @@ const trustBadges = [
                 </span>
               </div>
 
-              <h1 class="font-sans text-4xl sm:text-5xl lg:text-display-lg text-primary mb-6 leading-[1.08] tracking-tight font-normal">
+              <h1 class="font-sans text-3xl sm:text-5xl lg:text-display-lg text-primary mb-6 leading-[1.08] tracking-tight font-normal">
                 {{ currentSlideData.title }} <br />
                 <span class="italic font-serif">{{ currentSlideData.highlight }}</span>
               </h1>
@@ -311,10 +311,10 @@ const trustBadges = [
         </div>
       </Transition>
 
-      <!-- Carousel Navigation Arrows with Directional Tactile Response -->
+      <!-- Carousel Navigation Arrows with Directional Tactile Response (hidden on mobile, swipe used instead) -->
       <button 
         @click="prevSlide(); resetAutoplay()"
-        class="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-surface/90 backdrop-blur-md border border-outline-variant hover:bg-surface text-primary flex items-center justify-center shadow-md hover:shadow-xl hover:scale-110 active:-translate-x-1 active:scale-95 transition-all duration-300 group"
+        class="hidden sm:flex absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-surface/90 backdrop-blur-md border border-outline-variant hover:bg-surface text-primary items-center justify-center shadow-md hover:shadow-xl hover:scale-110 active:-translate-x-1 active:scale-95 transition-all duration-300 group"
         aria-label="Diapositiva anterior"
       >
         <span class="material-symbols-outlined text-xl transition-transform duration-300 group-hover:-translate-x-0.5">chevron_left</span>
@@ -322,7 +322,7 @@ const trustBadges = [
 
       <button 
         @click="nextSlide(); resetAutoplay()"
-        class="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-surface/90 backdrop-blur-md border border-outline-variant hover:bg-surface text-primary flex items-center justify-center shadow-md hover:shadow-xl hover:scale-110 active:translate-x-1 active:scale-95 transition-all duration-300 group"
+        class="hidden sm:flex absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-surface/90 backdrop-blur-md border border-outline-variant hover:bg-surface text-primary items-center justify-center shadow-md hover:shadow-xl hover:scale-110 active:translate-x-1 active:scale-95 transition-all duration-300 group"
         aria-label="Siguiente diapositiva"
       >
         <span class="material-symbols-outlined text-xl transition-transform duration-300 group-hover:translate-x-0.5">chevron_right</span>

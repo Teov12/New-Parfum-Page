@@ -71,11 +71,11 @@ const sendWhatsAppTracking = (order) => {
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/60 backdrop-blur-sm"
         @click.self="emit('close')"
       >
-        <div class="admin-modal-dialog bg-surface border border-outline-variant rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-[0_25px_60px_-15px_rgba(46,25,17,0.25)] p-6 sm:p-8 space-y-6">
+        <div class="admin-modal-dialog bg-surface border border-outline-variant rounded-2xl max-w-lg w-full max-h-[96vh] overflow-y-auto shadow-[0_25px_60px_-15px_rgba(46,25,17,0.25)] p-4 sm:p-8 space-y-4 sm:space-y-6">
           <div class="flex justify-between items-center border-b border-outline-variant pb-4">
             <div>
               <span class="font-label text-[10px] uppercase tracking-[0.25em] text-secondary font-bold block mb-0.5">Comprobante de Venta</span>
-              <h3 class="font-serif text-2xl text-primary font-bold">#{{ order.orderNumber }}</h3>
+              <h3 class="font-serif text-xl sm:text-2xl text-primary font-bold">#{{ order.orderNumber }}</h3>
             </div>
             <button @click="emit('close')" class="w-9 h-9 rounded-full flex items-center justify-center text-secondary hover:text-primary hover:bg-surface-container transition-all">
               <span class="material-symbols-outlined text-xl">close</span>

@@ -355,7 +355,7 @@ const calculateShipping = async () => {
 </script>
 
 <template>
-  <div class="bg-surface py-8">
+  <div class="bg-surface py-8 pb-28 sm:pb-8">
     <div
       v-if="product"
       class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop"
@@ -578,25 +578,25 @@ const calculateShipping = async () => {
 
           <!-- Quantity & Action Buttons (Píldoras) -->
           <div class="space-y-3 pt-2">
-            <div class="flex gap-3">
+            <div class="flex gap-2 sm:gap-3">
               <!-- Quantity Counter -->
               <div
                 class="inline-flex items-center border border-outline-variant rounded-full bg-surface flex-shrink-0 overflow-hidden shadow-2xs"
               >
                 <button
                   @click="quantity = Math.max(1, quantity - 1)"
-                  class="px-4 py-3 text-primary hover:bg-surface-container transition-colors text-base font-bold"
+                  class="px-3 sm:px-4 py-3 text-primary hover:bg-surface-container transition-colors text-base font-bold"
                 >
                   -
                 </button>
                 <span
-                  class="px-3 py-3 font-label text-xs font-bold text-primary min-w-[2.5rem] text-center"
+                  class="px-2 sm:px-3 py-3 font-label text-xs font-bold text-primary min-w-[2rem] sm:min-w-[2.5rem] text-center"
                 >
                   {{ quantity }}
                 </span>
                 <button
                   @click="quantity++"
-                  class="px-4 py-3 text-primary hover:bg-surface-container transition-colors text-base font-bold"
+                  class="px-3 sm:px-4 py-3 text-primary hover:bg-surface-container transition-colors text-base font-bold"
                 >
                   +
                 </button>
@@ -605,7 +605,7 @@ const calculateShipping = async () => {
               <!-- Add to Cart CTA (Píldora) -->
               <button
                 @click="handleAddToCart"
-                class="flex-grow bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-3.5 px-6 rounded-full border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-2 shadow-sm"
+                class="flex-grow bg-primary-container text-on-primary font-label text-xs uppercase tracking-wider sm:tracking-widest py-3.5 px-3 sm:px-6 rounded-full border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm text-center"
               >
                 <span class="material-symbols-outlined text-base"
                   >shopping_bag</span
@@ -972,6 +972,39 @@ const calculateShipping = async () => {
       >
         Explorar Catálogo
       </RouterLink>
+    </div>
+
+    <!-- Sticky Mobile Purchase Bar (< sm) -->
+    <div
+      v-if="product"
+      class="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-surface/95 backdrop-blur-md border-t border-outline-variant p-3 shadow-[0_-8px_25px_rgba(46,25,17,0.08)] flex items-center justify-between gap-3"
+    >
+      <div class="min-w-0">
+        <span class="block text-[9px] uppercase font-bold text-emerald-800 tracking-wider">Transferencia</span>
+        <div class="flex items-baseline gap-1.5">
+          <span class="font-sans font-bold text-base text-primary leading-none">
+            ${{ currentTransferPrice.toLocaleString("es-AR") }}
+          </span>
+          <span class="text-[10px] text-secondary font-medium truncate">({{ selectedSize?.size }})</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <button
+          @click="handleAddToCart"
+          class="bg-primary-container text-on-primary font-label text-xs uppercase tracking-wider py-2.5 px-3.5 rounded-full border border-primary-container flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
+        >
+          <span class="material-symbols-outlined text-base">shopping_bag</span>
+          <span>Añadir</span>
+        </button>
+
+        <button
+          @click="handleBuyNow"
+          class="bg-surface text-primary font-label text-xs uppercase tracking-wider py-2.5 px-3 rounded-full border border-primary flex items-center gap-1 active:scale-95 transition-all"
+        >
+          <span>Comprar</span>
+        </button>
+      </div>
     </div>
   </div>
 </template>

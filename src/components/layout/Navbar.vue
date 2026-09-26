@@ -144,6 +144,22 @@ const isActive = (path) => {
             <span>{{ link.name }}</span>
             <span class="material-symbols-outlined text-sm">chevron_right</span>
           </RouterLink>
+
+          <!-- Mobile Wishlist Link -->
+          <RouterLink
+            to="/catalogo?wishlist=true"
+            @click="isMobileMenuOpen = false"
+            class="font-label text-sm uppercase tracking-widest py-2.5 px-3 rounded-xl flex justify-between items-center transition-all hover:translate-x-1 text-secondary hover:bg-surface-container-low"
+          >
+            <span class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-lg text-rose-700">favorite</span>
+              <span>Mis Favoritos</span>
+            </span>
+            <span v-if="wishlistStore.totalItems > 0" class="bg-secondary text-surface text-xs px-2 py-0.5 rounded-full font-bold">
+              {{ wishlistStore.totalItems }}
+            </span>
+            <span v-else class="material-symbols-outlined text-sm">chevron_right</span>
+          </RouterLink>
         </div>
 
         <div class="pt-4 border-t border-outline-variant flex justify-between items-center text-xs font-label text-secondary uppercase tracking-widest">
