@@ -635,7 +635,7 @@ const calculateShipping = async () => {
                   class="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md flex items-center gap-0.5 leading-none"
                   :class="selectedSize?.size === s.size ? 'bg-amber-300/30 text-amber-100 border border-amber-300/30' : 'bg-amber-100 text-amber-900 border border-amber-300'"
                 >
-                  <span>🧪 Decant</span>
+                  <span>Decant</span>
                 </span>
 
                 <span class="font-bold text-xs">{{ s.size }}</span>

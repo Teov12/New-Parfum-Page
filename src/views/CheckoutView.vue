@@ -225,19 +225,19 @@ const buildWhatsAppMessage = (orderNumber) => {
   if (paymentMethod.value === 'credit_card') paymentMethodLabel = 'Tarjeta de Crédito (3 Cuotas Sin Interés)'
 
   const storeNameUpper = (tenantStore.storeName || 'Gicca Perfumes').toUpperCase()
-  let msg = `✨ *NUEVO PEDIDO - ${storeNameUpper}* ✨\n`
+  let msg = `*NUEVO PEDIDO - ${storeNameUpper}*\n`
   msg += `━━━━━━━━━━━━━━━━━━━━━\n`
-  msg += `📦 *Nº de Orden:* #${orderNumber}\n`
-  msg += `📅 *Fecha:* ${new Date().toLocaleDateString('es-AR')}\n\n`
+  msg += `*Nº de Orden:* #${orderNumber}\n`
+  msg += `*Fecha:* ${new Date().toLocaleDateString('es-AR')}\n\n`
 
-  msg += `👤 *DATOS DEL CLIENTE:*\n`
+  msg += `*DATOS DEL CLIENTE:*\n`
   msg += `• *Nombre:* ${customerName}\n`
   msg += `• *WhatsApp / Tel:* ${phone.value}\n`
   if (email.value) msg += `• *Email:* ${email.value}\n`
   if (dni.value) msg += `• *DNI / CUIT:* ${dni.value}\n`
   msg += `\n`
 
-  msg += `📍 *LOGÍSTICA Y ENTREGA (ANDREANI):*\n`
+  msg += `*LOGÍSTICA Y ENTREGA (ANDREANI):*\n`
   if (shippingOpt?.type === 'sucursal' && shippingStore.selectedBranch) {
     msg += `• *Modalidad:* Retiro en Sucursal / Punto Andreani\n`
     msg += `• *Sucursal:* ${shippingStore.selectedBranch.name}\n`
@@ -250,10 +250,10 @@ const buildWhatsAppMessage = (orderNumber) => {
   }
   msg += `• *Servicio:* ${shippingText}\n\n`
 
-  msg += `🛍️ *PRODUCTOS:*\n`
+  msg += `*PRODUCTOS:*\n`
   msg += `${itemsText}\n\n`
 
-  msg += `💰 *RESUMEN DE PAGO:*\n`
+  msg += `*RESUMEN DE PAGO:*\n`
   msg += `• *Subtotal Lista:* $${cartStore.subtotal.toLocaleString('es-AR')}\n`
   if (cartStore.discountAmount > 0) {
     msg += `• *Descuento Cupón:* -$${cartStore.discountAmount.toLocaleString('es-AR')}\n`
@@ -1060,8 +1060,9 @@ const handleMercadoPagoPayment = async () => {
                   <span v-if="isSubmitting">Registrando orden...</span>
                   <span v-else>Confirmar y Enviar Comprobante (${{ finalTotal.toLocaleString('es-AR') }})</span>
                 </button>
-                <p class="text-center text-[11px] text-secondary">
-                  🔒 Tu orden se registra en el sistema y se abre WhatsApp para adjuntar tu comprobante bancario.
+                <p class="text-center text-[11px] text-secondary flex items-center justify-center gap-1.5">
+                  <span class="material-symbols-outlined text-xs text-primary">lock</span>
+                  <span>Tu orden se registra en el sistema y se abre WhatsApp para adjuntar tu comprobante bancario.</span>
                 </p>
               </div>
             </div>
@@ -1172,7 +1173,7 @@ const handleMercadoPagoPayment = async () => {
               3 cuotas de ${{ Math.round(finalTotal / 3).toLocaleString('es-AR') }} sin interés
             </div>
             <div v-else-if="transferDiscount > 0" class="text-right text-[11px] text-emerald-800 font-medium">
-              🎉 ¡Ahorrás ${{ transferDiscount.toLocaleString('es-AR') }} pagando por Transferencia!
+              Ahorro de ${{ transferDiscount.toLocaleString('es-AR') }} aplicado por pago mediante Transferencia directa
             </div>
             <p v-if="shippingCost > 0" class="text-right text-[10px] text-secondary/80 italic">
               * Incluye costo de envío aproximado de Andreani

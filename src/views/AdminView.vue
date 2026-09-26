@@ -815,7 +815,7 @@ const openAndreaniTracking = (trackingCode) => {
 }
 
 const sendWhatsAppTracking = (order) => {
-  const text = `Hola ${order.customer?.firstName}! ✨ Te escribimos de Gicca Perfumes sobre tu orden #${order.orderNumber}.\n\nTu pedido se encuentra: *${order.fulfillmentStatus === 'shipped' ? 'DESPACHADO EN ANDREANI' : (order.fulfillmentStatus === 'delivered' ? 'ENTREGADO' : 'EN PREPARACIÓN')}*.\n${order.trackingCode ? `Código de Seguimiento Andreani: *${order.trackingCode}*\nPodés seguirlo en: https://www.andreani.com/#!/informacionEnvio/${order.trackingCode}` : ''}\n\n¡Cualquier consulta estamos a tu disposición!`
+  const text = `Hola ${order.customer?.firstName}, te escribimos de Gicca Perfumes sobre tu orden #${order.orderNumber}.\n\nTu pedido se encuentra: *${order.fulfillmentStatus === 'shipped' ? 'DESPACHADO EN ANDREANI' : (order.fulfillmentStatus === 'delivered' ? 'ENTREGADO' : 'EN PREPARACIÓN')}*.\n${order.trackingCode ? `Código de Seguimiento Andreani: *${order.trackingCode}*\nPodés seguirlo en: https://www.andreani.com/#!/informacionEnvio/${order.trackingCode}` : ''}\n\nQuedamos a tu entera disposición.`
   const url = `https://wa.me/${order.customer?.phone?.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`
   window.open(url, '_blank')
 }
@@ -2560,7 +2560,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
               <!-- Transfer price (PRECIO PRINCIPAL / EN MANO) -->
               <div class="sm:col-span-4">
                 <label class="block text-[10px] text-primary font-bold mb-1">
-                  🏦 Precio Transferencia ($ ARS) *
+                  Precio Transferencia ($ ARS) *
                 </label>
                 <input 
                   v-model.number="sizeObj.transferPrice" 
@@ -2577,7 +2577,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
               <!-- List price (Cuotas / Tarjetas) -->
               <div class="sm:col-span-3">
                 <label class="block text-[10px] text-secondary font-medium mb-1">
-                  💳 Precio Lista (Tarjetas / Cuotas) ($ ARS)
+                  Precio Lista (Tarjetas / Cuotas) ($ ARS)
                 </label>
                 <input 
                   v-model.number="sizeObj.price" 

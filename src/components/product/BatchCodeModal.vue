@@ -237,8 +237,9 @@ const closeModal = () => {
                   <p class="text-secondary leading-relaxed">
                     Girando el frasco boca abajo, en el fondo de vidrio encontrarás una serie de números y letras grabadas directamente con láser o serigrafiadas en una placa metálica.
                   </p>
-                  <p class="text-emerald-900 font-medium bg-emerald-50 p-2 rounded-lg border border-emerald-200">
-                    💡 <strong>Seña de originalidad:</strong> Los perfumes originales nunca tienen el código pegado en una cinta adhesiva común o impreso con tinta borrosa que se desprende con la uña.
+                  <p class="text-emerald-900 font-medium bg-emerald-50 p-2.5 rounded-lg border border-emerald-200 text-xs flex items-start gap-2">
+                    <span class="material-symbols-outlined text-sm text-emerald-700 flex-shrink-0 mt-0.5">info</span>
+                    <span><strong>Seña de originalidad:</strong> Los perfumes originales nunca tienen el código pegado en una cinta adhesiva común o impreso con tinta borrosa que se desprende con la uña.</span>
                   </p>
                 </div>
 
@@ -263,8 +264,9 @@ const closeModal = () => {
                   <p class="text-secondary leading-relaxed">
                     El código alfanumérico del frasco <strong>debe ser exactamente igual</strong> al código estampado en la caja exterior. Si son distintos, el frasco no corresponde a su empaque original.
                   </p>
-                  <p class="text-emerald-900 font-medium bg-emerald-50 p-2 rounded-lg border border-emerald-200">
-                    ✅ <strong>En {{ storeName }}:</strong> Cada unidad es inspeccionada visual y electrónicamente antes del despacho con Andreani para asegurar que los batch codes coincidan a la perfección.
+                  <p class="text-emerald-900 font-medium bg-emerald-50 p-2.5 rounded-lg border border-emerald-200 text-xs flex items-start gap-2">
+                    <span class="material-symbols-outlined text-sm text-emerald-700 flex-shrink-0 mt-0.5">verified</span>
+                    <span><strong>En {{ storeName }}:</strong> Cada unidad es inspeccionada visual y electrónicamente antes del despacho con Andreani para asegurar que los batch codes coincidan a la perfección.</span>
                   </p>
                 </div>
               </div>

@@ -62,8 +62,8 @@ const siteContentStore = useSiteContentStore()
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div v-reveal="{ delay: 100 }" class="bg-surface-container p-8 border border-outline-variant rounded-xl space-y-4 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-300">
-            <div class="w-12 h-12 bg-surface rounded-full flex items-center justify-center border border-outline-variant text-primary font-sans text-xl font-bold shadow-2xs">
-              ✓
+            <div class="w-12 h-12 bg-surface rounded-full flex items-center justify-center border border-outline-variant text-primary shadow-2xs">
+              <span class="material-symbols-outlined text-2xl text-primary">verified</span>
             </div>
             <h4 class="font-sans text-2xl text-primary font-normal">100% Originales</h4>
             <p class="font-sans text-sm text-secondary leading-relaxed">
@@ -72,8 +72,8 @@ const siteContentStore = useSiteContentStore()
           </div>
 
           <div v-reveal="{ delay: 200 }" class="bg-surface-container p-8 border border-outline-variant rounded-xl space-y-4 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-300">
-            <div class="w-12 h-12 bg-surface rounded-full flex items-center justify-center border border-outline-variant text-primary font-sans text-xl font-bold shadow-2xs">
-              💬
+            <div class="w-12 h-12 bg-surface rounded-full flex items-center justify-center border border-outline-variant text-primary shadow-2xs">
+              <span class="material-symbols-outlined text-2xl text-primary">support_agent</span>
             </div>
             <h4 class="font-sans text-2xl text-primary font-normal">Asesoramiento Directo</h4>
             <p class="font-sans text-sm text-secondary leading-relaxed">
@@ -82,8 +82,8 @@ const siteContentStore = useSiteContentStore()
           </div>
 
           <div v-reveal="{ delay: 300 }" class="bg-surface-container p-8 border border-outline-variant rounded-xl space-y-4 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-300">
-            <div class="w-12 h-12 bg-surface rounded-full flex items-center justify-center border border-outline-variant text-primary font-sans text-xl font-bold shadow-2xs">
-              📦
+            <div class="w-12 h-12 bg-surface rounded-full flex items-center justify-center border border-outline-variant text-primary shadow-2xs">
+              <span class="material-symbols-outlined text-2xl text-primary">local_shipping</span>
             </div>
             <h4 class="font-sans text-2xl text-primary font-normal">Envíos Cuidados</h4>
             <p class="font-sans text-sm text-secondary leading-relaxed">

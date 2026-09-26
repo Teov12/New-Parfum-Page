@@ -636,7 +636,7 @@ const handleSubmitProduct = async () => {
                 <!-- PRECIO TRANSFERENCIA (En mano / Efectivo) - Principal -->
                 <div class="sm:col-span-4">
                   <label class="block text-[10px] font-label uppercase tracking-wider text-primary font-bold mb-1">
-                    🏦 Precio Transferencia ($ ARS) *
+                    Precio Transferencia ($ ARS) *
                   </label>
                   <div class="relative">
                     <span class="absolute left-3 top-2.5 text-xs text-secondary font-bold">$</span>
@@ -649,14 +649,14 @@ const handleSubmitProduct = async () => {
                     />
                   </div>
                   <span class="text-[10px] text-emerald-800 font-semibold block mt-1">
-                    ✨ Dinero neto que recibís en mano
+                    Dinero neto recibido en mano
                   </span>
                 </div>
 
                 <!-- PRECIO LISTA (Tarjetas / Cuotas) - Calculado automáticamente -->
                 <div class="sm:col-span-3">
                   <label class="block text-[10px] font-label uppercase tracking-wider text-secondary font-bold mb-1">
-                    💳 Precio Lista (Tarjetas) *
+                    Precio Lista (Tarjetas) *
                   </label>
                   <div class="relative">
                     <span class="absolute left-3 top-2.5 text-xs text-secondary font-bold">$</span>

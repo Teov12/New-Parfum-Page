@@ -350,7 +350,7 @@ const activeFiltersCount = computed(() => {
             : 'bg-amber-50 hover:bg-amber-100/80 text-amber-950 border-amber-300'"
         >
           <span class="material-symbols-outlined text-sm">science</span>
-          <span>🧪 Decants & Muestras</span>
+          <span>Decants & Muestras</span>
           <span class="text-[10px] opacity-80">({{ totalDecantsCount }})</span>
         </button>
 
@@ -593,8 +593,10 @@ const activeFiltersCount = computed(() => {
               v-if="onlyDecants" 
               class="inline-flex items-center gap-1.5 bg-amber-100 text-amber-950 text-xs font-sans font-medium px-3 py-1 rounded-full border border-amber-300 shadow-2xs"
             >
-              <span>🧪 Sólo Decants & Fraccionados</span>
-              <button @click="onlyDecants = false" class="hover:text-rose-600 text-xs font-bold cursor-pointer">✕</button>
+              <span>Sólo Decants & Fraccionados</span>
+              <button @click="onlyDecants = false" class="hover:text-rose-600 flex items-center cursor-pointer" aria-label="Quitar filtro">
+                <span class="material-symbols-outlined text-xs">close</span>
+              </button>
             </span>
 
             <span 
@@ -602,7 +604,9 @@ const activeFiltersCount = computed(() => {
               class="inline-flex items-center gap-1.5 bg-neutral-100 text-xs font-sans font-medium px-3 py-1 rounded-full border border-neutral-200"
             >
               "{{ searchQuery }}"
-              <button @click="searchQuery = ''" class="hover:text-rose-600 text-xs cursor-pointer">✕</button>
+              <button @click="searchQuery = ''" class="hover:text-rose-600 flex items-center cursor-pointer" aria-label="Quitar filtro">
+                <span class="material-symbols-outlined text-xs">close</span>
+              </button>
             </span>
 
             <span 
@@ -611,7 +615,9 @@ const activeFiltersCount = computed(() => {
               class="inline-flex items-center gap-1.5 bg-neutral-100 text-xs font-sans font-medium px-3 py-1 rounded-full border border-neutral-200"
             >
               {{ formatGenderLabel(g) }}
-              <button @click="selectedGenders = selectedGenders.filter(x => x !== g)" class="hover:text-rose-600 text-xs">✕</button>
+              <button @click="selectedGenders = selectedGenders.filter(x => x !== g)" class="hover:text-rose-600 flex items-center cursor-pointer" aria-label="Quitar filtro">
+                <span class="material-symbols-outlined text-xs">close</span>
+              </button>
             </span>
 
             <span 
@@ -620,7 +626,9 @@ const activeFiltersCount = computed(() => {
               class="inline-flex items-center gap-1.5 bg-neutral-100 text-xs font-sans font-medium px-3 py-1 rounded-full border border-neutral-200"
             >
               {{ formatCategoryLabel(c) }}
-              <button @click="selectedCategories = selectedCategories.filter(x => x !== c)" class="hover:text-rose-600 text-xs">✕</button>
+              <button @click="selectedCategories = selectedCategories.filter(x => x !== c)" class="hover:text-rose-600 flex items-center cursor-pointer" aria-label="Quitar filtro">
+                <span class="material-symbols-outlined text-xs">close</span>
+              </button>
             </span>
 
             <span 
@@ -629,7 +637,9 @@ const activeFiltersCount = computed(() => {
               class="inline-flex items-center gap-1.5 bg-neutral-100 text-xs font-sans font-medium px-3 py-1 rounded-full border border-neutral-200"
             >
               {{ f }}
-              <button @click="selectedFamilies = selectedFamilies.filter(x => x !== f)" class="hover:text-rose-600 text-xs">✕</button>
+              <button @click="selectedFamilies = selectedFamilies.filter(x => x !== f)" class="hover:text-rose-600 flex items-center cursor-pointer" aria-label="Quitar filtro">
+                <span class="material-symbols-outlined text-xs">close</span>
+              </button>
             </span>
 
             <span 
@@ -638,7 +648,9 @@ const activeFiltersCount = computed(() => {
               class="inline-flex items-center gap-1.5 bg-neutral-100 text-xs font-sans font-medium px-3 py-1 rounded-full border border-neutral-200"
             >
               {{ b }}
-              <button @click="selectedBrands = selectedBrands.filter(x => x !== b)" class="hover:text-rose-600 text-xs">✕</button>
+              <button @click="selectedBrands = selectedBrands.filter(x => x !== b)" class="hover:text-rose-600 flex items-center cursor-pointer" aria-label="Quitar filtro">
+                <span class="material-symbols-outlined text-xs">close</span>
+              </button>
             </span>
 
             <button 
