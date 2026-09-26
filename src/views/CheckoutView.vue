@@ -144,6 +144,20 @@ onMounted(async () => {
 
   if (returnOrderNumber && (collectionStatus === 'approved' || route.path.includes('/checkout/success'))) {
     try {
+      const paymentId = urlParams.get('payment_id') || urlParams.get('collection_id')
+      await fetch('/api/checkout/confirm-return', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-tenant-id': tenantStore.tenantId || 'gicca'
+        },
+        body: JSON.stringify({
+          orderNumber: returnOrderNumber,
+          paymentId,
+          status: 'approved'
+        })
+      }).catch(() => {})
+
       const res = await fetch(`/api/orders/${encodeURIComponent(returnOrderNumber)}`)
       if (res.ok) {
         const ord = await res.json()

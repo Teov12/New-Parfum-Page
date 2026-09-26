@@ -2,6 +2,7 @@ import express from 'express'
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago'
 import { createOrder, updateOrder } from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
+import { resolveTenantById } from '../middleware/tenant.js'
 
 const router = express.Router()
 
@@ -201,6 +202,32 @@ router.post('/create-preference', async (req, res) => {
   }
 })
 
+// POST /api/checkout/confirm-return - Confirmación inmediata al retornar de Mercado Pago
+router.post('/confirm-return', async (req, res) => {
+  try {
+    const { orderNumber, paymentId, status } = req.body
+    if (!orderNumber) {
+      return res.status(400).json({ error: 'Falta orderNumber' })
+    }
+    const tenantId = req.tenantId || req.query.tenant || 'gicca'
+
+    if (status === 'approved') {
+      const updated = await updateOrder(orderNumber, {
+        paymentStatus: 'paid',
+        notes: paymentId 
+          ? `Pago aprobado por Mercado Pago (Operación #${paymentId})`
+          : 'Pago aprobado por Mercado Pago (Retorno verificado)'
+      }, tenantId)
+      return res.json({ success: true, order: updated })
+    }
+
+    res.json({ success: false, message: 'Estado de pago no aprobado' })
+  } catch (err) {
+    console.error('Error confirming return payment:', err)
+    res.status(500).json({ error: 'Error al confirmar pago' })
+  }
+})
+
 // POST /api/checkout/webhook - Webhook de notificación automática de pagos de Mercado Pago
 router.post('/webhook', async (req, res) => {
   try {
@@ -209,7 +236,10 @@ router.post('/webhook', async (req, res) => {
 
     if ((topic === 'payment' || topic === 'merchant_order') && paymentId) {
       const tenantId = req.query.tenant || req.tenantId || 'gicca'
-      const tenant = req.tenant
+      let tenant = req.tenant
+      if (!tenant || !getMpAccessToken(tenant)) {
+        tenant = await resolveTenantById(tenantId)
+      }
       const accessToken = getMpAccessToken(tenant)
 
       if (accessToken) {

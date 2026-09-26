@@ -117,7 +117,7 @@ export const tenantMiddleware = async (req, res, next) => {
   }
 }
 
-async function resolveTenantById(id) {
+export async function resolveTenantById(id) {
   if (isMongoConnected()) {
     try {
       const doc = await Tenant.findOne({ tenantId: id, status: 'active' }).lean()

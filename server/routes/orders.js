@@ -81,8 +81,8 @@ router.get('/stats', requireAuth, async (req, res) => {
   }
 })
 
-// GET /api/orders/:id - Get single order (Admin only)
-router.get('/:id', requireAuth, async (req, res) => {
+// GET /api/orders/:id - Get single order (Tracking / Receipt / Admin)
+router.get('/:id', async (req, res) => {
   try {
     const tenantId = req.tenantId || 'gicca'
     const orders = await getOrders(tenantId)
