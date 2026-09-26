@@ -64,7 +64,7 @@ defineProps({
 
       <!-- Base Notes (Fondo) -->
       <div class="flex items-start gap-4 p-5 bg-surface rounded-xs border border-outline-variant shadow-2xs">
-        <div class="w-12 h-12 bg-primary-container text-on-primary rounded-full flex items-center justify-center flex-shrink-0 border border-primary-container shadow-2xs">
+        <div class="w-12 h-12 bg-surface-container rounded-full flex items-center justify-center flex-shrink-0 text-primary border border-outline-variant shadow-2xs">
           <span class="material-symbols-outlined text-xl">nature</span>
         </div>
         <div>

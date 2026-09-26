@@ -51,7 +51,7 @@ const handleWishlist = () => {
       <RouterLink :to="`/producto/${product.slug}`" class="block w-full h-full overflow-hidden">
         <img 
           :src="product.images[0]" 
-          :alt="product.name"
+          :alt="`Perfume ${product.name} de ${product.brand} original`"
           class="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
           loading="lazy"
         />
@@ -150,19 +150,28 @@ const handleWishlist = () => {
       </div>
 
       <!-- Price & Actions Row -->
-      <div class="pt-3 border-t border-outline-variant/70 flex justify-between items-end">
-        <div>
-          <div class="flex items-baseline gap-1.5 flex-wrap">
-            <span class="font-sans font-bold text-lg sm:text-xl text-primary">
-              ${{ Math.round(selectedSize.price * 0.8).toLocaleString('es-AR') }}
+      <div class="pt-3 border-t border-outline-variant/70 flex justify-between items-end gap-2">
+        <div class="space-y-1 flex-1 min-w-0">
+          <!-- Precio exclusivo Transferencia -->
+          <div>
+            <span class="block text-[9px] font-bold uppercase tracking-wider text-emerald-800">
+              Transferencia (20% OFF)
             </span>
-            <span class="text-[9px] font-bold text-emerald-800 bg-emerald-100/90 px-1.5 py-0.5 rounded-xs uppercase tracking-wide">
-              20% OFF Transferencia
+            <span class="font-sans font-bold text-lg sm:text-xl text-primary leading-none">
+              ${{ (selectedSize.transferPrice || Math.round(selectedSize.price * 0.80)).toLocaleString('es-AR') }}
             </span>
           </div>
-          <p class="text-[11px] text-secondary font-sans mt-0.5">
-            <span class="line-through text-secondary/70">${{ selectedSize.price.toLocaleString('es-AR') }}</span> en <strong>3 cuotas sin interés</strong> de ${{ Math.round(selectedSize.price / 3).toLocaleString('es-AR') }}
-          </p>
+
+          <!-- Precio de Lista & Cuotas Sin Interés -->
+          <div class="pt-1 border-t border-outline-variant/50 text-[11px] font-sans leading-tight">
+            <p class="text-secondary text-[11px]">
+              Precio de lista: <strong class="text-primary font-semibold">${{ selectedSize.price.toLocaleString('es-AR') }}</strong>
+            </p>
+            <p class="text-amber-800 text-[10px] font-semibold flex items-center gap-1 mt-0.5">
+              <span class="material-symbols-outlined text-[13px] leading-none">credit_card</span>
+              <span><strong>3 cuotas sin interés</strong> de ${{ Math.round(selectedSize.price / 3).toLocaleString('es-AR') }}</span>
+            </p>
+          </div>
         </div>
 
         <!-- Mobile Add Button -->

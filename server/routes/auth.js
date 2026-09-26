@@ -1,19 +1,36 @@
 import express from 'express'
+import rateLimit from 'express-rate-limit'
 import { signAdminToken, requireAuth } from '../middleware/auth.js'
 
 const router = express.Router()
 
-// Contraseña de administrador (configurable por variable de entorno ADMIN_PASSWORD)
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123'
+// Limitador contra ataques de fuerza bruta en el login (máx. 10 intentos cada 15 min)
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Demasiados intentos fallidos de inicio de sesión. Por seguridad, intente nuevamente en 15 minutos.'
+  }
+})
 
-router.post('/login', (req, res) => {
+router.post('/login', loginLimiter, (req, res) => {
   const { password } = req.body
 
   if (!password) {
     return res.status(400).json({ error: 'Por favor ingrese la contraseña de administrador' })
   }
 
-  if (password === ADMIN_PASSWORD) {
+  const configuredPassword = process.env.ADMIN_PASSWORD
+  if (!configuredPassword && process.env.NODE_ENV === 'production') {
+    console.error('[CRITICAL SECURITY] ADMIN_PASSWORD no ha sido definida en las variables de entorno de producción.')
+    return res.status(500).json({ error: 'Servidor no configurado para autenticación administrativa.' })
+  }
+
+  const effectivePassword = configuredPassword || 'admin123'
+
+  if (password === effectivePassword) {
     const userPayload = {
       username: 'Admin Gicca',
       role: 'superadmin',

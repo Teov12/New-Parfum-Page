@@ -179,7 +179,7 @@ const scrollCarousel = (direction) => {
 const trustBadges = [
   { icon: 'verified_user', title: '100% Originales', desc: 'Garantía de autenticidad en caja cerrada y sellada.' },
   { icon: 'local_shipping', title: 'Envíos Asegurados', desc: 'Entregas a todo el país con seguimiento en tiempo real.' },
-  { icon: 'credit_card', title: 'Cuotas Sin Interés', desc: '3 y 6 cuotas con todas las tarjetas bancarias.' },
+  { icon: 'credit_card', title: 'Cuotas Sin Interés', desc: '3 cuotas fijas sin interés con tarjetas bancarias.' },
   { icon: 'support_agent', title: 'Atención por WhatsApp', desc: 'Te asesoramos para que elijas tu perfume ideal.' }
 ]
 </script>
@@ -208,7 +208,7 @@ const trustBadges = [
           <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
             <img 
               :src="currentSlideData.image" 
-              :alt="currentSlideData.tag"
+              :alt="`Perfumes importados y árabes originales - ${currentSlideData.title || ''} ${currentSlideData.highlight || ''}`"
               class="w-full h-full object-cover object-center opacity-70 will-change-transform"
               :class="currentSlide % 2 === 0 ? 'animate-ken-burns' : 'animate-ken-burns-alt'"
               decoding="async"
@@ -269,8 +269,8 @@ const trustBadges = [
                   <p class="font-label text-[10px] text-secondary uppercase tracking-wider">País Entero</p>
                 </div>
                 <div class="group/stat cursor-default">
-                  <p class="font-sans text-2xl text-primary font-normal group-hover/stat:text-primary-container transition-colors">3 y 6</p>
-                  <p class="font-label text-[10px] text-secondary uppercase tracking-wider">Cuotas Fijas</p>
+                  <p class="font-sans text-2xl text-primary font-normal group-hover/stat:text-primary-container transition-colors">3</p>
+                  <p class="font-label text-[10px] text-secondary uppercase tracking-wider">Cuotas Sin Interés</p>
                 </div>
               </div>
 
@@ -282,7 +282,7 @@ const trustBadges = [
                 <div class="relative aspect-[3/4] rounded-xl overflow-hidden mb-4 bg-surface-container group">
                   <img 
                     :src="currentSlideData.bottleImage" 
-                    :alt="currentSlideData.featuredTitle" 
+                    :alt="`Perfume ${currentSlideData.featuredTitle} original en Argentina`" 
                     class="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                     decoding="async"
                     @error="(e) => e.target.src = 'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=800&q=85'"
@@ -444,7 +444,7 @@ const trustBadges = [
           <img 
             v-if="cat.image"
             :src="cat.image" 
-            :alt="cat.title"
+            :alt="`Perfumes originales categoría ${cat.title} - Gicca Perfumes`"
             class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110 opacity-85"
           />
           <div class="absolute inset-0 bg-gradient-to-t from-primary via-primary/40 to-transparent"></div>
@@ -491,7 +491,7 @@ const trustBadges = [
               <div class="aspect-square bg-surface-container rounded-lg mb-4 overflow-hidden border border-outline-variant">
                 <img 
                   :src="family.image" 
-                  :alt="family.name"
+                  :alt="`Familia olfativa ${family.name} - Notas y fragancias`"
                   class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                 />
               </div>

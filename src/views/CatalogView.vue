@@ -69,6 +69,63 @@ const initFromQuery = () => {
   if (route.query.q) {
     searchQuery.value = route.query.q
   }
+
+  updateCatalogSeo()
+}
+
+const updateCatalogSeo = () => {
+  let title = 'Catálogo de Perfumes Importados y Árabes | Gicca Perfumes Argentina'
+  let desc = 'Explorá nuestro catálogo de perfumes importados y árabes 100% originales en Argentina. Lattafa, Afnan, Armaf, Dior, Chanel y más. Envíos a todo el país y cuotas.'
+
+  if (route.query.brand) {
+    title = `Perfumes ${route.query.brand} Originales en Argentina | Catálogo Gicca`
+    desc = `Comprá perfumes ${route.query.brand} 100% originales en cuotas sin interés. Catálogo oficial con envíos a todo el país y garantía de autenticidad.`
+  } else if (route.query.category === 'arabes') {
+    title = 'Perfumes Árabes Originales en Argentina - Lattafa, Afnan, Armaf | Gicca'
+    desc = 'Los mejores perfumes árabes originales en Argentina. Descubrí fragancias virales de larga duración como Khamrah, Asad, Yara y Club de Nuit.'
+  } else if (route.query.gender === 'Hombre' || route.query.gender === 'man') {
+    title = 'Perfumes Importados para Hombre | Fragancias Masculinas - Gicca'
+    desc = 'Perfumes importados masculinos 100% originales en Argentina. Amaderados, especiados y frescos con cuotas sin interés y envíos rápidos.'
+  } else if (route.query.gender === 'Mujer' || route.query.gender === 'woman') {
+    title = 'Perfumes Importados para Mujer | Fragancias Femeninas - Gicca'
+    desc = 'Perfumes importados femeninos originales en Argentina. Florales, orientales y dulces de las mejores casas perfumistas del mundo.'
+  } else if (route.query.gender === 'Unisex' || route.query.gender === 'unisex') {
+    title = 'Perfumes Unisex Importados y Árabes | Gicca Perfumes'
+    desc = 'Colección de perfumes unisex de nicho y árabes originales. Aromas sofisticados para compartir con cuotas sin interés.'
+  } else if (route.query.family) {
+    title = `Perfumes Familia Olfativa ${route.query.family} | Gicca Perfumes`
+    desc = `Descubrí perfumes con notas de la familia olfativa ${route.query.family}. Fragancias seleccionadas 100% originales en Argentina.`
+  } else if (route.query.q) {
+    title = `Buscar "${route.query.q}" en Perfumes | Gicca Perfumes`
+    desc = `Resultados de búsqueda para ${route.query.q} en Gicca Perfumes. Encontrá tus fragancias favoritas originales con envíos a todo el país.`
+  }
+
+  document.title = title
+
+  const setMetaTag = (attr, key, content) => {
+    let el = document.querySelector(`meta[${attr}="${key}"]`)
+    if (!el) {
+      el = document.createElement('meta')
+      el.setAttribute(attr, key)
+      document.head.appendChild(el)
+    }
+    el.setAttribute('content', content)
+  }
+
+  setMetaTag('name', 'description', desc)
+  setMetaTag('property', 'og:title', title)
+  setMetaTag('property', 'og:description', desc)
+  setMetaTag('name', 'twitter:title', title)
+  setMetaTag('name', 'twitter:description', desc)
+
+  let canonical = document.querySelector('link[rel="canonical"]')
+  if (!canonical) {
+    canonical = document.createElement('link')
+    canonical.setAttribute('rel', 'canonical')
+    document.head.appendChild(canonical)
+  }
+  const cleanUrl = window.location.origin + window.location.pathname + (window.location.search ? window.location.search : '')
+  canonical.setAttribute('href', cleanUrl)
 }
 
 onMounted(() => {

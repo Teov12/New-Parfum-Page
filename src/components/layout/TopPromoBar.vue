@@ -14,7 +14,7 @@ import { RouterLink } from 'vue-router'
       <span class="text-on-primary-container">•</span>
       <span class="font-bold text-amber-300">20% OFF Transferencia</span>
       <span class="text-on-primary-container">•</span>
-      <span class="font-medium">3 y 6 Cuotas Sin Interés</span>
+      <span class="font-medium">3 Cuotas Sin Interés</span>
     </div>
 
     <div class="hidden lg:flex items-center gap-4">

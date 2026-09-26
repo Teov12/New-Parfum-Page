@@ -12,31 +12,46 @@ const routes = [
     path: '/',
     name: 'home',
     component: HomeView,
-    meta: { title: 'Gicca Perfumes | Inicio' }
+    meta: { 
+      title: 'Gicca Perfumes | Perfumes Importados & Árabes 100% Originales en Argentina',
+      description: 'Tienda online de perfumes importados y árabes 100% originales en Argentina. Lattafa, Afnan, Armaf, Dior y más. Hasta 6 cuotas sin interés, 20% OFF por transferencia y envíos a todo el país.'
+    }
   },
   {
     path: '/catalogo',
     name: 'catalog',
     component: CatalogView,
-    meta: { title: 'Perfumes & Fragancias | Gicca Perfumes' }
+    meta: { 
+      title: 'Catálogo de Perfumes Importados y Árabes | Gicca Perfumes Argentina',
+      description: 'Explorá perfumes árabes, fragancias masculinas, femeninas y decants 100% originales. Comprá en cuotas sin interés con envíos a toda la Argentina.'
+    }
   },
   {
     path: '/producto/:slug',
     name: 'product-detail',
     component: ProductDetailView,
-    meta: { title: 'Detalle de Fragancia | Gicca Perfumes' }
+    meta: { 
+      title: 'Perfume Original | Gicca Perfumes Argentina',
+      description: 'Fragancias 100% originales en caja cerrada con batch code y garantía de autenticidad en Gicca Perfumes.'
+    }
   },
   {
     path: '/carrito',
     name: 'cart',
     component: CartView,
-    meta: { title: 'Tu Carrito | Gicca Perfumes' }
+    meta: { 
+      title: 'Bolsa de Compras | Gicca Perfumes',
+      robots: 'noindex, follow'
+    }
   },
   {
     path: '/checkout',
     name: 'checkout',
     component: CheckoutView,
-    meta: { title: 'Finalizar Compra | Gicca Perfumes' }
+    meta: { 
+      title: 'Finalizar Compra Segura | Gicca Perfumes',
+      robots: 'noindex, nofollow'
+    }
   },
   {
     path: '/nosotros',
@@ -46,13 +61,19 @@ const routes = [
     path: '/contacto',
     name: 'contact',
     component: ContactView,
-    meta: { title: 'Contacto & Asesoramiento | Gicca Perfumes' }
+    meta: { 
+      title: 'Contacto & Asesoramiento en Fragancias | Gicca Perfumes Argentina',
+      description: '¿Buscás un perfume en particular? Contactanos por WhatsApp o correo para recibir asesoramiento personalizado en fragancias importadas y árabes.'
+    }
   },
   {
     path: '/quiz',
     name: 'quiz',
     component: QuizView,
-    meta: { title: 'Encontrá tu Perfume Ideal | Gicca Perfumes' }
+    meta: { 
+      title: 'Test Olfativo: Descubrí tu Perfume Ideal en 60s | Gicca Perfumes',
+      description: 'Respondé 4 preguntas simples y encontrá el perfume que mejor combina con tu personalidad, estación del año y estilo de vida.'
+    }
   },
   // Admin Login (Standalone)
   {

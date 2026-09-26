@@ -72,6 +72,16 @@ const seasonOptions = [
   'Invierno'
 ]
 
+const occasionSuggestions = [
+  'Uso Diario & Oficina',
+  'Noche & Citas Elegantes',
+  'Fiestas & Salidas Nocturnas',
+  'Eventos Formales & Gala',
+  'Versátil (Todo momento)',
+  'Citas Románticas',
+  'Uso diario y ocasiones especiales'
+]
+
 // ==========================================
 // PRODUCT FORM STATE & VEE-VALIDATE
 // ==========================================
@@ -96,7 +106,7 @@ const defaultForm = () => ({
   stock: 10,
   images: [],
   sizes: [
-    { size: 100, price: null, costPrice: null, default: true }
+    { size: 100, transferPrice: null, price: null, costPrice: null, default: true }
   ],
   olfactoryPyramid: {
     topNotes: [],
@@ -119,30 +129,51 @@ const topNoteInput = ref('')
 const heartNoteInput = ref('')
 const baseNoteInput = ref('')
 
-// Calculated Profit for product being created/edited
+// Calculated Profit for product being created/edited (basado en precio transferencia en mano)
 const productUnitProfit = computed(() => {
-  const price = Number(formData.value.sizes[0]?.price) || 0
-  const cost = Number(formData.value.sizes[0]?.costPrice) || 0
-  return Math.max(0, price - cost)
+  const mainSize = formData.value.sizes[0]
+  const transfer = Number(mainSize?.transferPrice) || (Number(mainSize?.price) ? Math.round(Number(mainSize?.price) * 0.8) : 0)
+  const cost = Number(mainSize?.costPrice) || 0
+  return Math.max(0, transfer - cost)
 })
 
 const productProfitMargin = computed(() => {
-  const price = Number(formData.value.sizes[0]?.price) || 0
-  const cost = Number(formData.value.sizes[0]?.costPrice) || 0
-  if (price <= 0) return 0
-  return Math.round(((price - cost) / price) * 100)
+  const mainSize = formData.value.sizes[0]
+  const transfer = Number(mainSize?.transferPrice) || (Number(mainSize?.price) ? Math.round(Number(mainSize?.price) * 0.8) : 0)
+  const cost = Number(mainSize?.costPrice) || 0
+  if (transfer <= 0) return 0
+  return Math.round(((transfer - cost) / transfer) * 100)
 })
 
-// Calculadora automática: Precio deseado en Transferencia -> Precio de Lista a Publicar
+// Al agregar precio de transferencia deseado en mano, calcular precio de lista dividiendo por 0.80 (absorbe el 20% del banco)
+const onTransferPriceChange = (sizeObj) => {
+  const transfer = Number(sizeObj.transferPrice) || 0
+  if (transfer > 0) {
+    sizeObj.price = Math.round(transfer / 0.80)
+  } else {
+    sizeObj.price = null
+  }
+}
+
+// Si se ajusta manualmente el precio de lista, calcular precio transferencia con 20% OFF (* 0.80)
+const onListPriceChange = (sizeObj) => {
+  const price = Number(sizeObj.price) || 0
+  if (price > 0 && (!sizeObj.transferPrice || sizeObj.transferPrice <= 0)) {
+    sizeObj.transferPrice = Math.round(price * 0.80)
+  }
+}
+
+// Calculadora rápida: Precio en Transferencia deseado -> Precio de Lista a Publicar (/ 0.80)
 const targetTransferPrice = ref(null)
 
 const calculateListPriceFromTransfer = () => {
   const target = Number(targetTransferPrice.value) || 0
   if (target > 0 && formData.value.sizes[0]) {
-    // Si precio_transfer = precio_lista * 0.8 => precio_lista = precio_transfer / 0.8
-    const calculatedListPrice = Math.round(target / 0.8)
+    formData.value.sizes[0].transferPrice = target
+    const calculatedListPrice = Math.round(target / 0.80)
     formData.value.sizes[0].price = calculatedListPrice
     if (formData.value.price !== undefined) formData.value.price = calculatedListPrice
+    if (formData.value.transferPrice !== undefined) formData.value.transferPrice = target
   }
 }
 
@@ -328,9 +359,20 @@ const openCreateModal = () => {
 
 const openEditModal = (product) => {
   formData.value = JSON.parse(JSON.stringify(product))
+  formData.value.id = product.id || product._id
   
   if (!formData.value.sizes || formData.value.sizes.length === 0) {
-    formData.value.sizes = [{ size: 100, price: formData.value.price || null, costPrice: formData.value.costPrice || null, default: true }]
+    const rawPrice = formData.value.price || null
+    const rawTransfer = formData.value.transferPrice !== undefined && formData.value.transferPrice !== null
+      ? formData.value.transferPrice
+      : (rawPrice ? Math.round(rawPrice * 0.80) : null)
+    formData.value.sizes = [{
+      size: 100,
+      transferPrice: rawTransfer,
+      price: rawPrice || (rawTransfer ? Math.round(rawTransfer / 0.80) : null),
+      costPrice: formData.value.costPrice || null,
+      default: true
+    }]
   } else {
     formData.value.sizes = formData.value.sizes.map((s, idx) => {
       let num = s.size
@@ -338,10 +380,15 @@ const openEditModal = (product) => {
         const parsed = parseInt(num.replace(/\D/g, ''), 10)
         num = !isNaN(parsed) ? parsed : 100
       }
+      const sPrice = s.price || null
+      const sTransfer = s.transferPrice !== undefined && s.transferPrice !== null
+        ? s.transferPrice
+        : (sPrice ? Math.round(sPrice * 0.80) : null)
       return {
         size: num || 100,
-        price: s.price || null,
-        costPrice: s.costPrice !== undefined ? s.costPrice : Math.round((s.price || 0) * 0.45),
+        transferPrice: sTransfer,
+        price: sPrice || (sTransfer ? Math.round(sTransfer / 0.80) : null),
+        costPrice: s.costPrice !== undefined ? s.costPrice : Math.round((sTransfer || sPrice || 0) * 0.45),
         default: idx === 0 || s.default === true
       }
     })
@@ -356,10 +403,27 @@ const openEditModal = (product) => {
       season: ['Todo el año'],
       occasion: ''
     }
+  } else {
+    if (!formData.value.characteristics.occasion) {
+      formData.value.characteristics.occasion = ''
+    }
+    // Normalizar season a un Array para multi-select
+    if (typeof formData.value.characteristics.season === 'string') {
+      const s = formData.value.characteristics.season
+      formData.value.characteristics.season = s.includes('/')
+        ? s.split('/').map(x => x.trim())
+        : [s.trim()]
+    } else if (!Array.isArray(formData.value.characteristics.season)) {
+      formData.value.characteristics.season = ['Todo el año']
+    }
   }
 
   currentFormStep.value = 1
   isModalOpen.value = true
+}
+
+const goToStep = (stepNumber) => {
+  currentFormStep.value = stepNumber
 }
 
 const closeModal = () => {
@@ -387,9 +451,14 @@ const goToNextStep = () => {
       toastStore.show('Debes especificar al menos un tamaño en ml.', 'error')
       return
     }
-    if (!mainSize.price || Number(mainSize.price) <= 0) {
-      toastStore.show('El precio de venta debe ser mayor a $0.', 'error')
+    const hasTransfer = mainSize.transferPrice && Number(mainSize.transferPrice) > 0
+    const hasPrice = mainSize.price && Number(mainSize.price) > 0
+    if (!hasTransfer && !hasPrice) {
+      toastStore.show('El precio de transferencia debe ser mayor a $0.', 'error')
       return
+    }
+    if (!hasPrice && hasTransfer) {
+      mainSize.price = Math.round(Number(mainSize.transferPrice) / 0.80)
     }
     if (mainSize.costPrice === null || mainSize.costPrice === undefined || Number(mainSize.costPrice) < 0) {
       toastStore.show('Por favor ingresá un precio de costo válido (>= $0).', 'error')
@@ -410,7 +479,7 @@ const goToPrevStep = () => {
 
 // Sizes array helpers
 const addSize = () => {
-  formData.value.sizes.push({ size: 50, price: null, costPrice: null, default: false })
+  formData.value.sizes.push({ size: 50, transferPrice: null, price: null, costPrice: null, default: false })
 }
 
 const removeSize = (index) => {
@@ -504,19 +573,29 @@ const handleSubmitProduct = async () => {
   isSubmitting.value = true
 
   try {
-    const validSizes = formData.value.sizes.filter(s => s.size && s.price).map((s, idx) => ({
-      size: `${s.size} ml`,
-      price: Number(s.price),
-      costPrice: Number(s.costPrice) || Math.round(Number(s.price) * 0.45),
-      default: idx === 0
-    }))
+    const validSizes = formData.value.sizes
+      .filter(s => s.size && (s.transferPrice || s.price))
+      .map((s, idx) => {
+        const transfer = Number(s.transferPrice) || (s.price ? Math.round(Number(s.price) * 0.80) : 0)
+        const price = Number(s.price) || Math.round(transfer / 0.80)
+        const cost = Number(s.costPrice) || Math.round((transfer || price) * 0.45)
+        return {
+          size: `${s.size} ml`,
+          transferPrice: transfer,
+          price: price,
+          costPrice: cost,
+          default: idx === 0
+        }
+      })
 
     const mainPrice = validSizes[0]?.price || 0
-    const mainCost = validSizes[0]?.costPrice || Math.round(mainPrice * 0.45)
+    const mainTransferPrice = validSizes[0]?.transferPrice || Math.round(mainPrice * 0.80)
+    const mainCost = validSizes[0]?.costPrice || Math.round((mainTransferPrice || mainPrice) * 0.45)
 
     const payload = {
       ...formData.value,
       price: mainPrice,
+      transferPrice: mainTransferPrice,
       costPrice: mainCost,
       sizes: validSizes,
       images: formData.value.images.length > 0 
@@ -524,9 +603,10 @@ const handleSubmitProduct = async () => {
         : ['https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1000&q=85']
     }
 
+    const targetId = payload.id || formData.value.id || formData.value._id
     let res
-    if (isEditing.value) {
-      res = await productStore.updateProduct(payload.id, payload)
+    if (isEditing.value && targetId) {
+      res = await productStore.updateProduct(targetId, payload)
     } else {
       res = await (productStore.createProduct ? productStore.createProduct(payload) : productStore.addProduct(payload))
     }
@@ -536,7 +616,7 @@ const handleSubmitProduct = async () => {
       closeModal()
       await loadData()
     } else {
-      toastStore.show('Error al guardar el perfume en el catálogo', 'error')
+      toastStore.show(res?.error || 'Error al guardar el perfume en el catálogo', 'error')
     }
   } catch (err) {
     toastStore.show(err.message || 'Error inesperado al publicar', 'error')
@@ -876,8 +956,43 @@ const openCreateSlideModal = () => {
 }
 
 const openEditSlideModal = (slide) => {
-  slideForm.value = { ...slide }
+  slideForm.value = {
+    id: slide.id,
+    tag: slide.tag || '',
+    title: slide.title || '',
+    highlight: slide.highlight || '',
+    description: slide.description || '',
+    image: slide.image || '',
+    bottleImage: slide.bottleImage || '',
+    featuredTitle: slide.featuredTitle || '',
+    featuredSub: slide.featuredSub || '',
+    featuredRating: slide.featuredRating || '5.0 ★ Destacado',
+    primaryCtaText: slide.primaryCtaText || 'Explorar Catálogo',
+    primaryCtaLink: slide.primaryCtaLink || '/catalogo',
+    secondaryCtaText: slide.secondaryCtaText || '',
+    secondaryCtaLink: slide.secondaryCtaLink || '',
+    secondaryCtaIcon: slide.secondaryCtaIcon || ''
+  }
   isSlideModalOpen.value = true
+}
+
+const onSelectProductForSlide = (event) => {
+  const prodId = event.target.value
+  if (!prodId) return
+  const prod = productStore.items.find(p => p.id === prodId || p._id === prodId)
+  if (prod) {
+    slideForm.value.featuredTitle = `${prod.brand ? prod.brand + ' ' : ''}${prod.name}`.trim()
+    if (prod.fragranceFamily) {
+      slideForm.value.featuredSub = `Familia ${prod.fragranceFamily} • ${prod.concentration || 'Eau de Parfum'}`
+    } else if (prod.shortDescription) {
+      slideForm.value.featuredSub = prod.shortDescription
+    }
+    if (prod.images && prod.images.length > 0) {
+      slideForm.value.bottleImage = prod.images[0]
+    }
+    toastStore.show(`Datos del perfume "${prod.name}" cargados en la diapositiva`, 'info')
+  }
+  event.target.value = ''
 }
 
 const handleSaveSlide = async () => {
@@ -1459,9 +1574,9 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                   <tr>
                     <th class="py-3.5 px-4">Fragancia</th>
                     <th class="py-3.5 px-4">Marca & Tipo</th>
-                    <th class="py-3.5 px-4">Precio Venta</th>
+                    <th class="py-3.5 px-4">Precios (Transf. / Lista)</th>
                     <th class="py-3.5 px-4">Precio Costo</th>
-                    <th class="py-3.5 px-4">Ganancia Unitaria</th>
+                    <th class="py-3.5 px-4">Ganancia Neta</th>
                     <th class="py-3.5 px-4">Stock</th>
                     <th class="py-3.5 px-4 text-right">Acciones</th>
                   </tr>
@@ -1495,17 +1610,23 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                       <span class="text-[11px] text-secondary capitalize">{{ p.category }} • {{ p.concentration }}</span>
                     </td>
 
-                    <td class="py-3.5 px-4 font-bold text-sm text-primary">
-                      ${{ (p.price || 0).toLocaleString('es-AR') }}
+                    <td class="py-3.5 px-4">
+                      <div class="font-bold text-sm text-primary flex items-center gap-1.5">
+                        <span>${{ (p.transferPrice || (p.price ? Math.round(p.price * 0.80) : 0)).toLocaleString('es-AR') }}</span>
+                        <span class="text-[9px] uppercase font-bold bg-emerald-100 text-emerald-800 px-1 py-0.5 rounded-xs">Transf.</span>
+                      </div>
+                      <div class="text-[11px] text-secondary mt-0.5">
+                        Lista: ${{ (p.price || 0).toLocaleString('es-AR') }}
+                      </div>
                     </td>
 
                     <td class="py-3.5 px-4 text-secondary font-medium">
-                      ${{ (p.costPrice || Math.round((p.price || 0) * 0.45)).toLocaleString('es-AR') }}
+                      ${{ (p.costPrice || Math.round((p.transferPrice || p.price || 0) * 0.45)).toLocaleString('es-AR') }}
                     </td>
 
                     <td class="py-3.5 px-4">
                       <span class="font-bold text-emerald-700 block text-sm">
-                        +${{ (p.profit || Math.max(0, (p.price || 0) - (p.costPrice || Math.round((p.price || 0) * 0.45)))).toLocaleString('es-AR') }}
+                        +${{ (p.profit || Math.max(0, (p.transferPrice || Math.round((p.price || 0) * 0.80)) - (p.costPrice || Math.round((p.transferPrice || p.price || 0) * 0.45)))).toLocaleString('es-AR') }}
                       </span>
                       <span class="text-[10px] text-emerald-800 bg-emerald-100 border border-emerald-200 px-1.5 py-0.5 rounded-xs font-bold inline-block mt-0.5">
                         {{ p.profitMargin || 55 }}% Margen
@@ -1867,7 +1988,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                 </div>
 
                 <!-- Text info -->
-                <div class="flex-grow space-y-1">
+                <div class="flex-grow space-y-1.5">
                   <div class="flex items-center gap-2">
                     <span class="font-mono text-xs font-bold text-secondary">#{{ idx + 1 }}</span>
                     <span class="bg-surface-container px-2 py-0.5 rounded-xs text-[10px] font-label uppercase font-bold text-primary border border-outline-variant">
@@ -1876,17 +1997,26 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                   </div>
                   <h4 class="font-sans text-lg font-medium text-primary">{{ slide.title }} <span class="italic font-serif">{{ slide.highlight }}</span></h4>
                   <p class="font-sans text-xs text-secondary line-clamp-1 max-w-xl">{{ slide.description }}</p>
-                  <p class="text-[11px] text-secondary">Destacado: <strong>{{ slide.featuredTitle }}</strong> ({{ slide.featuredRating }})</p>
+                  
+                  <div class="flex items-center flex-wrap gap-2 pt-1">
+                    <div class="flex items-center gap-1.5 bg-surface-container px-2.5 py-1 rounded-xs border border-outline-variant">
+                      <span class="material-symbols-outlined text-xs text-primary">local_florist</span>
+                      <span class="text-xs text-secondary">Perfume en frasco:</span>
+                      <strong class="text-xs text-primary font-bold">{{ slide.featuredTitle || 'Sin especificar' }}</strong>
+                    </div>
+                    <span v-if="slide.featuredSub" class="text-[11px] text-secondary">({{ slide.featuredSub }})</span>
+                    <span class="text-[10px] text-amber-900 bg-amber-100 px-1.5 py-0.5 rounded-xs font-semibold">{{ slide.featuredRating }}</span>
+                  </div>
                 </div>
 
                 <!-- Actions -->
                 <div class="flex items-center gap-2 flex-shrink-0">
                   <button 
                     @click="openEditSlideModal(slide)"
-                    class="bg-surface border border-outline-variant hover:border-primary text-primary font-label text-xs uppercase px-3 py-1.5 rounded-xs flex items-center gap-1 transition-colors shadow-2xs"
+                    class="bg-primary hover:bg-slate-800 text-on-primary font-label text-xs uppercase tracking-wider px-3.5 py-2 rounded-xs flex items-center gap-1.5 transition-colors shadow-xs border border-primary/20"
                   >
                     <span class="material-symbols-outlined text-sm">edit</span>
-                    <span>Editar Textos</span>
+                    <span>Editar Slide</span>
                   </button>
                   <button 
                     @click="confirmDeleteContentItem('slide', slide, slide.title)"
@@ -2328,16 +2458,18 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
           </button>
         </div>
 
-        <!-- Wizard Stepper Indicators -->
+        <!-- Wizard Stepper Indicators (Clickeables) -->
         <div class="grid grid-cols-5 gap-2 py-1">
-          <div 
+          <button 
             v-for="st in steps" 
             :key="st.number"
-            class="p-2 rounded-xs border text-center transition-all"
+            type="button"
+            @click="goToStep(st.number)"
+            class="p-2 rounded-xs border text-center transition-all cursor-pointer hover:border-primary"
             :class="currentFormStep === st.number ? 'bg-primary text-on-primary border-primary font-bold shadow-xs' : (currentFormStep > st.number ? 'bg-surface-container text-primary border-outline-variant' : 'bg-surface text-secondary/60 border-outline-variant/60')"
           >
             <span class="text-[10px] font-label uppercase block tracking-wider">{{ st.title }}</span>
-          </div>
+          </button>
         </div>
 
         <!-- STEP 1: General Info -->
@@ -2397,53 +2529,73 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
             <div 
               v-for="(sizeObj, idx) in formData.sizes" 
               :key="idx"
-              class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center bg-surface p-3 rounded-xs border border-outline-variant"
+              class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start bg-surface p-3.5 rounded-xs border border-outline-variant shadow-2xs"
             >
               <!-- Size input -->
-              <div class="sm:col-span-3">
-                <label class="block text-[10px] text-secondary mb-1">Volumen (ml)</label>
+              <div class="sm:col-span-2">
+                <label class="block text-[10px] text-secondary font-medium mb-1">Volumen</label>
                 <div class="flex items-center gap-1">
                   <input v-model.number="sizeObj.size" type="number" placeholder="100" class="w-full bg-surface-container border border-outline-variant rounded-xs p-2 text-xs font-sans text-center" />
                   <span class="text-xs text-secondary font-bold">ml</span>
                 </div>
               </div>
 
-              <!-- Sale price -->
+              <!-- Transfer price (PRECIO PRINCIPAL / EN MANO) -->
               <div class="sm:col-span-4">
-                <label class="block text-[10px] text-secondary mb-1">Precio Lista / Cuotas ($ ARS) *</label>
-                <input v-model.number="sizeObj.price" type="number" placeholder="87500" class="w-full bg-surface-container border border-outline-variant rounded-xs p-2 text-xs font-sans font-bold text-primary" />
-                <div class="mt-1 space-y-0.5 text-[10px]">
-                  <span class="text-emerald-800 font-semibold block">
-                    🏦 Transferencia (-20%): ${{ Math.round((sizeObj.price || 0) * 0.8).toLocaleString('es-AR') }}
-                  </span>
-                  <span class="text-secondary block">
-                    💳 3 cuotas s/int: ${{ Math.round((sizeObj.price || 0) / 3).toLocaleString('es-AR') }}
-                  </span>
-                </div>
+                <label class="block text-[10px] text-primary font-bold mb-1">
+                  🏦 Precio Transferencia ($ ARS) *
+                </label>
+                <input 
+                  v-model.number="sizeObj.transferPrice" 
+                  @input="onTransferPriceChange(sizeObj)" 
+                  type="number" 
+                  placeholder="Ej. 70000" 
+                  class="w-full bg-surface-container border-2 border-primary/50 focus:border-primary rounded-xs p-2 text-xs font-sans font-bold text-primary focus:outline-none" 
+                />
+                <span class="text-[10px] text-emerald-800 font-semibold block mt-1">
+                  Precio base en mano (Efectivo / Transf.)
+                </span>
+              </div>
+
+              <!-- List price (Cuotas / Tarjetas) -->
+              <div class="sm:col-span-3">
+                <label class="block text-[10px] text-secondary font-medium mb-1">
+                  💳 Precio Lista (Tarjetas / Cuotas) ($ ARS)
+                </label>
+                <input 
+                  v-model.number="sizeObj.price" 
+                  @input="onListPriceChange(sizeObj)" 
+                  type="number" 
+                  placeholder="Ej. 68750" 
+                  class="w-full bg-surface-container border border-outline-variant focus:border-primary rounded-xs p-2 text-xs font-sans font-semibold text-secondary focus:outline-none" 
+                />
+                <span class="text-[10px] text-amber-800 font-semibold block mt-1">
+                  3 cuotas s/int: ${{ Math.round((sizeObj.price || 0) / 3).toLocaleString('es-AR') }}
+                </span>
               </div>
 
               <!-- Cost price -->
-              <div class="sm:col-span-4">
-                <label class="block text-[10px] text-secondary mb-1">Precio Costo ($ ARS) *</label>
-                <input v-model.number="sizeObj.costPrice" type="number" placeholder="82000" class="w-full bg-surface-container border border-outline-variant rounded-xs p-2 text-xs font-sans text-secondary" />
+              <div class="sm:col-span-2">
+                <label class="block text-[10px] text-secondary font-medium mb-1">Precio Costo ($ ARS) *</label>
+                <input v-model.number="sizeObj.costPrice" type="number" placeholder="35000" class="w-full bg-surface-container border border-outline-variant rounded-xs p-2 text-xs font-sans text-secondary" />
               </div>
 
               <!-- Remove button -->
-              <div class="sm:col-span-1 text-right">
+              <div class="sm:col-span-1 text-right pt-6">
                 <button v-if="formData.sizes.length > 1" @click="removeSize(idx)" type="button" class="p-1 text-secondary hover:text-error">
                   <span class="material-symbols-outlined text-base">delete</span>
                 </button>
               </div>
             </div>
 
-            <!-- Calculadora Inversa Transferencia -> Precio Lista Cuotas -->
+            <!-- Asistente de Precios: Transferencia -> Precio Lista Cuotas (/ 0.80) -->
             <div class="p-3.5 bg-surface-container rounded-xs border border-outline-variant space-y-2 mt-2">
               <div class="flex items-center gap-1.5 text-xs text-primary font-bold">
                 <span class="material-symbols-outlined text-sm text-primary">calculate</span>
-                <span>Asistente de Precios: ¿Cuánto querés cobrar por Transferencia?</span>
+                <span>Asistente Rápido: Fijar Precio de Transferencia (Cálculo automático de Lista)</span>
               </div>
               <p class="text-[11px] text-secondary leading-relaxed">
-                Ingresá tu precio deseado en transferencia (ej: $70.000). Se calculará automáticamente el precio de lista ($87.500) para ofrecer cuotas sin interés y que en transferencia quede en tu precio objetivo.
+                Ingresá tu precio deseado en mano por transferencia (ej: $55.000). Se calcula automáticamente el precio de lista para absorber el 20% bancario ($68.750), garantizando que te queden $55.000 limpios tanto en cuotas como por transferencia (20% OFF).
               </p>
               <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center pt-1">
                 <div class="relative w-full sm:w-56">
@@ -2451,7 +2603,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                   <input 
                     v-model.number="targetTransferPrice" 
                     type="number" 
-                    placeholder="Ej. 70000" 
+                    placeholder="Ej. 55000" 
                     class="w-full bg-surface border border-outline-variant rounded-xs pl-6 pr-2 py-2 text-xs font-sans text-primary font-bold focus:border-primary focus:outline-none"
                     @keyup.enter="calculateListPriceFromTransfer"
                   />
@@ -2461,7 +2613,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                   @click="calculateListPriceFromTransfer" 
                   class="bg-primary hover:bg-slate-800 text-on-primary font-label text-[11px] uppercase tracking-wider px-4 py-2 rounded-xs transition-colors flex-shrink-0 border border-primary/20 shadow-xs"
                 >
-                  Fijar Precio de Lista ({{ targetTransferPrice ? `$${Math.round(targetTransferPrice / 0.8).toLocaleString('es-AR')}` : '...' }})
+                  Aplicar (Precio Lista): {{ targetTransferPrice ? `$${Math.round(targetTransferPrice / 0.80).toLocaleString('es-AR')}` : '...' }}
                 </button>
               </div>
             </div>
@@ -2469,8 +2621,8 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
             <!-- Live Profit Preview Widget -->
             <div class="bg-emerald-50 border border-emerald-300 p-4 rounded-xs flex justify-between items-center mt-3">
               <div>
-                <span class="font-label text-xs uppercase font-bold text-emerald-900 block">Rentabilidad por Frasco:</span>
-                <span class="text-xs text-emerald-800">Ganancia calculada automáticamente por unidad vendida.</span>
+                <span class="font-label text-xs uppercase font-bold text-emerald-900 block">Rentabilidad por Transferencia:</span>
+                <span class="text-xs text-emerald-800">Ganancia neta calculada sobre el precio en mano (Transferencia) menos costo.</span>
               </div>
               <div class="text-right">
                 <span class="font-bold text-lg text-emerald-900 block">+${{ productUnitProfit.toLocaleString('es-AR') }}</span>
@@ -2590,6 +2742,32 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
             </div>
           </div>
 
+          <!-- Ocasión Sugerida -->
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold">Ocasión Sugerida</label>
+              <span class="text-[10px] text-secondary font-sans">Escribí o elegí una sugerencia</span>
+            </div>
+            <input 
+              v-model="formData.characteristics.occasion" 
+              type="text" 
+              placeholder="Ej. Uso Diario & Oficina, Noche & Citas Elegantes..."
+              class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none mb-2"
+            />
+            <div class="flex flex-wrap gap-1.5">
+              <button 
+                v-for="sug in occasionSuggestions" 
+                :key="sug"
+                type="button"
+                @click="formData.characteristics.occasion = sug"
+                class="px-2.5 py-1 rounded-xs text-[11px] font-sans border transition-all"
+                :class="formData.characteristics.occasion === sug ? 'bg-primary text-on-primary border-primary font-semibold shadow-xs' : 'bg-surface text-secondary border-outline-variant hover:border-primary/50'"
+              >
+                {{ sug }}
+              </button>
+            </div>
+          </div>
+
           <div>
             <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Descripción de la Fragancia</label>
             <textarea v-model="formData.description" rows="3" placeholder="Una creación opulenta y envolvente..." class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none"></textarea>
@@ -2608,24 +2786,39 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
           </button>
           <div v-else></div>
 
-          <button 
-            v-if="currentFormStep < steps.length" 
-            @click="goToNextStep" 
-            type="button" 
-            class="bg-primary hover:bg-slate-800 text-on-primary font-label text-xs uppercase tracking-wider px-8 py-2.5 rounded-xs transition-all shadow-xs border border-primary/20"
-          >
-            Siguiente →
-          </button>
+          <div class="flex items-center gap-2">
+            <!-- Botón Guardar directo al editar -->
+            <button 
+              v-if="isEditing && currentFormStep < steps.length" 
+              @click="handleSubmitProduct" 
+              :disabled="isSubmitting"
+              type="button" 
+              class="bg-emerald-700 hover:bg-emerald-800 text-white font-label text-xs uppercase tracking-wider px-5 py-2.5 rounded-xs transition-all shadow-xs border border-emerald-600 disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <span class="material-symbols-outlined text-sm">save</span>
+              <span>{{ isSubmitting ? 'Guardando...' : 'Guardar Cambios' }}</span>
+            </button>
 
-          <button 
-            v-else 
-            @click="handleSubmitProduct" 
-            :disabled="isSubmitting"
-            type="button" 
-            class="bg-primary hover:bg-slate-800 text-on-primary font-label text-xs uppercase tracking-wider px-8 py-2.5 rounded-xs transition-all shadow-xs border border-primary/20 disabled:opacity-50"
-          >
-            <span>{{ isSubmitting ? 'Publicando...' : (isEditing ? 'Guardar Cambios' : 'Publicar Perfume') }}</span>
-          </button>
+            <button 
+              v-if="currentFormStep < steps.length" 
+              @click="goToNextStep" 
+              type="button" 
+              class="bg-primary hover:bg-slate-800 text-on-primary font-label text-xs uppercase tracking-wider px-8 py-2.5 rounded-xs transition-all shadow-xs border border-primary/20"
+            >
+              Siguiente →
+            </button>
+
+            <button 
+              v-else 
+              @click="handleSubmitProduct" 
+              :disabled="isSubmitting"
+              type="button" 
+              class="bg-primary hover:bg-slate-800 text-on-primary font-label text-xs uppercase tracking-wider px-8 py-2.5 rounded-xs transition-all shadow-xs border border-primary/20 disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <span class="material-symbols-outlined text-sm" v-if="isEditing">save</span>
+              <span>{{ isSubmitting ? 'Publicando...' : (isEditing ? 'Guardar Cambios' : 'Publicar Perfume') }}</span>
+            </button>
+          </div>
         </div>
 
       </div>
@@ -2827,6 +3020,59 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
           <div>
             <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Bajada / Descripción</label>
             <textarea v-model="slideForm.description" rows="2" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans focus:border-primary focus:outline-none"></textarea>
+          </div>
+
+          <!-- Perfume Destacado en la Tarjeta Flotante (Showcase) -->
+          <div class="bg-surface-container p-4 rounded-xs border border-outline-variant space-y-3">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+              <div>
+                <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold">
+                  Perfume Destacado en la Tarjeta del Frasco
+                </label>
+                <span class="text-[11px] text-secondary font-sans">
+                  Nombre del perfume y notas olfativas que aparecen en la tarjeta flotante de la portada.
+                </span>
+              </div>
+              <div v-if="productStore.items && productStore.items.length > 0" class="flex items-center gap-1.5 flex-shrink-0">
+                <span class="text-[10px] font-label uppercase text-secondary font-bold">Elegir de catálogo:</span>
+                <select 
+                  @change="onSelectProductForSlide($event)" 
+                  class="bg-surface border border-outline-variant rounded-xs px-2.5 py-1 text-xs font-sans text-primary focus:border-primary focus:outline-none"
+                >
+                  <option value="">-- Autocompletar --</option>
+                  <option v-for="prod in productStore.items" :key="prod.id || prod._id" :value="prod.id || prod._id">
+                    {{ prod.name }} ({{ prod.brand }})
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+              <div>
+                <label class="block font-label text-[11px] uppercase tracking-wider text-primary font-bold mb-1">
+                  Nombre del Perfume Destacado *
+                </label>
+                <input 
+                  v-model="slideForm.featuredTitle" 
+                  type="text" 
+                  required 
+                  placeholder="Ej. Bleu de Chanel Eau de Parfum" 
+                  class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans text-primary font-bold focus:border-primary focus:outline-none" 
+                />
+              </div>
+
+              <div>
+                <label class="block font-label text-[11px] uppercase tracking-wider text-secondary font-semibold mb-1">
+                  Subtítulo / Notas Aromáticas
+                </label>
+                <input 
+                  v-model="slideForm.featuredSub" 
+                  type="text" 
+                  placeholder="Ej. Toronja, Incienso & Maderas Nobles" 
+                  class="w-full bg-surface border border-outline-variant rounded-xs p-2.5 text-xs font-sans focus:border-primary focus:outline-none" 
+                />
+              </div>
+            </div>
           </div>
 
           <!-- Slide Images (Background & Bottle) -->

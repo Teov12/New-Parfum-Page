@@ -201,12 +201,12 @@ const goToCartPage = () => {
               </div>
               <div class="text-right">
                 <span class="font-sans text-xl font-bold text-primary">
-                  ${{ (Math.round(cartStore.subtotal * 0.8) + cartStore.shippingCost).toLocaleString('es-AR') }}
+                  ${{ cartStore.transferTotal.toLocaleString('es-AR') }}
                 </span>
               </div>
             </div>
             <p class="text-[11px] text-secondary text-right">
-              O ${{ cartStore.total.toLocaleString('es-AR') }} en hasta <strong>3 cuotas sin interés</strong>
+              Precio de lista: ${{ cartStore.total.toLocaleString('es-AR') }} en hasta <strong>3 cuotas sin interés</strong>
             </p>
           </div>
 

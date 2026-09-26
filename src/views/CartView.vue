@@ -294,18 +294,19 @@ const proceedToCheckout = () => {
                 </div>
                 <div class="text-right">
                   <span class="font-sans text-2xl sm:text-3xl font-bold text-primary">
-                    ${{ (Math.round(cartStore.subtotal * 0.8) + cartStore.shippingCost).toLocaleString('es-AR') }}
+                    ${{ cartStore.transferTotal.toLocaleString('es-AR') }}
                   </span>
                 </div>
               </div>
 
               <div class="p-3 bg-surface-container rounded-xs border border-outline-variant text-xs text-secondary space-y-1">
                 <div class="flex justify-between text-primary font-medium">
-                  <span>Precio de Lista (con Tarjeta):</span>
-                  <span>${{ cartStore.total.toLocaleString('es-AR') }}</span>
+                  <span>Precio de Lista (Tarjetas):</span>
+                  <span class="font-bold">${{ cartStore.total.toLocaleString('es-AR') }}</span>
                 </div>
-                <p class="text-[11px] text-secondary">
-                  Hasta <strong>3 y 6 cuotas fijas sin interés</strong> con todas las tarjetas bancarias.
+                <p class="text-[11px] text-amber-800 font-medium flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm">credit_card</span>
+                  <span>Hasta <strong>3 cuotas fijas sin interés</strong> de ${{ Math.round(cartStore.total / 3).toLocaleString('es-AR') }}</span>
                 </p>
               </div>
             </div>

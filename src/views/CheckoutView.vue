@@ -131,7 +131,7 @@ const shippingCost = computed(() => {
 })
 
 const transferDiscount = computed(() => {
-  return paymentMethod.value === 'transfer' ? Math.round(cartStore.subtotal * 0.20) : 0
+  return paymentMethod.value === 'transfer' ? (cartStore.transferDiscount || Math.round(cartStore.subtotal * 0.20)) : 0
 })
 
 const finalTotal = computed(() => {
@@ -169,7 +169,7 @@ const buildWhatsAppMessage = (orderNumber) => {
   }).join('\n\n')
 
   let paymentMethodLabel = 'Transferencia Bancaria (20% OFF)'
-  if (paymentMethod.value === 'credit_card') paymentMethodLabel = 'Tarjeta de Crédito (3 y 6 Cuotas Sin Interés)'
+  if (paymentMethod.value === 'credit_card') paymentMethodLabel = 'Tarjeta de Crédito (3 Cuotas Sin Interés)'
 
   let msg = `✨ *NUEVO PEDIDO - GICCA PERFUMES* ✨\n`
   msg += `━━━━━━━━━━━━━━━━━━━━━\n`
@@ -838,9 +838,10 @@ const handleFinalOrder = async () => {
                       Sin Interés
                     </span>
                   </div>
-                  <p class="text-[11px] text-secondary">Abonás el precio de lista en 3 y 6 cuotas fijas sin interés.</p>
-                  <div class="pt-1 text-[11px] text-primary font-medium">
-                    3 cuotas de ${{ Math.round(cartStore.subtotal / 3).toLocaleString('es-AR') }} o 6 de ${{ Math.round(cartStore.subtotal / 6).toLocaleString('es-AR') }}
+                  <p class="text-[11px] text-secondary">Abonás el precio de lista en hasta 3 cuotas fijas sin interés.</p>
+                  <div class="pt-1 text-[11px] text-amber-800 font-bold flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">credit_card</span>
+                    <span>3 cuotas de ${{ Math.round(cartStore.subtotal / 3).toLocaleString('es-AR') }} sin interés</span>
                   </div>
                 </div>
               </div>

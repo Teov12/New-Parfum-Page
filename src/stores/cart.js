@@ -16,6 +16,21 @@ export const useCartStore = defineStore('cart', {
       return state.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
     },
 
+    transferSubtotal: (state) => {
+      return state.items.reduce((acc, item) => {
+        const itemTransfer = Number(item.transferPrice) || (item.price > 0 ? Math.round(item.price * 0.80) : 0)
+        return acc + (itemTransfer * item.quantity)
+      }, 0)
+    },
+
+    transferDiscount: (state) => {
+      return Math.max(0, state.items.reduce((acc, item) => {
+        const itemPrice = Number(item.price) || 0
+        const itemTransfer = Number(item.transferPrice) || (itemPrice > 0 ? Math.round(itemPrice * 0.80) : 0)
+        return acc + ((itemPrice - itemTransfer) * item.quantity)
+      }, 0))
+    },
+
     discountAmount: (state) => {
       if (!state.coupon) return 0
       const subtotal = state.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
@@ -37,6 +52,10 @@ export const useCartStore = defineStore('cart', {
 
     total() {
       return Math.max(0, this.subtotal - this.discountAmount) + this.shippingCost
+    },
+
+    transferTotal() {
+      return Math.max(0, this.transferSubtotal - this.discountAmount) + this.shippingCost
     },
 
     amountForFreeShipping: (state) => {
@@ -61,6 +80,9 @@ export const useCartStore = defineStore('cart', {
       const sizeObj = chosenSize || product.sizes.find(s => s.default) || product.sizes[0]
       const sizeLabel = typeof sizeObj === 'string' ? sizeObj : sizeObj.size
       const sizePrice = typeof sizeObj === 'object' ? sizeObj.price : product.price
+      const sizeTransferPrice = typeof sizeObj === 'object' && sizeObj.transferPrice !== undefined && sizeObj.transferPrice !== null
+        ? Number(sizeObj.transferPrice)
+        : (product.transferPrice || (sizePrice > 0 ? Math.round(sizePrice * 0.80) : 0))
 
       const existingIndex = this.items.findIndex(
         i => i.id === product.id && i.size === sizeLabel
@@ -78,6 +100,7 @@ export const useCartStore = defineStore('cart', {
           image: product.images[0],
           size: sizeLabel,
           price: sizePrice,
+          transferPrice: sizeTransferPrice,
           originalPrice: product.originalPrice,
           quantity: quantity
         })
