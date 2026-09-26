@@ -44,7 +44,11 @@ router.get('/', async (req, res) => {
       list = list.filter(p => normalizeCategory(p.category) === cNorm)
     }
     if (family) {
-      list = list.filter(p => p.fragranceFamily?.toLowerCase() === family.toLowerCase())
+      const famLower = family.toLowerCase().trim()
+      list = list.filter(p => {
+        const pFam = p.fragranceFamily?.toLowerCase().trim() || ''
+        return pFam === famLower || pFam.includes(famLower) || famLower.includes(pFam)
+      })
     }
     if (brand) {
       list = list.filter(p => p.brand?.toLowerCase() === brand.toLowerCase())

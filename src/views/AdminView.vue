@@ -2503,7 +2503,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Concentración</label>
               <select v-model="formData.concentration" class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans">
@@ -2531,6 +2531,24 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                 <option value="nicho">Nicho</option>
                 <option value="arabe">Árabe</option>
               </select>
+            </div>
+
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1">Familia Olfativa</label>
+              <input v-model="formData.fragranceFamily" list="families-list-admin" type="text" placeholder="Ej. Amaderada, Oriental..." class="w-full bg-surface-container border border-outline-variant rounded-xs p-3 text-xs font-sans" />
+              <datalist id="families-list-admin">
+                <option v-for="fam in siteContentStore.olfactiveFamilies" :key="fam.id || fam.name" :value="fam.name" />
+                <option value="Amaderada" />
+                <option value="Cítrica" />
+                <option value="Floral" />
+                <option value="Oriental" />
+                <option value="Gourmand" />
+                <option value="Acuática" />
+                <option value="Fougère" />
+                <option value="Chipre" />
+                <option value="Cuero" />
+                <option value="Especiada" />
+              </datalist>
             </div>
           </div>
         </div>

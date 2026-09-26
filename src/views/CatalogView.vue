@@ -217,8 +217,14 @@ const filteredProducts = computed(() => {
     }
 
     // Families
-    if (selectedFamilies.value.length > 0 && !selectedFamilies.value.includes(p.fragranceFamily)) {
-      return false
+    if (selectedFamilies.value.length > 0) {
+      const match = selectedFamilies.value.some(f => {
+        if (!p.fragranceFamily) return false
+        const pFam = p.fragranceFamily.toLowerCase().trim()
+        const target = f.toLowerCase().trim()
+        return pFam === target || pFam.includes(target) || target.includes(pFam)
+      })
+      if (!match) return false
     }
 
     // Concentrations

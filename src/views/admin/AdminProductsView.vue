@@ -2,6 +2,7 @@
 import { ref, computed } from "vue";
 import { useProductStore } from "@/stores/products";
 import { useToastStore } from "@/stores/toast";
+import { useSiteContentStore } from "@/stores/siteContent";
 import ProductWizardModal from "@/components/admin/ProductWizardModal.vue";
 import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal.vue";
 import CsvImportModal from "@/components/admin/CsvImportModal.vue";
@@ -9,11 +10,34 @@ import { normalizeGender, normalizeCategory } from "@/utils/normalize";
 
 const productStore = useProductStore();
 const toastStore = useToastStore();
+const siteContentStore = useSiteContentStore();
 
 // Filter State
 const searchQuery = ref("");
 const filterGender = ref("all");
 const filterCategory = ref("all");
+const filterFamily = ref("all");
+
+const standardFamilies = [
+  'Amaderada',
+  'Cítrica',
+  'Floral',
+  'Oriental',
+  'Ámbar',
+  'Gourmand',
+  'Fougère',
+  'Chipre',
+  'Acuática',
+  'Cuero',
+  'Especiada',
+  'Frutal'
+];
+
+const availableFamilies = computed(() => {
+  const guideFamilies = (siteContentStore.olfactiveFamilies || []).map((f) => (f.name || '').trim()).filter(Boolean);
+  const set = new Set([...guideFamilies, ...standardFamilies]);
+  return Array.from(set);
+});
 
 // Modals State
 const isWizardModalOpen = ref(false);
@@ -78,10 +102,20 @@ const filteredProducts = computed(() => {
       normalizeCategory(p.category) !== normalizeCategory(filterCategory.value)
     )
       return false;
+    if (filterFamily.value !== "all") {
+      if (!p.fragranceFamily) return false;
+      const target = filterFamily.value.toLowerCase().trim();
+      const pFam = p.fragranceFamily.toLowerCase().trim();
+      if (pFam !== target && !pFam.includes(target) && !target.includes(pFam)) {
+        return false;
+      }
+    }
     if (searchQuery.value.trim()) {
       const q = searchQuery.value.toLowerCase().trim();
       return (
-        p.name?.toLowerCase().includes(q) || p.brand?.toLowerCase().includes(q)
+        p.name?.toLowerCase().includes(q) ||
+        p.brand?.toLowerCase().includes(q) ||
+        p.fragranceFamily?.toLowerCase().includes(q)
       );
     }
     return true;
@@ -252,7 +286,7 @@ const handleDeleteProduct = async () => {
           />
         </div>
 
-        <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+        <div class="grid grid-cols-2 sm:flex sm:items-center gap-2">
           <select
             v-model="filterGender"
             class="w-full sm:w-auto bg-surface-container/70 border border-outline-variant rounded-xl px-3 py-2.5 text-xs font-sans text-primary focus:border-primary focus:bg-surface focus:outline-none transition-all shadow-2xs cursor-pointer"
@@ -271,6 +305,16 @@ const handleDeleteProduct = async () => {
             <option value="disenador">Diseñador</option>
             <option value="nicho">Nicho</option>
             <option value="arabe">Árabe</option>
+          </select>
+
+          <select
+            v-model="filterFamily"
+            class="col-span-2 sm:col-span-1 w-full sm:w-auto bg-surface-container/70 border border-outline-variant rounded-xl px-3 py-2.5 text-xs font-sans text-primary focus:border-primary focus:bg-surface focus:outline-none transition-all shadow-2xs cursor-pointer"
+          >
+            <option value="all">Todas las Familias</option>
+            <option v-for="fam in availableFamilies" :key="fam" :value="fam">
+              {{ fam }}
+            </option>
           </select>
         </div>
       </div>
@@ -340,6 +384,7 @@ const handleDeleteProduct = async () => {
             </h4>
             <p class="text-[11px] text-secondary capitalize mt-0.5">
               {{ p.sizes?.[0]?.size || "100 ml" }} • {{ p.category }} •
+              <span class="font-medium text-primary">{{ p.fragranceFamily || 'Amaderada' }}</span> •
               {{ p.concentration }}
             </p>
           </div>
@@ -505,9 +550,12 @@ const handleDeleteProduct = async () => {
                 <span class="font-medium text-primary block text-sm">{{
                   p.brand
                 }}</span>
-                <span class="text-[11px] text-secondary capitalize mt-0.5 block"
-                  >{{ p.category }} • {{ p.concentration }}</span
-                >
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  <span class="text-[11px] text-secondary capitalize">{{ p.category }} • {{ p.concentration }}</span>
+                  <span class="text-[9px] font-label uppercase px-2 py-0.5 rounded-full bg-surface-container border border-outline-variant font-medium text-primary">
+                    {{ p.fragranceFamily || 'Amaderada' }}
+                  </span>
+                </div>
               </td>
 
               <td class="py-4 px-5">

@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { useProductStore } from '@/stores/products'
 import { useToastStore } from '@/stores/toast'
+import { useSiteContentStore } from '@/stores/siteContent'
 
 const props = defineProps({
   isOpen: {
@@ -18,6 +19,7 @@ const emit = defineEmits(['close', 'saved'])
 
 const productStore = useProductStore()
 const toastStore = useToastStore()
+const siteContentStore = useSiteContentStore()
 
 const currentFormStep = ref(1)
 const isSubmitting = ref(false)
@@ -68,6 +70,47 @@ const situationOptions = [
   { label: 'Deportivo / Gimnasio', value: 'Deportivo / Aire Libre', icon: 'fitness_center' }
 ]
 
+const standardFamilies = [
+  'Amaderada',
+  'Cítrica',
+  'Floral',
+  'Oriental',
+  'Ámbar',
+  'Gourmand',
+  'Fougère',
+  'Chipre',
+  'Acuática',
+  'Cuero',
+  'Especiada',
+  'Frutal'
+]
+
+const otherFamilies = computed(() => {
+  const guideNames = (siteContentStore.olfactiveFamilies || []).map(f => (f.name || '').toLowerCase().trim())
+  return standardFamilies.filter(f => !guideNames.includes(f.toLowerCase().trim()))
+})
+
+const availableFamilies = computed(() => {
+  const guideFamilies = (siteContentStore.olfactiveFamilies || []).map(f => (f.name || '').trim()).filter(Boolean)
+  const set = new Set([...guideFamilies, ...standardFamilies])
+  return Array.from(set)
+})
+
+const isFamilyInGuide = (famName) => {
+  if (!famName) return false
+  const target = famName.toLowerCase().trim()
+  return (siteContentStore.olfactiveFamilies || []).some(f => 
+    (f.name || '').toLowerCase().trim() === target
+  )
+}
+
+const onFamilySelectChange = (e) => {
+  const val = e.target.value
+  if (val !== 'custom') {
+    formData.value.fragranceFamily = val
+  }
+}
+
 const defaultForm = () => ({
   id: '',
   name: '',
@@ -75,7 +118,7 @@ const defaultForm = () => ({
   concentration: 'Eau de Parfum',
   gender: 'unisex',
   category: 'disenador',
-  fragranceFamily: 'Amaderada',
+  fragranceFamily: siteContentStore.olfactiveFamilies?.[0]?.name || 'Amaderada',
   transferPrice: null,
   price: null,
   costPrice: null,
@@ -118,6 +161,9 @@ const cardFeeRate = ref(28) // Recargo / Comisión bancaria / Mercado Pago (28% 
 
 watch(() => props.isOpen, (open) => {
   if (open) {
+    if (!siteContentStore.olfactiveFamilies || siteContentStore.olfactiveFamilies.length === 0) {
+      siteContentStore.fetchContent()
+    }
     currentFormStep.value = 1
     targetTransferPrice.value = null
     topNoteInput.value = ''
@@ -126,6 +172,9 @@ watch(() => props.isOpen, (open) => {
 
     if (props.product) {
       formData.value = JSON.parse(JSON.stringify(props.product))
+      if (!formData.value.fragranceFamily) {
+        formData.value.fragranceFamily = 'Amaderada'
+      }
 
       if (!formData.value.sizes || formData.value.sizes.length === 0) {
         const transfer = formData.value.transferPrice !== undefined && formData.value.transferPrice !== null
@@ -256,6 +305,10 @@ const goToNextStep = () => {
     }
     if (!formData.value.brand || formData.value.brand.trim().length < 2) {
       toastStore.show('Por favor ingresá la casa o marca del perfume.', 'error')
+      return
+    }
+    if (!formData.value.fragranceFamily || formData.value.fragranceFamily.trim().length < 2) {
+      toastStore.show('Por favor seleccioná o ingresá una familia olfativa.', 'error')
       return
     }
   }
@@ -584,6 +637,102 @@ const handleSubmitProduct = async () => {
                 </select>
               </div>
             </div>
+
+            <!-- Familia Olfativa (Conectada a la Guía de Aromas) -->
+            <div class="bg-surface-container/40 p-4 sm:p-5 rounded-2xl border border-outline-variant space-y-3.5">
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1.5">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base text-primary">psychology_alt</span>
+                    <label class="font-label text-xs uppercase tracking-widest text-primary font-bold">
+                      Familia Olfativa *
+                    </label>
+                  </div>
+                  <p class="text-[11px] text-secondary mt-0.5">
+                    Vincula este perfume a la Guía de Aromas de la tienda y a los filtros interactivos del catálogo.
+                  </p>
+                </div>
+                <span 
+                  v-if="isFamilyInGuide(formData.fragranceFamily)" 
+                  class="text-[10px] font-label uppercase text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full font-bold flex-shrink-0"
+                >
+                  En Guía de Aromas
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[10px] font-label uppercase text-secondary font-medium mb-1">
+                    Seleccionar de la Guía o Lista
+                  </label>
+                  <select 
+                    :value="availableFamilies.includes(formData.fragranceFamily) ? formData.fragranceFamily : 'custom'"
+                    @change="onFamilySelectChange"
+                    class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-xs font-sans text-primary focus:border-primary focus:outline-none transition-all cursor-pointer"
+                  >
+                    <optgroup label="Familias en tu Guía de Aromas">
+                      <option 
+                        v-for="fam in siteContentStore.olfactiveFamilies" 
+                        :key="fam.id || fam.name" 
+                        :value="fam.name"
+                      >
+                        {{ fam.name }} (Activa en Tienda)
+                      </option>
+                    </optgroup>
+                    <optgroup label="Otras Familias Clásicas">
+                      <option 
+                        v-for="fam in otherFamilies" 
+                        :key="fam" 
+                        :value="fam"
+                      >
+                        {{ fam }}
+                      </option>
+                    </optgroup>
+                    <option value="custom">Otra / Personalizada (Escribir al lado)...</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-[10px] font-label uppercase text-secondary font-medium mb-1">
+                    Nombre o Mezcla (Editable)
+                  </label>
+                  <input 
+                    v-model="formData.fragranceFamily" 
+                    type="text" 
+                    placeholder="Ej. Oriental Vainilla, Amaderada Especiada..." 
+                    class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-xs font-sans text-primary focus:border-primary focus:outline-none transition-all" 
+                  />
+                </div>
+              </div>
+
+              <!-- Quick Selection Pills -->
+              <div class="pt-1">
+                <div class="text-[10px] font-label uppercase tracking-wider text-secondary font-medium mb-2 flex items-center justify-between">
+                  <span>Selección rápida:</span>
+                  <span class="text-[10px] text-secondary/80">Punto verde = en tu Guía de Aromas</span>
+                </div>
+                <div class="flex flex-wrap gap-1.5">
+                  <button
+                    v-for="fam in availableFamilies"
+                    :key="fam"
+                    type="button"
+                    @click="formData.fragranceFamily = fam"
+                    class="text-xs px-3 py-1.5 rounded-lg border transition-all cursor-pointer shadow-2xs flex items-center gap-1.5 active:scale-95"
+                    :class="formData.fragranceFamily === fam 
+                      ? 'bg-primary text-on-primary border-primary font-bold shadow-xs' 
+                      : 'bg-surface hover:bg-surface-container text-secondary hover:text-primary border-outline-variant/70'"
+                  >
+                    <span>{{ fam }}</span>
+                    <span 
+                      v-if="isFamilyInGuide(fam)" 
+                      class="w-1.5 h-1.5 rounded-full"
+                      :class="formData.fragranceFamily === fam ? 'bg-amber-300' : 'bg-emerald-600'"
+                      title="Familia activa en la Guía de Aromas de la tienda"
+                    ></span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- STEP 2: Cost, Price & Sizes (With Profit Widget) -->
@@ -812,6 +961,24 @@ const handleSubmitProduct = async () => {
 
           <!-- STEP 4: Pyramid -->
           <div v-if="currentFormStep === 4" class="space-y-4 animate-in fade-in">
+            <!-- Active Olfactory Family Card -->
+            <div class="bg-surface-container/60 p-4 rounded-xl border border-outline-variant flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-lg text-primary">psychology_alt</span>
+                <div>
+                  <span class="text-[10px] font-label uppercase tracking-wider text-secondary block">Familia Olfativa Asignada:</span>
+                  <span class="font-bold text-sm text-primary">{{ formData.fragranceFamily || 'Amaderada' }}</span>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                @click="currentFormStep = 1" 
+                class="text-[11px] font-label uppercase text-primary hover:text-primary-container underline cursor-pointer"
+              >
+                Cambiar en Paso 1
+              </button>
+            </div>
+
             <!-- Top Notes -->
             <div class="bg-surface-container/40 p-4 rounded-xl border border-outline-variant space-y-2.5">
               <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold">Notas de Salida</label>
