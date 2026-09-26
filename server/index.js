@@ -42,8 +42,11 @@ app.use(express.urlencoded({ extended: true, limit: '20mb' }))
 // Multi-tenant Middleware (detecta automáticamente la tienda según dominio o cabecera x-tenant-id)
 app.use(tenantMiddleware)
 
-// Static uploads directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
+// Static uploads directory with cache
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  maxAge: '7d',
+  immutable: true
+}))
 
 // API Routes
 app.use('/api/tenant', tenantRoutes)
@@ -136,11 +139,13 @@ app.get('/sitemap.xml', async (req, res) => {
   }
 })
 
-// Health Check
+// Health Check (Lightweight endpoint for UptimeRobot / Ping / Keep-Alive)
 app.get('/api/health', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache')
   res.json({
     status: 'ok',
     service: 'Gicca Perfumes Backend API',
+    uptime: Math.round(process.uptime()),
     timestamp: new Date().toISOString()
   })
 })
@@ -172,12 +177,21 @@ app.use((err, req, res, next) => {
   })
 })
 
-// Serve production frontend dist (SPA Mode)
+// Serve production frontend dist (SPA Mode) with optimized HTTP caching
 const distPath = path.join(__dirname, '..', 'dist')
 if (fs.existsSync(distPath)) {
-  app.use(express.static(distPath))
+  app.use(express.static(distPath, {
+    maxAge: '1y',
+    immutable: true,
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-cache, must-revalidate')
+      }
+    }
+  }))
   app.use((req, res, next) => {
     if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate')
       return res.sendFile(path.join(distPath, 'index.html'))
     }
     next()
