@@ -225,11 +225,16 @@ const trustBadges = [
             <!-- Left Column: Pure Luxury Typography (7 cols on lg) -->
             <div class="lg:col-span-7 flex flex-col justify-center text-left">
               
-              <!-- Editorial Kicker / Eyebrow -->
-              <div class="flex items-center gap-3 mb-4 sm:mb-6">
-                <span class="w-8 h-px bg-primary/40"></span>
+              <!-- Editorial Kicker / Eyebrow with 6 Cuotas Badge -->
+              <div class="flex flex-wrap items-center gap-2.5 sm:gap-3 mb-4 sm:mb-6">
+                <span class="w-8 h-px bg-primary/40 hidden sm:inline-block"></span>
                 <span class="font-label text-xs sm:text-[13px] uppercase tracking-[0.25em] text-secondary font-medium">
                   {{ currentSlideData.tag || 'ALTA PERFUMERÍA' }}
+                </span>
+                <span class="text-secondary/40 hidden sm:inline">•</span>
+                <span class="inline-flex items-center gap-1.5 font-label text-[11px] sm:text-xs uppercase tracking-[0.16em] text-amber-950 font-bold bg-amber-500/15 px-2.5 py-0.5 rounded-xs border border-amber-800/25">
+                  <span class="material-symbols-outlined text-[13px] text-amber-900 leading-none">credit_card</span>
+                  <span>Hasta 6 Cuotas Sin Interés</span>
                 </span>
               </div>
 
@@ -261,6 +266,19 @@ const trustBadges = [
                   <span>{{ currentSlideData.secondaryCtaText }}</span>
                   <span class="material-symbols-outlined text-base transition-transform duration-300 group-hover/cta:translate-x-1.5">arrow_forward</span>
                 </RouterLink>
+              </div>
+
+              <!-- Commercial Highlights: 6 Cuotas & Transferencia -->
+              <div class="flex flex-wrap items-center gap-4 sm:gap-6 mt-8 sm:mt-10 pt-6 border-t border-outline-variant/60 max-w-lg">
+                <div class="flex items-center gap-2 text-primary text-xs font-sans">
+                  <span class="material-symbols-outlined text-base text-primary">credit_card</span>
+                  <span>Hasta <strong>6 cuotas fijas sin interés</strong> (3 y 6)</span>
+                </div>
+                <span class="text-outline-variant hidden sm:inline">•</span>
+                <div class="flex items-center gap-2 text-emerald-800 text-xs font-sans font-medium">
+                  <span class="material-symbols-outlined text-base text-emerald-700">payments</span>
+                  <span>28% OFF por Transferencia</span>
+                </div>
               </div>
 
             </div>
