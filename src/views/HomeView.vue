@@ -188,7 +188,7 @@ const trustBadges = [
   <div>
     <!-- HERO SECTION: INTERACTIVE IMAGE CAROUSEL (EDITORIAL SPLIT - BYREDO / LE LABO AESTHETIC) -->
     <header 
-      class="relative w-full min-h-[82vh] lg:min-h-[86vh] flex items-center bg-[#faf7f3] border-b border-outline-variant overflow-hidden group/hero select-none"
+      class="relative w-full min-h-[82vh] lg:min-h-[86vh] flex items-center bg-surface border-b border-outline-variant overflow-hidden group/hero select-none"
       @mouseenter="stopAutoplay"
       @mouseleave="startAutoplay"
       @touchstart.passive="onTouchStart"
@@ -204,19 +204,19 @@ const trustBadges = [
           :key="currentSlideData.id || `slide-${currentSlide}`"
           class="absolute inset-0 w-full h-full flex items-center overflow-hidden"
         >
-          <!-- Ambient Atmosphere Background Image -->
+          <!-- Hero Background Image (Full vibrancy with Ken Burns slow zoom) -->
           <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
             <img 
               :src="currentSlideData.image" 
               :alt="`Gicca Perfumes - ${currentSlideData.title || ''} ${currentSlideData.highlight || ''}`"
-              class="w-full h-full object-cover object-center opacity-25 lg:opacity-15 will-change-transform filter saturate-90"
+              class="w-full h-full object-cover object-center opacity-80 sm:opacity-85 will-change-transform"
               :class="currentSlide % 2 === 0 ? 'animate-ken-burns' : 'animate-ken-burns-alt'"
               decoding="async"
               @error="(e) => e.target.src = 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=2000&q=85'"
             />
-            <!-- Luxury Warm Editorial Tonal Overlays -->
-            <div class="absolute inset-0 bg-gradient-to-r from-[#faf7f3] via-[#faf7f3]/95 to-[#faf7f3]/70"></div>
-            <div class="absolute inset-0 bg-gradient-to-t from-[#faf7f3] via-transparent to-[#faf7f3]/40"></div>
+            <!-- Luxury Warm Tonal Overlays: legibilidad impecable a la izquierda y foto viva a la derecha -->
+            <div class="absolute inset-0 bg-gradient-to-r from-surface via-surface/85 via-45% to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent via-20% to-transparent"></div>
           </div>
 
           <!-- Slide Content: Editorial Split Grid -->
