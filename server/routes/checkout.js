@@ -180,6 +180,9 @@ router.post('/create-preference', async (req, res) => {
     const prefPayload = {
       items,
       payer,
+      payment_methods: {
+        installments: 6
+      },
       back_urls: {
         success: `${origin}/checkout/success?orderNumber=${order.orderNumber}`,
         failure: `${origin}/checkout/failure?orderNumber=${order.orderNumber}`,

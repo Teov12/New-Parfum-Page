@@ -52,7 +52,7 @@ const faqs = [
   {
     id: 4,
     q: '¿Qué medios de pago aceptan?',
-    a: 'Aceptamos tarjetas de crédito bancarias con hasta 3 cuotas fijas sin interés sobre el precio de lista a través de Mercado Pago, tarjetas de débito y Transferencia Bancaria directa con 20% de descuento.'
+    a: 'Aceptamos tarjetas de crédito bancarias con hasta 6 cuotas fijas sin interés (3 y 6 cuotas) sobre el precio de lista a través de Mercado Pago, tarjetas de débito y Transferencia Bancaria directa con descuento.'
   },
   {
     id: 5,

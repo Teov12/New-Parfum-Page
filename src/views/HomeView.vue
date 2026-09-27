@@ -179,7 +179,7 @@ const scrollCarousel = (direction) => {
 const trustBadges = [
   { icon: 'verified_user', title: '100% Originales', desc: 'Garantía de autenticidad en caja cerrada y sellada.' },
   { icon: 'local_shipping', title: 'Envíos Asegurados', desc: 'Entregas a todo el país con seguimiento en tiempo real.' },
-  { icon: 'credit_card', title: 'Cuotas Sin Interés', desc: '3 cuotas fijas sin interés con tarjetas bancarias.' },
+  { icon: 'credit_card', title: 'Hasta 6 Cuotas', desc: '3 y 6 cuotas fijas sin interés con tarjetas bancarias.' },
   { icon: 'support_agent', title: 'Atención por WhatsApp', desc: 'Te asesoramos para que elijas tu perfume ideal.' }
 ]
 </script>

@@ -2605,7 +2605,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                   class="w-full bg-surface-container border border-outline-variant focus:border-primary rounded-xs p-2 text-xs font-sans font-semibold text-secondary focus:outline-none" 
                 />
                 <span class="text-[10px] text-amber-800 font-semibold block mt-1">
-                  3 cuotas s/int: ${{ Math.round((sizeObj.price || 0) / 3).toLocaleString('es-AR') }}
+                  6 cuotas s/int: ${{ Math.round((sizeObj.price || 0) / 6).toLocaleString('es-AR') }} · 3 cuotas: ${{ Math.round((sizeObj.price || 0) / 3).toLocaleString('es-AR') }}
                 </span>
               </div>
 
@@ -2630,7 +2630,7 @@ const handleModalImageUpload = async (targetObj, fieldKey, event) => {
                 <span>Asistente Rápido: Fijar Precio de Transferencia (Cálculo automático de Lista)</span>
               </div>
               <p class="text-[11px] text-secondary leading-relaxed">
-                Ingresá tu precio deseado en mano por transferencia (ej: $55.500). Se calcula automáticamente el precio de lista para absorber el {{ cardFeeRate || 20 }}% de Mercado Pago en 3 cuotas ($69.375), garantizando que te queden ${{ (targetTransferPrice || 55500).toLocaleString('es-AR') }} limpios tanto en cuotas como por transferencia directa.
+                Ingresá tu precio deseado en mano por transferencia (ej: $55.500). Se calcula automáticamente el precio de lista para absorber el {{ cardFeeRate || 28 }}% de Mercado Pago en cuotas sin interés, garantizando que te queden ${{ (targetTransferPrice || 55500).toLocaleString('es-AR') }} limpios tanto en cuotas como por transferencia directa.
               </p>
               <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center pt-1">
                 <div class="relative w-full sm:w-56">

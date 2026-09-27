@@ -1184,7 +1184,7 @@ const handleMercadoPagoPayment = async () => {
               </span>
             </div>
             <div v-if="paymentMethod === 'credit_card'" class="text-right text-[11px] text-secondary">
-              3 cuotas de ${{ Math.round(finalTotal / 3).toLocaleString('es-AR') }} sin interés
+              Hasta 6 cuotas de ${{ Math.round(finalTotal / 6).toLocaleString('es-AR') }} (o 3 de ${{ Math.round(finalTotal / 3).toLocaleString('es-AR') }}) sin interés
             </div>
             <div v-else-if="transferDiscount > 0" class="text-right text-[11px] text-emerald-800 font-medium">
               Ahorro de ${{ transferDiscount.toLocaleString('es-AR') }} aplicado por pago mediante Transferencia directa
