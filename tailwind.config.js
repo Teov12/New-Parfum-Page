@@ -8,26 +8,26 @@ export default {
     extend: {
       colors: {
         surface: {
-          DEFAULT: '#fffdfa',
+          DEFAULT: 'rgb(var(--color-surface-rgb, 255 253 250) / <alpha-value>)',
           dim: '#f3ece3',
-          container: '#fcf7f1',
-          'container-low': '#fefbf7',
-          'container-high': '#f7eee3',
+          container: 'rgb(var(--color-surface-container-rgb, 252 247 241) / <alpha-value>)',
+          'container-low': 'rgb(var(--color-surface-container-low-rgb, 254 251 247) / <alpha-value>)',
+          'container-high': 'rgb(var(--color-surface-container-high-rgb, 247 238 227) / <alpha-value>)',
           'container-highest': '#f2e5d6',
           lowest: '#ffffff',
           variant: '#f2e5d6'
         },
         primary: {
-          DEFAULT: '#2e1911',
-          container: '#784233',
+          DEFAULT: 'rgb(var(--color-primary-rgb, 46 25 17) / <alpha-value>)',
+          container: 'rgb(var(--color-primary-container-rgb, 120 66 51) / <alpha-value>)',
           fixed: '#fde8e1',
           'fixed-dim': '#f5cfc4'
         },
         'on-primary': {
           DEFAULT: '#ffffff',
           container: '#ffffff',
-          fixed: '#2e1911',
-          'fixed-variant': '#5c382e'
+          fixed: 'rgb(var(--color-primary-rgb, 46 25 17) / <alpha-value>)',
+          'fixed-variant': 'rgb(var(--color-primary-container-rgb, 120 66 51) / <alpha-value>)'
         },
         secondary: {
           DEFAULT: '#6d6964',

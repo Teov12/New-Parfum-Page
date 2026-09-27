@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import { useSiteContentStore } from '@/stores/siteContent'
 import { useToastStore } from '@/stores/toast'
 import { useTenantStore } from '@/stores/tenant'
+import { THEME_PRESETS } from '@/utils/themePresets.js'
 import CategoryModal from '@/components/admin/CategoryModal.vue'
 import FamilyModal from '@/components/admin/FamilyModal.vue'
 import SlideModal from '@/components/admin/SlideModal.vue'
@@ -13,7 +14,57 @@ const siteContentStore = useSiteContentStore()
 const toastStore = useToastStore()
 const tenantStore = useTenantStore()
 
-const activeDesignSubtab = ref('categorias') // 'categorias', 'familias', 'banners', 'editorial', 'icono'
+const activeDesignSubtab = ref('categorias') // 'categorias', 'familias', 'banners', 'editorial', 'icono', 'paleta'
+
+// Theme Palettes State
+const selectedPaletteId = ref(tenantStore.branding?.paletteId || 'amber')
+const customPrimaryColor = ref(tenantStore.branding?.primaryColor || '#2e1911')
+const isSavingTheme = ref(false)
+
+const selectPresetTheme = (preset) => {
+  selectedPaletteId.value = preset.id
+  customPrimaryColor.value = preset.primary
+  tenantStore.previewTheme({
+    ...tenantStore.branding,
+    paletteId: preset.id,
+    primaryColor: preset.primary,
+    primaryContainer: preset.primaryContainer,
+    surface: preset.surface,
+    surfaceContainer: preset.surfaceContainer
+  })
+}
+
+const onCustomColorChange = () => {
+  selectedPaletteId.value = 'custom'
+  tenantStore.previewTheme({
+    ...tenantStore.branding,
+    paletteId: 'custom',
+    primaryColor: customPrimaryColor.value
+  })
+}
+
+const saveTheme = async () => {
+  isSavingTheme.value = true
+  try {
+    const preset = THEME_PRESETS.find(p => p.id === selectedPaletteId.value)
+    const updatedBranding = {
+      ...tenantStore.branding,
+      paletteId: selectedPaletteId.value,
+      primaryColor: customPrimaryColor.value,
+      primaryContainer: preset?.primaryContainer,
+      surface: preset?.surface,
+      surfaceContainer: preset?.surfaceContainer
+    }
+    await tenantStore.updateSettings({
+      branding: updatedBranding
+    })
+    toastStore.show('¡Paleta de colores aplicada y guardada con éxito!', 'success')
+  } catch (err) {
+    toastStore.show(err.message || 'Error al guardar la paleta', 'error')
+  } finally {
+    isSavingTheme.value = false
+  }
+}
 
 // Store Icon State
 const isSavingStoreIcon = ref(false)
@@ -30,6 +81,8 @@ const syncStoreIconForm = () => {
     storeIcon: tenantStore.branding?.storeIcon || 'spa',
     storeName: tenantStore.storeName || 'Gicca Perfumes'
   }
+  selectedPaletteId.value = tenantStore.branding?.paletteId || 'amber'
+  customPrimaryColor.value = tenantStore.branding?.primaryColor || '#2e1911'
 }
 
 onMounted(() => {
@@ -274,6 +327,15 @@ const handleSaveEditorial = async () => {
         >
           <span class="material-symbols-outlined text-sm">token</span>
           <span>Ícono Tienda</span>
+        </button>
+
+        <button 
+          @click="activeDesignSubtab = 'paleta'"
+          class="px-3 sm:px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 sm:gap-2 text-center cursor-pointer"
+          :class="activeDesignSubtab === 'paleta' ? 'bg-primary text-on-primary font-bold shadow-xs' : 'text-secondary hover:text-primary hover:bg-surface/80'"
+        >
+          <span class="material-symbols-outlined text-sm">palette</span>
+          <span>Paleta de Colores</span>
         </button>
       </div>
     </div>
@@ -802,6 +864,116 @@ const handleSaveEditorial = async () => {
             >
               <span class="material-symbols-outlined text-sm">save</span>
               <span>{{ isSavingStoreIcon ? 'Guardando Cambios...' : 'Guardar y Aplicar Ícono' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBTAB 6: PALETA DE COLORES DE LA BOUTIQUE (DYNAMIC THEMING) -->
+      <div v-if="activeDesignSubtab === 'paleta'" key="paleta" class="space-y-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h3 class="font-serif text-xl sm:text-2xl font-normal text-primary">Paleta de Colores de la Boutique</h3>
+            <p class="font-sans text-xs text-secondary mt-0.5">
+              Personalizá la identidad visual de la tienda. Al seleccionar una paleta o color, toda la web (botones, badges, títulos y fondos) se adapta en tiempo real.
+            </p>
+          </div>
+          <button 
+            @click="saveTheme"
+            :disabled="isSavingTheme"
+            class="bg-primary hover:bg-primary-container text-on-primary font-label text-xs uppercase tracking-wider px-6 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-xs disabled:opacity-50 border border-primary/20 cursor-pointer font-bold"
+          >
+            <span class="material-symbols-outlined text-sm">palette</span>
+            <span>{{ isSavingTheme ? 'Guardando...' : 'Guardar y Aplicar Paleta' }}</span>
+          </button>
+        </div>
+
+        <!-- Presets Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div 
+            v-for="preset in THEME_PRESETS" 
+            :key="preset.id"
+            @click="selectPresetTheme(preset)"
+            class="bg-surface border rounded-2xl p-5 transition-all cursor-pointer relative group flex flex-col justify-between"
+            :class="selectedPaletteId === preset.id 
+              ? 'border-primary ring-2 ring-primary/40 shadow-md' 
+              : 'border-outline-variant hover:border-outline hover:shadow-xs'"
+          >
+            <div>
+              <!-- Header with Active Badge -->
+              <div class="flex items-center justify-between mb-3">
+                <span class="font-serif text-lg font-bold text-primary">{{ preset.name }}</span>
+                <span 
+                  v-if="selectedPaletteId === preset.id"
+                  class="bg-primary text-on-primary text-[10px] font-label uppercase px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-2xs"
+                >
+                  <span class="material-symbols-outlined text-xs">check</span>
+                  <span>Activo</span>
+                </span>
+              </div>
+              <p class="font-label text-[11px] uppercase tracking-wider text-secondary font-medium mb-1">{{ preset.subtitle }}</p>
+              <p class="font-sans text-xs text-secondary leading-relaxed mb-4">{{ preset.description }}</p>
+            </div>
+
+            <!-- Color Swatches & Preview Button -->
+            <div class="space-y-3 pt-3 border-t border-outline-variant/60">
+              <div class="flex items-center gap-2">
+                <span 
+                  v-for="(hex, cIdx) in preset.previewColors" 
+                  :key="cIdx"
+                  class="w-7 h-7 rounded-full border border-black/10 shadow-2xs"
+                  :style="{ backgroundColor: hex }"
+                ></span>
+              </div>
+
+              <!-- Mini Component Simulation -->
+              <div class="p-3 rounded-lg flex items-center justify-between border" :style="{ backgroundColor: preset.surface, borderColor: preset.previewColors[1] + '40' }">
+                <span class="text-xs font-serif font-bold" :style="{ color: preset.primary }">Gicca Boutique</span>
+                <span class="text-[10px] font-label uppercase px-2.5 py-1 rounded-sm text-white font-medium shadow-2xs" :style="{ backgroundColor: preset.primary }">
+                  Comprar
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Color Hex Picker -->
+        <div class="bg-surface border border-outline-variant rounded-2xl p-6 shadow-xs space-y-4">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-lg text-primary">colorize</span>
+            <h4 class="font-serif text-lg font-normal text-primary">Color Personalizado de Marca</h4>
+          </div>
+          <p class="font-sans text-xs text-secondary">
+            Si tenés un código de color específico de tu marca (ej. de tu logo o manual de identidad corporativa), podés ingresarlo acá para aplicarlo a la tienda.
+          </p>
+
+          <div class="flex flex-wrap items-center gap-4 pt-2">
+            <div class="flex items-center gap-2.5 bg-surface-container border border-outline-variant rounded-xl p-2 pr-4 shadow-2xs">
+              <input 
+                type="color" 
+                v-model="customPrimaryColor" 
+                @input="onCustomColorChange"
+                class="w-10 h-10 rounded-lg cursor-pointer border-0 bg-transparent"
+              />
+              <div>
+                <label class="block text-[10px] font-label uppercase tracking-wider text-secondary">Color Primario (Hex)</label>
+                <input 
+                  type="text" 
+                  v-model="customPrimaryColor" 
+                  @input="onCustomColorChange"
+                  placeholder="#2E1911"
+                  class="font-mono text-xs font-bold text-primary bg-transparent focus:outline-none uppercase w-24"
+                />
+              </div>
+            </div>
+
+            <button 
+              @click="saveTheme"
+              :disabled="isSavingTheme"
+              class="bg-primary hover:bg-primary-container text-on-primary font-label text-xs uppercase tracking-wider px-6 py-3 rounded-xl flex items-center gap-2 transition-all shadow-xs disabled:opacity-50 cursor-pointer font-bold"
+            >
+              <span class="material-symbols-outlined text-sm">save</span>
+              <span>{{ isSavingTheme ? 'Guardando...' : 'Aplicar y Guardar Este Color' }}</span>
             </button>
           </div>
         </div>

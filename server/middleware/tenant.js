@@ -37,7 +37,11 @@ export const DEFAULT_TENANT_CONFIG = {
     storeIcon: 'spa',
     faviconUrl: '',
     tagline: 'Atelier de Alta Perfumería',
+    paletteId: 'amber',
     primaryColor: '#2E1911',
+    primaryContainer: '#784233',
+    surface: '#fffdfa',
+    accentColor: '#D4AF37',
     instagramUrl: 'https://instagram.com/giccaparfum',
     whatsappNumber: '+5493564123456'
   },

@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { applyTheme } from '@/utils/themePresets.js'
 
 // Utility function to update favicon dynamically in the document head
 export function applyDynamicFavicon(branding, storeName) {
@@ -38,7 +39,10 @@ export const useTenantStore = defineStore('tenant', {
       iconUrl: '/uploads/perfume_1790448931002_az0ndj.png',
       storeIcon: 'spa',
       faviconUrl: '/favicon.png',
+      paletteId: 'amber',
       primaryColor: '#2E1911',
+      primaryContainer: '#784233',
+      surface: '#fffdfa',
       whatsappNumber: '5493564622055',
       instagram: '@giccaparfum'
     },
@@ -95,6 +99,7 @@ export const useTenantStore = defineStore('tenant', {
               this.commercial = { ...this.commercial, ...data.commercial }
             }
             applyDynamicFavicon(this.branding, this.name)
+            applyTheme(this.branding)
           }
         }
       } catch (err) {
@@ -148,8 +153,15 @@ export const useTenantStore = defineStore('tenant', {
           this.commercial = { ...this.commercial, ...result.tenant.commercial }
         }
         applyDynamicFavicon(this.branding, this.name)
+        applyTheme(this.branding)
       }
       return result
+    },
+
+    previewTheme(branding) {
+      if (branding) {
+        applyTheme(branding)
+      }
     }
   }
 })
