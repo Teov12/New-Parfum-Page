@@ -186,9 +186,9 @@ const trustBadges = [
 
 <template>
   <div>
-    <!-- HERO SECTION: INTERACTIVE IMAGE CAROUSEL -->
+    <!-- HERO SECTION: INTERACTIVE IMAGE CAROUSEL (EDITORIAL SPLIT - BYREDO / LE LABO AESTHETIC) -->
     <header 
-      class="relative w-full min-h-[85vh] flex items-center bg-surface-container-low border-b border-outline-variant overflow-hidden group/hero select-none"
+      class="relative w-full min-h-[82vh] lg:min-h-[86vh] flex items-center bg-[#faf7f3] border-b border-outline-variant overflow-hidden group/hero select-none"
       @mouseenter="stopAutoplay"
       @mouseleave="startAutoplay"
       @touchstart.passive="onTouchStart"
@@ -204,106 +204,105 @@ const trustBadges = [
           :key="currentSlideData.id || `slide-${currentSlide}`"
           class="absolute inset-0 w-full h-full flex items-center overflow-hidden"
         >
-          <!-- Slide Background Image with GPU accelerated composition -->
+          <!-- Ambient Atmosphere Background Image -->
           <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
             <img 
               :src="currentSlideData.image" 
-              :alt="`Perfumes importados y árabes originales - ${currentSlideData.title || ''} ${currentSlideData.highlight || ''}`"
-              class="w-full h-full object-cover object-center opacity-70 will-change-transform"
+              :alt="`Gicca Perfumes - ${currentSlideData.title || ''} ${currentSlideData.highlight || ''}`"
+              class="w-full h-full object-cover object-center opacity-25 lg:opacity-15 will-change-transform filter saturate-90"
               :class="currentSlide % 2 === 0 ? 'animate-ken-burns' : 'animate-ken-burns-alt'"
               decoding="async"
               @error="(e) => e.target.src = 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=2000&q=85'"
             />
-            <!-- Luxury Warm Gradient Overlays -->
-            <div class="absolute inset-0 bg-gradient-to-r from-surface via-surface/90 to-surface/40"></div>
-            <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
+            <!-- Luxury Warm Editorial Tonal Overlays -->
+            <div class="absolute inset-0 bg-gradient-to-r from-[#faf7f3] via-[#faf7f3]/95 to-[#faf7f3]/70"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-[#faf7f3] via-transparent to-[#faf7f3]/40"></div>
           </div>
 
-          <!-- Slide Content -->
-          <div class="relative z-10 w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 lg:py-24 grid grid-cols-1 lg:grid-cols-12 gap-gutter h-full items-center">
+          <!-- Slide Content: Editorial Split Grid -->
+          <div class="relative z-10 w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-14 lg:py-20 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 h-full items-center">
             
-            <!-- Text Column (8 cols) -->
-            <div class="lg:col-span-8 flex flex-col justify-center">
+            <!-- Left Column: Pure Luxury Typography (7 cols on lg) -->
+            <div class="lg:col-span-7 flex flex-col justify-center text-left">
               
-              <div v-if="currentSlideData.tag" class="mb-4">
-                <span class="font-label text-xs sm:text-[13px] uppercase tracking-[0.25em] text-secondary font-semibold">
-                  {{ currentSlideData.tag }}
+              <!-- Editorial Kicker / Eyebrow -->
+              <div class="flex items-center gap-3 mb-4 sm:mb-6">
+                <span class="w-8 h-px bg-primary/40"></span>
+                <span class="font-label text-xs sm:text-[13px] uppercase tracking-[0.25em] text-secondary font-medium">
+                  {{ currentSlideData.tag || 'ALTA PERFUMERÍA' }}
                 </span>
               </div>
 
-              <h1 class="font-sans text-3xl sm:text-5xl lg:text-display-lg text-primary mb-6 leading-[1.08] tracking-tight font-normal">
+              <!-- Editorial Headline -->
+              <h1 class="font-sans text-3xl sm:text-5xl lg:text-[54px] xl:text-[60px] text-primary mb-6 leading-[1.08] tracking-[-0.02em] font-normal">
                 {{ currentSlideData.title }} <br />
-                <span class="italic font-serif">{{ currentSlideData.highlight }}</span>
+                <span class="italic font-serif text-primary-container">{{ currentSlideData.highlight }}</span>
               </h1>
 
-              <p class="font-sans text-base sm:text-body-lg text-secondary mb-10 max-w-xl leading-relaxed">
+              <!-- Editorial Narrative -->
+              <p class="font-sans text-sm sm:text-base lg:text-lg text-secondary mb-8 sm:mb-10 max-w-xl leading-relaxed font-normal">
                 {{ currentSlideData.description }}
               </p>
 
-              <!-- CTAs: Botones Elegantes -->
-              <div class="flex flex-col sm:flex-row gap-4">
+              <!-- CTAs: Sobrio y Elegante (Sin iconos de varita mágica ni botones inflados) -->
+              <div class="flex flex-wrap items-center gap-5 sm:gap-7">
                 <RouterLink 
                   :to="currentSlideData.primaryCtaLink"
-                  class="inline-flex items-center justify-center bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-4 px-9 rounded-full border border-primary-container hover:bg-inverse-surface transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 text-center"
+                  class="inline-flex items-center justify-center bg-primary text-on-primary font-label text-xs uppercase tracking-[0.18em] py-4 px-8 sm:px-9 rounded-sm border border-primary hover:bg-primary-container hover:border-primary-container transition-all duration-300 text-center shadow-xs hover:shadow-md active:translate-y-0"
                 >
                   <span>{{ currentSlideData.primaryCtaText }}</span>
                 </RouterLink>
 
                 <RouterLink 
+                  v-if="currentSlideData.secondaryCtaText"
                   :to="currentSlideData.secondaryCtaLink"
-                  class="inline-flex items-center justify-center bg-surface text-primary font-label text-xs uppercase tracking-widest py-4 px-9 rounded-full border border-outline hover:bg-surface-container transition-all duration-300 gap-2 shadow-xs hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 text-center"
+                  class="inline-flex items-center gap-2 text-primary font-label text-xs uppercase tracking-[0.18em] py-3.5 px-1 hover:text-primary-container transition-colors group/cta"
                 >
-                  <span v-if="currentSlideData.secondaryCtaIcon" class="material-symbols-outlined text-sm">{{ currentSlideData.secondaryCtaIcon }}</span>
                   <span>{{ currentSlideData.secondaryCtaText }}</span>
+                  <span class="material-symbols-outlined text-base transition-transform duration-300 group-hover/cta:translate-x-1.5">arrow_forward</span>
                 </RouterLink>
-              </div>
-
-              <!-- Quick Stats -->
-              <div class="grid grid-cols-3 gap-6 pt-10 mt-10 border-t border-outline-variant max-w-md">
-                <div class="group/stat cursor-default">
-                  <p class="font-sans text-2xl text-primary font-normal group-hover/stat:text-primary-container transition-colors">100%</p>
-                  <p class="font-label text-[10px] text-secondary uppercase tracking-wider">Originales</p>
-                </div>
-                <div class="group/stat cursor-default">
-                  <p class="font-sans text-2xl text-primary font-normal group-hover/stat:text-primary-container transition-colors">Envíos</p>
-                  <p class="font-label text-[10px] text-secondary uppercase tracking-wider">País Entero</p>
-                </div>
-                <div class="group/stat cursor-default">
-                  <p class="font-sans text-2xl text-primary font-normal group-hover/stat:text-primary-container transition-colors">3</p>
-                  <p class="font-label text-[10px] text-secondary uppercase tracking-wider">Cuotas Sin Interés</p>
-                </div>
               </div>
 
             </div>
 
-            <!-- Featured Showcase Bottle Column (4 cols) - Editorial Card -->
-            <div class="hidden lg:flex lg:col-span-4 justify-center items-center relative">
-              <div class="relative w-72 rounded-2xl bg-surface/95 p-4 border border-outline-variant shadow-[0_20px_45px_-12px_rgba(46,25,17,0.08)] hover:shadow-[0_25px_50px_-10px_rgba(46,25,17,0.14)] transition-all duration-500 hover:scale-[1.02]">
-                <div class="relative aspect-[3/4] rounded-xl overflow-hidden mb-4 bg-surface-container group">
+            <!-- Right Column: Integrated Fragrance Showcase (5 cols on lg) - Byredo / Le Labo Editorial Frame -->
+            <div class="hidden lg:flex lg:col-span-5 justify-center lg:justify-end items-center">
+              <div class="relative w-full max-w-[380px] xl:max-w-[410px]">
+                
+                <!-- Architectural Exhibition Frame -->
+                <div class="relative aspect-[4/5] bg-surface rounded-sm overflow-hidden border border-outline-variant/80 shadow-[0_12px_36px_rgba(46,25,17,0.06)] group">
                   <img 
-                    :src="currentSlideData.bottleImage" 
-                    :alt="`Perfume ${currentSlideData.featuredTitle} original en Argentina`" 
-                    class="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                    :src="currentSlideData.bottleImage || currentSlideData.image" 
+                    :alt="`Perfume ${currentSlideData.featuredTitle || 'exclusivo'} original en Argentina`" 
+                    class="w-full h-full object-cover object-center transition-transform duration-1000 ease-out group-hover:scale-105"
                     decoding="async"
                     @error="(e) => e.target.src = 'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=800&q=85'"
                   />
-                </div>
-                <div class="space-y-1.5 pt-1">
-                  <div class="flex items-center justify-between text-secondary">
-                    <span class="font-label text-[10px] font-semibold uppercase tracking-wider">
-                      Selección de la Boutique
-                    </span>
-                    <span v-if="currentSlideData.featuredRating" class="font-label text-[11px] text-primary font-medium">
-                      {{ currentSlideData.featuredRating }}
-                    </span>
+                  
+                  <!-- Corner Exhibition Monogram / Accent -->
+                  <div class="absolute top-4 left-4 z-10 px-2.5 py-1 bg-surface/90 backdrop-blur-xs border border-outline-variant/60 rounded-xs">
+                    <span class="font-mono text-[10px] tracking-widest uppercase text-secondary font-medium">GICCA — 0{{ currentSlide + 1 }}</span>
                   </div>
-                  <h4 class="font-serif text-lg text-primary font-normal line-clamp-1">
-                    {{ currentSlideData.featuredTitle }}
-                  </h4>
-                  <p class="font-sans text-xs text-secondary line-clamp-1">
-                    {{ currentSlideData.featuredSub }}
-                  </p>
                 </div>
+
+                <!-- Curatorial Caption below the frame (Museum Plaque Aesthetic) -->
+                <div v-if="currentSlideData.featuredTitle" class="mt-4 pt-3.5 border-t border-outline-variant/60 flex items-start justify-between text-left">
+                  <div class="space-y-1 pr-4">
+                    <span class="font-label text-[10px] uppercase tracking-[0.2em] text-secondary font-semibold">
+                      Selección de la Casa
+                    </span>
+                    <h3 class="font-serif text-lg text-primary font-normal leading-snug">
+                      {{ currentSlideData.featuredTitle }}
+                    </h3>
+                    <p v-if="currentSlideData.featuredSub" class="font-sans text-xs text-secondary/80 line-clamp-1">
+                      {{ currentSlideData.featuredSub }}
+                    </p>
+                  </div>
+                  <span class="font-mono text-xs text-secondary/60 tracking-widest pt-0.5 whitespace-nowrap">
+                    0{{ currentSlide + 1 }}/0{{ slidesCount }}
+                  </span>
+                </div>
+
               </div>
             </div>
 
@@ -311,43 +310,45 @@ const trustBadges = [
         </div>
       </Transition>
 
-      <!-- Carousel Navigation Arrows with Directional Tactile Response (hidden on mobile, swipe used instead) -->
-      <button 
-        @click="prevSlide(); resetAutoplay()"
-        class="hidden sm:flex absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-surface/90 backdrop-blur-md border border-outline-variant hover:bg-surface text-primary items-center justify-center shadow-md hover:shadow-xl hover:scale-110 active:-translate-x-1 active:scale-95 transition-all duration-300 group"
-        aria-label="Diapositiva anterior"
-      >
-        <span class="material-symbols-outlined text-xl transition-transform duration-300 group-hover:-translate-x-0.5">chevron_left</span>
-      </button>
+      <!-- Editorial Slide Controls Dock -->
+      <div class="absolute bottom-6 sm:bottom-8 right-margin-mobile sm:right-margin-desktop z-30 flex items-center gap-3 bg-surface/95 backdrop-blur-md px-3.5 py-2 rounded-sm border border-outline-variant/70 shadow-xs">
+        <!-- Numeric Counter -->
+        <div class="flex items-center gap-1.5 font-mono text-xs text-primary font-medium tracking-wider pl-1">
+          <span>0{{ currentSlide + 1 }}</span>
+          <span class="text-secondary/40">/</span>
+          <span class="text-secondary/60">0{{ slidesCount }}</span>
+        </div>
 
-      <button 
-        @click="nextSlide(); resetAutoplay()"
-        class="hidden sm:flex absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-surface/90 backdrop-blur-md border border-outline-variant hover:bg-surface text-primary items-center justify-center shadow-md hover:shadow-xl hover:scale-110 active:translate-x-1 active:scale-95 transition-all duration-300 group"
-        aria-label="Siguiente diapositiva"
-      >
-        <span class="material-symbols-outlined text-xl transition-transform duration-300 group-hover:translate-x-0.5">chevron_right</span>
-      </button>
+        <span class="w-px h-4 bg-outline-variant/70"></span>
 
-      <!-- Carousel Bottom Dot Indicators with Animated Autoplay Progress Bar -->
-      <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 bg-surface/85 backdrop-blur-md px-4 py-2 rounded-full border border-outline-variant shadow-md">
-        <button 
-          v-for="(slide, idx) in heroSlides" 
-          :key="slide.id"
-          @click="goToSlide(idx)"
-          class="relative h-2 rounded-full transition-all duration-500 overflow-hidden"
-          :class="currentSlide === idx ? 'w-10 bg-primary/20' : 'w-2.5 bg-outline-variant hover:bg-primary/50'"
-          :aria-label="`Ir a diapositiva ${idx + 1}`"
-        >
-          <!-- Active Progress fill bar -->
-          <div 
-            v-if="currentSlide === idx"
-            :key="`prog-${currentSlide}`"
-            class="h-full bg-primary-container rounded-full"
-            :style="{ 
-              animation: isAutoplayPaused ? 'none' : 'autoplayProgress 6s linear forwards' 
-            }"
-          ></div>
-        </button>
+        <!-- Minimalist Directional Navigation -->
+        <div class="flex items-center gap-1">
+          <button 
+            @click="prevSlide(); resetAutoplay()"
+            class="w-7 h-7 rounded-sm hover:bg-surface-container flex items-center justify-center text-primary transition-colors active:scale-90"
+            aria-label="Diapositiva anterior"
+          >
+            <span class="material-symbols-outlined text-base">west</span>
+          </button>
+          <button 
+            @click="nextSlide(); resetAutoplay()"
+            class="w-7 h-7 rounded-sm hover:bg-surface-container flex items-center justify-center text-primary transition-colors active:scale-90"
+            aria-label="Siguiente diapositiva"
+          >
+            <span class="material-symbols-outlined text-base">east</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Subtle Editorial Autoplay Progress Line -->
+      <div class="absolute bottom-0 left-0 right-0 h-[2px] bg-outline-variant/30 z-20">
+        <div 
+          :key="`progress-${currentSlide}`"
+          class="h-full bg-primary-container/80 transition-all duration-300"
+          :style="{ 
+            animation: isAutoplayPaused ? 'none' : 'autoplayProgress 6s linear forwards' 
+          }"
+        ></div>
       </div>
     </header>
 
