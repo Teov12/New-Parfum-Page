@@ -1,10 +1,11 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { RouterLink, RouterView, useRouter, useRoute } from 'vue-router'
 import { useAdminAuthStore } from '@/stores/adminAuth'
 import { useOrdersStore } from '@/stores/orders'
 import { useProductStore } from '@/stores/products'
 import { useTenantStore } from '@/stores/tenant'
+import OnboardingModal from '@/components/admin/OnboardingModal.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -15,6 +16,13 @@ const tenantStore = useTenantStore()
 
 const isSidebarCollapsed = ref(localStorage.getItem('admin_sidebar_collapsed') === 'true')
 const isMobileDrawerOpen = ref(false)
+const isOnboardingOpen = ref(false)
+
+watch(() => tenantStore.isLoaded, (loaded) => {
+  if (loaded && tenantStore.branding && tenantStore.branding.onboardingCompleted === false) {
+    isOnboardingOpen.value = true
+  }
+}, { immediate: true })
 
 const toggleSidebar = () => {
   isSidebarCollapsed.value = !isSidebarCollapsed.value
@@ -354,6 +362,16 @@ const closeMobileDrawer = () => {
                 <span>Mercado Pago</span>
               </div>
 
+              <!-- Onboarding Wizard Trigger -->
+              <button 
+                @click="isOnboardingOpen = true"
+                class="bg-amber-50 hover:bg-amber-100/80 text-amber-900 border border-amber-300 font-label text-xs uppercase tracking-wider px-3 sm:px-3.5 py-2 rounded-xl transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer font-bold"
+                title="Abrir Asistente de Configuración Inicial"
+              >
+                <span class="material-symbols-outlined text-base">auto_fix_high</span>
+                <span class="hidden md:inline">Asistente</span>
+              </button>
+
               <!-- Quick View Store CTA -->
               <RouterLink 
                 to="/" 
@@ -579,6 +597,13 @@ const closeMobileDrawer = () => {
         <span class="text-[9px] font-label uppercase tracking-wider mt-0.5">Tienda</span>
       </RouterLink>
     </nav>
+
+    <!-- Modal de Configuración Inicial (Onboarding Wizard) -->
+    <OnboardingModal 
+      :isOpen="isOnboardingOpen" 
+      @close="isOnboardingOpen = false" 
+      @completed="isOnboardingOpen = false" 
+    />
 
   </div>
 </template>
