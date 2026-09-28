@@ -102,6 +102,13 @@ const routes = [
       description: 'Respondé 4 preguntas simples y encontrá el perfume que mejor combina con tu personalidad, estación del año y estilo de vida.'
     }
   },
+  // Superadmin SaaS Command Center
+  {
+    path: '/superadmin',
+    name: 'superadmin',
+    component: () => import('../views/admin/SuperAdminView.vue'),
+    meta: { title: 'Consola Superadmin SaaS | Gestión de Perfumerías', requiresAuth: true }
+  },
   // Admin Login (Standalone)
   {
     path: '/admin/login',

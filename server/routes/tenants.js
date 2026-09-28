@@ -290,4 +290,50 @@ router.post('/create', requireAuth, async (req, res) => {
   }
 })
 
+// PUT /api/tenant/:id/status - Cambiar estado de suscripción (Superadmin)
+router.put('/:id/status', requireAuth, async (req, res) => {
+  try {
+    const { status, plan } = req.body
+    const targetId = req.params.id.toLowerCase().trim()
+
+    if (!isMongoConnected()) {
+      return res.json({ success: true, message: 'Estado actualizado (modo local)' })
+    }
+
+    const tenant = await Tenant.findOne({ tenantId: targetId })
+    if (!tenant) {
+      return res.status(404).json({ error: 'Perfumería no encontrada' })
+    }
+
+    if (status) tenant.status = status
+    if (plan) tenant.plan = plan
+    await tenant.save()
+    clearTenantCache()
+
+    res.json({ success: true, message: `Perfumería ${tenant.name} actualizada (${status || tenant.status})`, tenant })
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Error al actualizar estado' })
+  }
+})
+
+// DELETE /api/tenant/:id - Dar de baja perfumería (Superadmin)
+router.delete('/:id', requireAuth, async (req, res) => {
+  try {
+    const targetId = req.params.id.toLowerCase().trim()
+    if (targetId === 'gicca') {
+      return res.status(400).json({ error: 'No es posible eliminar la tienda principal Gicca' })
+    }
+
+    if (!isMongoConnected()) {
+      return res.json({ success: true, message: 'Perfumería eliminada (modo local)' })
+    }
+
+    await Tenant.deleteOne({ tenantId: targetId })
+    clearTenantCache()
+    res.json({ success: true, message: 'Perfumería dada de baja con éxito' })
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Error al eliminar perfumería' })
+  }
+})
+
 export default router

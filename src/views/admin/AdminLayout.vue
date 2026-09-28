@@ -262,6 +262,17 @@ const closeMobileDrawer = () => {
               <span class="material-symbols-outlined text-xl flex-shrink-0 group-hover:scale-110 transition-transform">storefront</span>
               <span v-if="!isSidebarCollapsed" class="truncate flex-grow">Ajustes & Pagos</span>
             </RouterLink>
+
+            <!-- Superadmin SaaS Console -->
+            <RouterLink 
+              to="/superadmin"
+              class="group flex items-center gap-3 px-3 py-2.5 rounded-xl font-label text-xs uppercase tracking-wider transition-all relative text-amber-900 bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20"
+              :class="isSidebarCollapsed ? 'justify-center' : ''"
+              title="Consola Superadmin Multi-Tenant"
+            >
+              <span class="material-symbols-outlined text-xl flex-shrink-0 text-amber-800 group-hover:scale-110 transition-transform">hub</span>
+              <span v-if="!isSidebarCollapsed" class="truncate flex-grow font-bold">Consola SaaS</span>
+            </RouterLink>
           </div>
         </div>
 
