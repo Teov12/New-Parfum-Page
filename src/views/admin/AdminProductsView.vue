@@ -45,6 +45,26 @@ const selectedProductForEdit = ref(null);
 
 const isCsvModalOpen = ref(false);
 
+const isSeeding = ref(false);
+
+const confirmSeedStarter = async () => {
+  if (confirm('¿Deseas importar el Catálogo Sugerido de alta perfumería (Lattafa Asad, Yara, Khamrah, Club de Nuit, Sauvage, Bleu, Baccarat Rouge, Libre)? Se cargarán con sus familias olfativas, notas y tamaños.')) {
+    isSeeding.value = true;
+    try {
+      const res = await productStore.seedStarterCatalog();
+      if (res.success) {
+        toastStore.show(res.message || 'Catálogo sugerido importado con éxito', 'success');
+      } else {
+        toastStore.show(res.error || 'Error al importar catálogo', 'error');
+      }
+    } catch (err) {
+      toastStore.show(err.message, 'error');
+    } finally {
+      isSeeding.value = false;
+    }
+  }
+};
+
 const isDeleteModalOpen = ref(false);
 const productToDelete = ref(null);
 const isDeleting = ref(false);
@@ -320,6 +340,17 @@ const handleDeleteProduct = async () => {
       </div>
 
       <div class="flex items-center gap-2 w-full sm:w-auto">
+        <button
+          @click="confirmSeedStarter"
+          :disabled="isSeeding"
+          class="flex-1 sm:flex-initial bg-amber-50 hover:bg-amber-100/90 text-amber-900 font-label text-xs uppercase tracking-wider px-3.5 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-2xs border border-amber-300 active:scale-95 cursor-pointer disabled:opacity-50"
+          title="Importar catálogo preconfigurado con perfumes best-seller"
+        >
+          <span v-if="isSeeding" class="inline-block w-3.5 h-3.5 border-2 border-amber-800 border-t-transparent rounded-full animate-spin"></span>
+          <span v-else class="material-symbols-outlined text-base text-amber-800">auto_fix_high</span>
+          <span>Catálogo Sugerido</span>
+        </button>
+
         <button
           @click="isCsvModalOpen = true"
           class="flex-1 sm:flex-initial bg-surface hover:bg-surface-container text-primary font-label text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-2xs border border-outline-variant hover:border-primary active:scale-95 cursor-pointer"

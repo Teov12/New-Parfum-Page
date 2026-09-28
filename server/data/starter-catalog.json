@@ -1,0 +1,282 @@
+[
+  {
+    "brand": "Lattafa",
+    "name": "Asad",
+    "concentration": "Eau de Parfum",
+    "gender": "hombre",
+    "category": "arabe",
+    "fragranceFamily": "Oriental",
+    "price": 68000,
+    "transferPrice": 49000,
+    "costPrice": 32000,
+    "stock": 15,
+    "isBestSeller": true,
+    "shortDescription": "El perfume árabe más buscado del momento, con pimienta negra, café y tabaco.",
+    "description": "Lattafa Asad es una fragancia oriental especiada de proyección masiva y estela duradera. Abre con acordes punzantes de pimienta negra y piña madura, evolucionando hacia un corazón cálido de café arábico, iris y pachulí, sobre un fondo sensual de ámbar seco, benjuí y maderas de cedro.",
+    "images": [
+      "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=800&q=80"
+    ],
+    "sizes": [
+      { "size": "100 ml", "price": 68000, "transferPrice": 49000, "costPrice": 32000, "default": true },
+      { "size": "5 ml (Decant)", "price": 9500, "transferPrice": 6800, "costPrice": 3500, "default": false },
+      { "size": "10 ml (Decant)", "price": 16500, "transferPrice": 11900, "costPrice": 6000, "default": false }
+    ],
+    "olfactoryPyramid": {
+      "topNotes": ["Pimienta Negra", "Piña", "Tabaco"],
+      "heartNotes": ["Café", "Pachulí", "Iris"],
+      "baseNotes": ["Ámbar", "Vainilla", "Maderas Secas", "Benjuí"]
+    },
+    "characteristics": {
+      "longevity": "10 a 14 horas",
+      "sillage": "Pesada",
+      "season": "Otoño / Invierno",
+      "occasion": "Citas nocturnas y eventos formales",
+      "timeOfDay": "Noche"
+    }
+  },
+  {
+    "brand": "Lattafa",
+    "name": "Yara",
+    "concentration": "Eau de Parfum",
+    "gender": "mujer",
+    "category": "arabe",
+    "fragranceFamily": "Floral",
+    "price": 64000,
+    "transferPrice": 46000,
+    "costPrice": 29000,
+    "stock": 20,
+    "isBestSeller": true,
+    "shortDescription": "Fragancia dulce, cremosa y aterciopelada con notas de malvavisco, frutas tropicales y vainilla.",
+    "description": "Lattafa Yara es un fenómeno viral mundial en perfumería femenina. Destaca por su carácter goloso y delicado a la vez, combinando notas iniciales de heliotropo, orquídea y mandarina con un fondo ultra cremoso de acordes gourmand, vainilla blanca y almizcle.",
+    "images": [
+      "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=800&q=80"
+    ],
+    "sizes": [
+      { "size": "100 ml", "price": 64000, "transferPrice": 46000, "costPrice": 29000, "default": true },
+      { "size": "5 ml (Decant)", "price": 8900, "transferPrice": 6400, "costPrice": 3200, "default": false },
+      { "size": "10 ml (Decant)", "price": 15500, "transferPrice": 11200, "costPrice": 5800, "default": false }
+    ],
+    "olfactoryPyramid": {
+      "topNotes": ["Heliotropo", "Orquídea", "Mandarina"],
+      "heartNotes": ["Acorde Gourmand", "Frutas Tropicales"],
+      "baseNotes": ["Vainilla de Madagascar", "Almizcle Blanco", "Sándalo"]
+    },
+    "characteristics": {
+      "longevity": "8 a 10 horas",
+      "sillage": "Moderada a Intensa",
+      "season": "Primavera / Todo el año",
+      "occasion": "Uso diario, salidas y reuniones",
+      "timeOfDay": "Día y Noche"
+    }
+  },
+  {
+    "brand": "Lattafa",
+    "name": "Khamrah",
+    "concentration": "Eau de Parfum",
+    "gender": "unisex",
+    "category": "arabe",
+    "fragranceFamily": "Oriental",
+    "price": 82000,
+    "transferPrice": 59000,
+    "costPrice": 38000,
+    "stock": 12,
+    "isBestSeller": true,
+    "shortDescription": "Suntuosa mezcla licorosa de canela, dátiles dulces, praliné y madera de roble.",
+    "description": "Una obra maestra de la perfumería oriental contemporánea. Abre con un estallido especiado de canela, nuez moscada y bergamota, para dar paso a un corazón adictivo de dátiles jugosos, praliné, nardos y mahonial sobre una base imponente de haba tonka, vainilla y maderas preciosas.",
+    "images": [
+      "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=800&q=80"
+    ],
+    "sizes": [
+      { "size": "100 ml", "price": 82000, "transferPrice": 59000, "costPrice": 38000, "default": true },
+      { "size": "5 ml (Decant)", "price": 11500, "transferPrice": 8300, "costPrice": 4200, "default": false },
+      { "size": "10 ml (Decant)", "price": 19800, "transferPrice": 14200, "costPrice": 7500, "default": false }
+    ],
+    "olfactoryPyramid": {
+      "topNotes": ["Canela", "Nuez Moscada", "Bergamota"],
+      "heartNotes": ["Dátiles", "Praliné", "Nardos", "Mahonial"],
+      "baseNotes": ["Vainilla", "Haba Tonka", "Benjuí", "Mirra", "Madera de Ámbar"]
+    },
+    "characteristics": {
+      "longevity": "12 a 16 horas",
+      "sillage": "Pesada",
+      "season": "Otoño / Invierno",
+      "occasion": "Ocasiones especiales, galas y noche",
+      "timeOfDay": "Noche"
+    }
+  },
+  {
+    "brand": "Armaf",
+    "name": "Club de Nuit Intense Man",
+    "concentration": "Eau de Parfum",
+    "gender": "hombre",
+    "category": "arabe",
+    "fragranceFamily": "Amaderada",
+    "price": 72000,
+    "transferPrice": 52000,
+    "costPrice": 34000,
+    "stock": 18,
+    "isBestSeller": true,
+    "shortDescription": "El rey indiscutido de los cumplidos masculinos: cítrico ahumado con abedul y piña.",
+    "description": "Inspiración sublime y legendaria en Aventus. Abre con un golpe cítrico vibrante de limón, grosellas negras y manzana, que evoluciona hacia un corazón ahumado de abedul y jazmín silvestre, culminando en un fondo irresistible de almizcle, ámbar gris y pachulí.",
+    "images": [
+      "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=800&q=80"
+    ],
+    "sizes": [
+      { "size": "105 ml", "price": 72000, "transferPrice": 52000, "costPrice": 34000, "default": true },
+      { "size": "5 ml (Decant)", "price": 9900, "transferPrice": 7100, "costPrice": 3600, "default": false },
+      { "size": "10 ml (Decant)", "price": 17200, "transferPrice": 12400, "costPrice": 6200, "default": false }
+    ],
+    "olfactoryPyramid": {
+      "topNotes": ["Limón", "Piña", "Bergamota", "Grosellas Negras", "Manzana"],
+      "heartNotes": ["Abedul Ahumado", "Jazmín", "Rosa"],
+      "baseNotes": ["Almizcle", "Ámbar Gris", "Pachulí", "Vainilla"]
+    },
+    "characteristics": {
+      "longevity": "9 a 12 horas",
+      "sillage": "Fuerte",
+      "season": "Todo el año",
+      "occasion": "Trabajo, salidas, eventos y citas",
+      "timeOfDay": "Día y Noche"
+    }
+  },
+  {
+    "brand": "Dior",
+    "name": "Sauvage",
+    "concentration": "Eau de Parfum",
+    "gender": "hombre",
+    "category": "disenador",
+    "fragranceFamily": "Cítrica",
+    "price": 185000,
+    "transferPrice": 133000,
+    "costPrice": 92000,
+    "stock": 8,
+    "isBestSeller": true,
+    "shortDescription": "Bergamota de Reggio di Calabria y ambroxan con un fondo misterioso de vainilla de Papúa.",
+    "description": "Una composición de frescura rotunda dictada por un nombre que suena como un manifiesto. Francois Demachy la concibió entre la brutalidad y la nobleza. La potente estela ambarina del ambroxan se envuelve con acentos ahumados de vainilla de Papúa Nueva Guinea.",
+    "images": [
+      "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=800&q=80"
+    ],
+    "sizes": [
+      { "size": "100 ml", "price": 185000, "transferPrice": 133000, "costPrice": 92000, "default": true },
+      { "size": "5 ml (Decant)", "price": 19500, "transferPrice": 14000, "costPrice": 8500, "default": false },
+      { "size": "10 ml (Decant)", "price": 34000, "transferPrice": 24500, "costPrice": 15000, "default": false }
+    ],
+    "olfactoryPyramid": {
+      "topNotes": ["Bergamota de Calabria", "Pimienta de Sichuan"],
+      "heartNotes": ["Lavanda", "Pimienta Rosa", "Vetiver", "Geranio"],
+      "baseNotes": ["Ambroxan", "Cedro", "Ládano", "Absoluto de Vainilla"]
+    },
+    "characteristics": {
+      "longevity": "10 a 12 horas",
+      "sillage": "Muy Buena",
+      "season": "Todo el año",
+      "occasion": "Versátil absoluto para cualquier contexto",
+      "timeOfDay": "Día y Noche"
+    }
+  },
+  {
+    "brand": "Chanel",
+    "name": "Bleu de Chanel",
+    "concentration": "Eau de Parfum",
+    "gender": "hombre",
+    "category": "disenador",
+    "fragranceFamily": "Amaderada",
+    "price": 210000,
+    "transferPrice": 151000,
+    "costPrice": 105000,
+    "stock": 6,
+    "isBestSeller": true,
+    "shortDescription": "El estándar de oro de la elegancia masculina moderna: cedro, pomelo y sándalo de Nueva Caledonia.",
+    "description": "El elogio de la libertad masculina expresado en una fragancia aromática amaderada con una estela cautivadora. Un aroma atemporal, inconformista, contenido en un frasco azul enigmático y profundo que personifica la alta distinción francesa.",
+    "images": [
+      "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=800&q=80"
+    ],
+    "sizes": [
+      { "size": "100 ml", "price": 210000, "transferPrice": 151000, "costPrice": 105000, "default": true },
+      { "size": "5 ml (Decant)", "price": 22000, "transferPrice": 15800, "costPrice": 9800, "default": false },
+      { "size": "10 ml (Decant)", "price": 38000, "transferPrice": 27300, "costPrice": 17000, "default": false }
+    ],
+    "olfactoryPyramid": {
+      "topNotes": ["Pomelo", "Limón", "Menta", "Pimienta Rosa"],
+      "heartNotes": ["Jengibre", "Nuez Moscada", "Jazmín", "Iso E Super"],
+      "baseNotes": ["Incienso", "Vetiver", "Cedro", "Sándalo", "Pachulí"]
+    },
+    "characteristics": {
+      "longevity": "8 a 11 horas",
+      "sillage": "Elegante y Sofisticada",
+      "season": "Primavera / Otoño / Todo el año",
+      "occasion": "Reuniones ejecutivas, cenas y eventos formales",
+      "timeOfDay": "Día y Noche"
+    }
+  },
+  {
+    "brand": "Maison Francis Kurkdjian",
+    "name": "Baccarat Rouge 540",
+    "concentration": "Eau de Parfum",
+    "gender": "unisex",
+    "category": "nicho",
+    "fragranceFamily": "Oriental",
+    "price": 340000,
+    "transferPrice": 245000,
+    "costPrice": 165000,
+    "stock": 5,
+    "isBestSeller": true,
+    "shortDescription": "El perfume nicho más codiciado del planeta: ámbar gris, jazmín grandiflorum y cedro de Virginia.",
+    "description": "Luminosa y densa, transparente e intensa, Baccarat Rouge 540 posa sobre la piel como una brisa de ámbar floral y amaderado. Una alquimia poética concebida por Francis Kurkdjian donde las notas aéreas del jazmín y el brillo del azafrán magnifican las facetas minerales del ámbar gris.",
+    "images": [
+      "https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=800&q=80"
+    ],
+    "sizes": [
+      { "size": "70 ml", "price": 340000, "transferPrice": 245000, "costPrice": 165000, "default": true },
+      { "size": "5 ml (Decant)", "price": 34000, "transferPrice": 24500, "costPrice": 16000, "default": false },
+      { "size": "10 ml (Decant)", "price": 59000, "transferPrice": 42500, "costPrice": 28000, "default": false }
+    ],
+    "olfactoryPyramid": {
+      "topNotes": ["Azafrán Rojo", "Jazmín Grandiflorum"],
+      "heartNotes": ["Madera de Ámbar", "Ámbar Gris Mineral"],
+      "baseNotes": ["Resina de Abeto", "Cedro de Virginia"]
+    },
+    "characteristics": {
+      "longevity": "14 a 18 horas",
+      "sillage": "Excepcional y Envolvente",
+      "season": "Todo el año",
+      "occasion": "Lujo supremo, celebraciones y momentos cumbre",
+      "timeOfDay": "Día y Noche"
+    }
+  },
+  {
+    "brand": "Yves Saint Laurent",
+    "name": "Libre",
+    "concentration": "Eau de Parfum",
+    "gender": "mujer",
+    "category": "disenador",
+    "fragranceFamily": "Floral",
+    "price": 178000,
+    "transferPrice": 128000,
+    "costPrice": 88000,
+    "stock": 10,
+    "isBestSeller": true,
+    "shortDescription": "La tensión sensual entre la flor de azahar de Marruecos y la audacia de la lavanda francesa.",
+    "description": "La fragancia de una mujer fuerte, audaz y libre que experimenta su libertad al límite. La primera lavanda floral: la tensión entre la ardiente sensualidad de la flor de azahar y la frescura andrógina de la lavanda Diva cultivada de forma sostenible en Francia.",
+    "images": [
+      "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=800&q=80"
+    ],
+    "sizes": [
+      { "size": "90 ml", "price": 178000, "transferPrice": 128000, "costPrice": 88000, "default": true },
+      { "size": "5 ml (Decant)", "price": 18500, "transferPrice": 13300, "costPrice": 8000, "default": false },
+      { "size": "10 ml (Decant)", "price": 32000, "transferPrice": 23000, "costPrice": 14000, "default": false }
+    ],
+    "olfactoryPyramid": {
+      "topNotes": ["Lavanda Diva", "Mandarina", "Grosellas Negras", "Petit Grain"],
+      "heartNotes": ["Flor de Azahar de Marruecos", "Jazmín Sambac"],
+      "baseNotes": ["Vainilla de Madagascar", "Cedro", "Ámbar Gris", "Almizcle"]
+    },
+    "characteristics": {
+      "longevity": "9 a 12 horas",
+      "sillage": "Notable",
+      "season": "Otoño / Primavera / Invierno",
+      "occasion": "Empoderamiento, citas y eventos distinguidos",
+      "timeOfDay": "Día y Noche"
+    }
+  }
+]

@@ -203,6 +203,27 @@ export const useProductStore = defineStore('products', {
       } catch (err) {
         return { success: false, error: err.message }
       }
+    },
+
+    async seedStarterCatalog() {
+      this.loading = true
+      try {
+        const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
+        const headers = { 'Authorization': `Bearer ${token}` }
+        const res = await fetch('/api/products/seed-starter', {
+          method: 'POST',
+          headers
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Error al importar catálogo sugerido')
+        await this.fetchProducts()
+        await this.fetchStats()
+        return { success: true, count: data.count, message: data.message }
+      } catch (err) {
+        return { success: false, error: err.message }
+      } finally {
+        this.loading = false
+      }
     }
   }
 })

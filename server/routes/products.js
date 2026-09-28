@@ -1,4 +1,7 @@
 import express from 'express'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import {
   getProducts,
   getProductByIdOrSlug,
@@ -7,6 +10,9 @@ import {
   deleteProduct
 } from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const router = express.Router()
 
@@ -150,6 +156,38 @@ router.post('/bulk', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('Error in bulk import:', err)
     res.status(500).json({ error: 'Error al procesar la importación masiva de perfumes' })
+  }
+})
+
+// POST /api/products/seed-starter - Cargar catálogo base sugerido (protegido con requireAuth)
+router.post('/seed-starter', requireAuth, async (req, res) => {
+  try {
+    const tenantId = req.tenantId || 'gicca'
+    const starterPath = path.join(__dirname, '..', 'data', 'starter-catalog.json')
+    if (!fs.existsSync(starterPath)) {
+      return res.status(404).json({ error: 'No se encontró el archivo de catálogo sugerido' })
+    }
+
+    const starterItems = JSON.parse(fs.readFileSync(starterPath, 'utf-8'))
+    const created = []
+    for (const item of starterItems) {
+      try {
+        const prod = await createProduct(item, tenantId)
+        created.push(prod)
+      } catch (err) {
+        console.warn(`[SeedStarter] Error creando ${item.name}:`, err.message)
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      count: created.length,
+      message: `Se importaron ${created.length} perfumes recomendados con éxito`,
+      created
+    })
+  } catch (err) {
+    console.error('Error seeding starter catalog:', err)
+    res.status(500).json({ error: 'Error al importar catálogo sugerido' })
   }
 })
 
