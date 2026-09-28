@@ -19,6 +19,29 @@ const emit = defineEmits(['close', 'shipment-generated'])
 const toastStore = useToastStore()
 const ordersStore = useOrdersStore()
 const isGeneratingShipment = ref(false)
+const isResendingEmail = ref(false)
+
+const handleResendEmail = async () => {
+  if (!props.order) return
+  isResendingEmail.value = true
+  try {
+    const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
+    const headers = { 'Content-Type': 'application/json' }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+
+    const res = await fetch(`/api/orders/${props.order.id || props.order.orderNumber}/resend-email`, {
+      method: 'POST',
+      headers
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'Error al reenviar email')
+    toastStore.show(data.message || 'Email de confirmación reenviado', 'success')
+  } catch (err) {
+    toastStore.show(err.message, 'error')
+  } finally {
+    isResendingEmail.value = false
+  }
+}
 
 const handleGenerateShipment = async () => {
   if (!props.order) return
@@ -169,6 +192,17 @@ const sendWhatsAppTracking = (order) => {
             >
               <span class="material-symbols-outlined text-sm">local_shipping</span>
               <span>{{ isGeneratingShipment ? 'Conectando con Andreani...' : 'Generar Envío Andreani' }}</span>
+            </button>
+
+            <button 
+              @click="handleResendEmail"
+              :disabled="isResendingEmail"
+              class="bg-surface hover:bg-surface-container border border-outline-variant hover:border-primary text-primary font-label text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl flex items-center gap-1.5 shadow-2xs transition-all disabled:opacity-50"
+              title="Reenviar correo de confirmación de compra al cliente"
+            >
+              <span v-if="isResendingEmail" class="inline-block w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
+              <span v-else class="material-symbols-outlined text-sm">mail</span>
+              <span>Reenviar Email</span>
             </button>
 
             <button 

@@ -3,6 +3,7 @@ import { MercadoPagoConfig, Preference, Payment } from 'mercadopago'
 import { createOrder, updateOrder } from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
 import { resolveTenantById } from '../middleware/tenant.js'
+import { sendOrderConfirmationEmail, sendStoreOwnerNewOrderAlert } from '../services/mailer.js'
 
 const router = express.Router()
 
@@ -104,6 +105,14 @@ router.post('/create-preference', async (req, res) => {
       paymentMethod: 'mercadopago',
       paymentStatus: 'pending'
     }, tenantId)
+
+    // Notificaciones iniciales por email
+    sendOrderConfirmationEmail({ order, tenant }).catch(e => {
+      console.warn('[Mailer] Error en confirmación de orden:', e.message)
+    })
+    sendStoreOwnerNewOrderAlert({ order, tenant }).catch(e => {
+      console.warn('[Mailer] Error en alerta de orden:', e.message)
+    })
 
     // Si la perfumería aún no configuró sus credenciales de MP, respondemos con modo simulación/fallback
     if (!accessToken) {
@@ -229,6 +238,12 @@ router.post('/confirm-return', async (req, res) => {
           ? `Pago aprobado por Mercado Pago (Operación #${paymentId})`
           : 'Pago aprobado por Mercado Pago (Retorno verificado)'
       }, tenantId)
+
+      // Enviar correo de pago aprobado al comprador
+      sendOrderConfirmationEmail({ order: updated, tenant: req.tenant }).catch(e => {
+        console.warn('[Mailer] Error en confirmación de pago aprobado:', e.message)
+      })
+
       return res.json({ success: true, order: updated })
     }
 

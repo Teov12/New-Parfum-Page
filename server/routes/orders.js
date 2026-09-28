@@ -6,6 +6,7 @@ import {
   deleteOrder
 } from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
+import { sendOrderConfirmationEmail, sendStoreOwnerNewOrderAlert } from '../services/mailer.js'
 
 const router = express.Router()
 
@@ -106,10 +107,37 @@ router.post('/', async (req, res) => {
     }
 
     const created = await createOrder(orderData, tenantId)
+
+    // Disparar notificaciones transaccionales por email (asíncronas sin bloquear respuesta)
+    sendOrderConfirmationEmail({ order: created, tenant: req.tenant }).catch(e => {
+      console.warn('[Mailer] Error en confirmación de orden:', e.message)
+    })
+    sendStoreOwnerNewOrderAlert({ order: created, tenant: req.tenant }).catch(e => {
+      console.warn('[Mailer] Error en alerta a dueño de tienda:', e.message)
+    })
+
     res.status(201).json(created)
   } catch (err) {
     console.error('Error creating order:', err)
     res.status(400).json({ error: err.message || 'Error al registrar el pedido' })
+  }
+})
+
+// POST /api/orders/:id/resend-email - Reenviar email de confirmación manualmente (Admin only)
+router.post('/:id/resend-email', requireAuth, async (req, res) => {
+  try {
+    const tenantId = req.tenantId || 'gicca'
+    const orders = await getOrders(tenantId)
+    const order = orders.find(o => o.id === req.params.id || o.orderNumber === req.params.id)
+    if (!order) {
+      return res.status(404).json({ error: 'Pedido no encontrado' })
+    }
+
+    await sendOrderConfirmationEmail({ order, tenant: req.tenant })
+    res.json({ success: true, message: `Email de confirmación reenviado a ${order.customer?.email || 'cliente'}` })
+  } catch (err) {
+    console.error('Error resending email:', err)
+    res.status(500).json({ error: err.message || 'Error al reenviar correo' })
   }
 })
 
