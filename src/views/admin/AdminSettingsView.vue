@@ -24,6 +24,8 @@ const LUXURY_ICONS = [
 
 const form = ref({
   name: '',
+  domain: '',
+  subdomain: '',
   branding: {
     tagline: '',
     logoUrl: '',
@@ -50,6 +52,42 @@ const form = ref({
 const isTestingMp = ref(false)
 const mpTestResult = ref(null)
 
+const isCheckingDns = ref(false)
+const dnsCheckResult = ref(null)
+
+const verifyDomainDns = async () => {
+  if (!form.value.domain) {
+    toastStore.show('Por favor ingresá un dominio para verificar', 'warning')
+    return
+  }
+  isCheckingDns.value = true
+  dnsCheckResult.value = null
+  try {
+    const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
+    const res = await fetch('/api/tenant/verify-domain', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ domain: form.value.domain })
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'Error al verificar dominio')
+    dnsCheckResult.value = data
+    if (data.hasRecords) {
+      toastStore.show('¡Registros DNS detectados correctamente!', 'success')
+    } else {
+      toastStore.show('Aún no se detectan registros DNS para este dominio', 'info')
+    }
+  } catch (err) {
+    dnsCheckResult.value = { success: false, message: err.message }
+    toastStore.show(err.message, 'error')
+  } finally {
+    isCheckingDns.value = false
+  }
+}
+
 onMounted(async () => {
   try {
     const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
@@ -62,6 +100,8 @@ onMounted(async () => {
       const data = await res.json()
       if (data?.tenant) {
         form.value.name = data.tenant.name || 'Gicca Perfumes'
+        form.value.domain = data.tenant.domain || ''
+        form.value.subdomain = data.tenant.subdomain || ''
         if (data.tenant.branding) {
           form.value.branding = {
             tagline: data.tenant.branding.tagline || '',
@@ -193,11 +233,13 @@ const handleSave = async () => {
   try {
     await tenantStore.updateSettings({
       name: form.value.name,
+      domain: form.value.domain,
+      subdomain: form.value.subdomain,
       branding: form.value.branding,
       commercial: form.value.commercial
     })
 
-    toastStore.show('¡Configuración de la tienda, ícono y medios de pago guardada!', 'success')
+    toastStore.show('¡Configuración de la tienda, dominio y medios de pago guardada!', 'success')
   } catch (err) {
     console.error(err)
     toastStore.show(err.message || 'Error al guardar cambios', 'error')
@@ -490,6 +532,84 @@ const handleSave = async () => {
                 class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
               />
               <p class="text-[10px] text-secondary mt-1">Superando este monto, Andreani es bonificado.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta Dominio Propio & DNS -->
+        <div class="bg-surface border border-outline-variant rounded-2xl p-6 sm:p-8 space-y-5 shadow-xs">
+          <div class="flex items-center justify-between border-b border-outline-variant pb-3">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-xl text-primary">language</span>
+              <div>
+                <h2 class="font-sans text-base font-bold text-primary">Tu Dominio Propio & DNS</h2>
+                <p class="text-xs text-secondary">Vincula tu propio dominio web o subdominio de marca</p>
+              </div>
+            </div>
+            <span 
+              :class="form.domain ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-surface-container text-secondary border-outline-variant'"
+              class="text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full border shadow-2xs font-mono"
+            >
+              {{ form.domain ? 'Personalizado' : 'Predeterminado' }}
+            </span>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">
+                Dominio Web Principal
+              </label>
+              <div class="flex gap-2">
+                <input
+                  v-model="form.domain"
+                  type="text"
+                  placeholder="ej. miperfumeria.com.ar"
+                  class="flex-1 bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
+                />
+                <button
+                  type="button"
+                  @click="verifyDomainDns"
+                  :disabled="isCheckingDns || !form.domain"
+                  class="px-4 py-3 bg-surface border border-outline-variant hover:border-primary text-primary font-label text-xs uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                >
+                  <span v-if="isCheckingDns" class="inline-block w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
+                  <span v-else class="material-symbols-outlined text-sm">dns</span>
+                  <span>{{ isCheckingDns ? 'Comprobando...' : 'Verificar DNS' }}</span>
+                </button>
+              </div>
+              <p class="text-[11px] text-secondary mt-1">Escribe tu dominio sin https:// ni barras (ej: giccaperfumes.com.ar).</p>
+            </div>
+
+            <!-- Alerta Diagnóstico DNS -->
+            <div v-if="dnsCheckResult" :class="dnsCheckResult.hasRecords ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950' : 'bg-amber-50/80 border-amber-300 text-amber-950'" class="p-3.5 rounded-xl border text-xs leading-relaxed space-y-1">
+              <div class="flex items-center gap-2 font-bold">
+                <span class="material-symbols-outlined text-sm">{{ dnsCheckResult.hasRecords ? 'check_circle' : 'info' }}</span>
+                <span>{{ dnsCheckResult.hasRecords ? 'Registros DNS Encontrados' : 'Propagación en Progreso o Incompleta' }}</span>
+              </div>
+              <p>{{ dnsCheckResult.message }}</p>
+            </div>
+
+            <!-- Guía DNS -->
+            <div class="bg-surface-container/70 border border-outline-variant/80 rounded-xl p-4 space-y-3">
+              <div class="flex items-center gap-2 text-xs font-bold text-primary">
+                <span class="material-symbols-outlined text-base text-secondary">tune</span>
+                <span>Instrucciones de Configuración DNS</span>
+              </div>
+              <div class="text-xs text-secondary space-y-2 font-sans">
+                <p>En el panel de tu proveedor de dominio (NIC Argentina, DonWeb, GoDaddy, Cloudflare, etc.), añade estos registros:</p>
+                <div class="bg-surface p-3 rounded-lg border border-outline-variant font-mono text-[11px] space-y-1">
+                  <div class="flex justify-between border-b border-outline-variant/60 pb-1 text-secondary">
+                    <span>Tipo: <strong>A</strong></span>
+                    <span>Host: <strong>@</strong></span>
+                    <span>Destino: <strong>IP de tu VPS / Servidor</strong></span>
+                  </div>
+                  <div class="flex justify-between pt-1 text-secondary">
+                    <span>Tipo: <strong>CNAME</strong></span>
+                    <span>Host: <strong>www</strong></span>
+                    <span>Destino: <strong>{{ form.domain || 'tu-dominio.com.ar' }}</strong></span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

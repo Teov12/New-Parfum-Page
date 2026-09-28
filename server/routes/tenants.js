@@ -1,6 +1,7 @@
 import express from 'express'
 import fs from 'fs'
 import path from 'path'
+import dns from 'dns'
 import { fileURLToPath } from 'url'
 import { Tenant } from '../models/Tenant.js'
 import { DEFAULT_TENANT_CONFIG, clearTenantCache } from '../middleware/tenant.js'
@@ -93,6 +94,8 @@ router.get('/settings', requireAuth, async (req, res) => {
       tenant: {
         tenantId,
         name: tenant.name || DEFAULT_TENANT_CONFIG.name,
+        domain: tenant.domain || '',
+        subdomain: tenant.subdomain || '',
         branding: tenant.branding || DEFAULT_TENANT_CONFIG.branding,
         commercial
       }
@@ -103,11 +106,54 @@ router.get('/settings', requireAuth, async (req, res) => {
   }
 })
 
+// POST /api/tenant/verify-domain - Verificar propagación DNS de un dominio personalizado
+router.post('/verify-domain', requireAuth, async (req, res) => {
+  try {
+    const { domain } = req.body
+    if (!domain || typeof domain !== 'string') {
+      return res.status(400).json({ error: 'Debes indicar un dominio a verificar' })
+    }
+
+    const cleanDomain = domain.replace(/^https?:\/\//i, '').replace(/\/.*$/, '').trim().toLowerCase()
+    
+    // Resolver registros DNS A
+    let aRecords = []
+    try {
+      aRecords = await dns.promises.resolve(cleanDomain, 'A')
+    } catch (e) {
+      // Sin registros A
+    }
+
+    // Resolver registros DNS CNAME
+    let cnameRecords = []
+    try {
+      cnameRecords = await dns.promises.resolveCname(cleanDomain)
+    } catch (e) {
+      // Sin registros CNAME
+    }
+
+    const hasRecords = aRecords.length > 0 || cnameRecords.length > 0
+
+    res.json({
+      success: true,
+      domain: cleanDomain,
+      hasRecords,
+      aRecords,
+      cnameRecords,
+      message: hasRecords 
+        ? `Se detectaron registros DNS activos para ${cleanDomain} (${aRecords.join(', ') || cnameRecords.join(', ')})` 
+        : `Aún no se detectan registros DNS para ${cleanDomain}. Si acabás de configurarlo, la propagación puede tardar entre 15 minutos y 24 horas.`
+    })
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Error al consultar DNS' })
+  }
+})
+
 // PUT /api/tenant/settings - Actualizar datos comerciales y branding de la tienda (Admin)
 router.put('/settings', requireAuth, async (req, res) => {
   try {
     const tenantId = req.tenantId || 'gicca'
-    const { name, branding, commercial } = req.body
+    const { name, domain, subdomain, branding, commercial } = req.body
 
     // Normalizar credenciales de Mercado Pago para compatibilidad total
     if (commercial) {
@@ -124,11 +170,15 @@ router.put('/settings', requireAuth, async (req, res) => {
     const updatedLocal = {
       tenantId,
       name: name || existing.name || DEFAULT_TENANT_CONFIG.name,
+      domain: domain !== undefined ? domain.trim().toLowerCase() : (existing.domain || ''),
+      subdomain: subdomain !== undefined ? subdomain.trim().toLowerCase() : (existing.subdomain || ''),
       branding: { ...(existing.branding || DEFAULT_TENANT_CONFIG.branding), ...branding },
       commercial: { ...(existing.commercial || DEFAULT_TENANT_CONFIG.commercial), ...commercial }
     }
     persistLocalTenant(updatedLocal)
     DEFAULT_TENANT_CONFIG.name = updatedLocal.name
+    DEFAULT_TENANT_CONFIG.domain = updatedLocal.domain
+    DEFAULT_TENANT_CONFIG.subdomain = updatedLocal.subdomain
     DEFAULT_TENANT_CONFIG.branding = { ...DEFAULT_TENANT_CONFIG.branding, ...updatedLocal.branding }
     DEFAULT_TENANT_CONFIG.commercial = { ...DEFAULT_TENANT_CONFIG.commercial, ...updatedLocal.commercial }
 
@@ -147,11 +197,15 @@ router.put('/settings', requireAuth, async (req, res) => {
         tenantId,
         name: name || DEFAULT_TENANT_CONFIG.name,
         slug: tenantId,
+        domain: updatedLocal.domain,
+        subdomain: updatedLocal.subdomain,
         branding: { ...DEFAULT_TENANT_CONFIG.branding, ...branding },
         commercial: { ...DEFAULT_TENANT_CONFIG.commercial, ...commercial }
       })
     } else {
       if (name) tenantDoc.name = name
+      if (domain !== undefined) tenantDoc.domain = domain.trim().toLowerCase()
+      if (subdomain !== undefined) tenantDoc.subdomain = subdomain.trim().toLowerCase()
       if (branding) tenantDoc.branding = { ...tenantDoc.branding, ...branding }
       if (commercial) tenantDoc.commercial = { ...tenantDoc.commercial, ...commercial }
     }

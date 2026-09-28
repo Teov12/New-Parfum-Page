@@ -146,6 +146,8 @@ export const useTenantStore = defineStore('tenant', {
       const result = await res.json()
       if (result.tenant) {
         this.name = result.tenant.name || this.name
+        if (result.tenant.domain !== undefined) this.domain = result.tenant.domain || ''
+        if (result.tenant.subdomain !== undefined) this.subdomain = result.tenant.subdomain || ''
         if (result.tenant.branding) {
           this.branding = { ...this.branding, ...result.tenant.branding }
         }
