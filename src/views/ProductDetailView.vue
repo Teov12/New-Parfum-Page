@@ -401,7 +401,7 @@ const calculateShipping = async () => {
       </nav>
 
       <!-- Main Product View: Gallery (Left) + Details & Purchase (Right) -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-20">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-12 items-start mb-14 lg:mb-20">
         <!-- IMAGE GALLERY (7 cols - Encuadre Editorial Recto) -->
         <div class="lg:col-span-7 space-y-4">
           <!-- Main Selected Image with Smooth Crossfade Transition -->
@@ -496,7 +496,7 @@ const calculateShipping = async () => {
 
             <!-- Product Title -->
             <h1
-              class="font-sans text-3xl sm:text-4xl text-primary font-normal leading-tight mb-2"
+              class="font-sans text-2xl sm:text-3xl lg:text-3xl xl:text-4xl text-primary font-normal leading-tight mb-2"
             >
               {{ product.name }}
             </h1>

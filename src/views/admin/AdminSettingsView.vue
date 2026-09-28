@@ -271,10 +271,10 @@ const handleSave = async () => {
     </div>
 
     <!-- Main Content Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 xl:gap-8">
       
       <!-- Columna Izquierda: Ícono & Identidad (6 cols) -->
-      <div class="lg:col-span-6 space-y-6">
+      <div class="xl:col-span-6 space-y-6">
         
         <!-- Tarjeta Ícono & Logotipo de la Tienda -->
         <div class="bg-surface border border-outline-variant rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs">
@@ -617,7 +617,7 @@ const handleSave = async () => {
       </div>
 
       <!-- Columna Derecha: Medios de Pago (6 cols) -->
-      <div class="lg:col-span-6 space-y-6">
+      <div class="xl:col-span-6 space-y-6">
         
         <!-- 1. Transferencia Bancaria Directa -->
         <div class="bg-surface border border-outline-variant rounded-2xl p-6 sm:p-8 space-y-5 shadow-xs">

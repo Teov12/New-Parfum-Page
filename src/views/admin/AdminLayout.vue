@@ -14,7 +14,11 @@ const ordersStore = useOrdersStore()
 const productStore = useProductStore()
 const tenantStore = useTenantStore()
 
-const isSidebarCollapsed = ref(localStorage.getItem('admin_sidebar_collapsed') === 'true')
+const isSidebarCollapsed = ref(
+  localStorage.getItem('admin_sidebar_collapsed') !== null 
+    ? localStorage.getItem('admin_sidebar_collapsed') === 'true' 
+    : (typeof window !== 'undefined' && window.innerWidth < 1280)
+)
 const isMobileDrawerOpen = ref(false)
 const isOnboardingOpen = ref(false)
 
@@ -407,7 +411,7 @@ const closeMobileDrawer = () => {
         </header>
 
         <!-- MAIN EXPANDED WORKSPACE CANVAS -->
-        <main class="flex-1 w-full max-w-[1720px] mx-auto p-4 sm:p-6 lg:p-8 xl:p-10 pb-28 md:pb-12 transition-all">
+        <main class="flex-1 w-full max-w-[1720px] mx-auto p-4 sm:p-5 lg:p-6 xl:p-8 2xl:p-10 pb-28 md:pb-12 transition-all">
           <RouterView v-slot="{ Component }">
             <Transition name="admin-fade-slide" mode="out-in">
               <component :is="Component" />

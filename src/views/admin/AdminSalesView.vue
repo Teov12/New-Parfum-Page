@@ -85,7 +85,7 @@ const handleDeleteOrder = async () => {
   <div class="space-y-6 animate-in fade-in duration-300">
     
     <!-- Sales Financial Summary Cards with Fluid Hover Animation -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
       <!-- Facturación -->
       <div class="bg-surface border border-outline-variant rounded-2xl p-4 sm:p-6 shadow-[0_10px_25px_-8px_rgba(46,25,17,0.05)] hover:shadow-[0_18px_35px_-10px_rgba(46,25,17,0.1)] hover:-translate-y-1 transition-all duration-300 group">
         <div class="flex justify-between items-start mb-2 sm:mb-3">
@@ -327,7 +327,7 @@ const handleDeleteOrder = async () => {
     <!-- Desktop Sales Table (>= md) -->
     <div class="hidden md:block bg-surface border border-outline-variant rounded-2xl overflow-hidden shadow-[0_8px_30px_-10px_rgba(46,25,17,0.06)]">
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs font-sans">
+        <table class="w-full min-w-[850px] text-left text-xs font-sans">
           <thead class="bg-surface-container-high/80 border-b border-outline-variant text-[11px] font-label uppercase tracking-widest text-secondary font-bold">
             <tr>
               <th class="py-4 px-5">Nº Pedido / Fecha</th>

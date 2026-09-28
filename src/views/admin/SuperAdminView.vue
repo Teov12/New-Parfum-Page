@@ -241,7 +241,7 @@ const deleteTenant = async (tenant) => {
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       
       <!-- KPI Stats Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         
         <div class="bg-[#1B1917] border border-white/10 rounded-2xl p-5 shadow-xs">
           <div class="flex justify-between items-start mb-2">
@@ -317,7 +317,7 @@ const deleteTenant = async (tenant) => {
       <!-- Tenants Table Card -->
       <div class="bg-[#1B1917] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs font-sans">
+          <table class="w-full min-w-[760px] text-left text-xs font-sans">
             <thead>
               <tr class="border-b border-white/10 text-white/50 uppercase font-label tracking-wider text-[11px] bg-white/[0.02]">
                 <th class="py-4 px-6">Perfumería</th>

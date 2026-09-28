@@ -68,18 +68,18 @@ const isActive = (path) => {
           <span class="material-symbols-outlined text-lg sm:text-xl">{{ tenantStore.branding?.storeIcon || 'spa' }}</span>
         </div>
 
-        <span class="font-sans text-2xl sm:text-3xl text-primary font-normal tracking-tight group-hover:text-primary-container transition-colors">
+        <span class="font-sans text-xl sm:text-2xl xl:text-3xl text-primary font-normal tracking-tight group-hover:text-primary-container transition-colors truncate max-w-[200px] sm:max-w-none">
           {{ tenantStore.storeName || 'Gicca Perfumes' }}
         </span>
       </RouterLink>
 
       <!-- Desktop Navigation Links -->
-      <div class="hidden lg:flex items-center gap-6">
+      <div class="hidden lg:flex items-center gap-2 lg:gap-3 xl:gap-5 2xl:gap-6">
         <RouterLink
           v-for="link in navLinks"
           :key="link.name"
           :to="link.path"
-          class="font-label text-label-sm uppercase tracking-wider transition-all duration-200 relative py-1 px-2.5 rounded-full"
+          class="font-label text-[11px] xl:text-xs uppercase tracking-wider transition-all duration-200 relative py-1 px-2 xl:px-2.5 rounded-full"
           :class="isActive(link.path) 
             ? 'text-primary font-bold bg-surface-container' 
             : 'text-secondary hover:text-primary hover:bg-surface-container/50'"
@@ -90,7 +90,7 @@ const isActive = (path) => {
         <!-- Quiz Olfativo Button -->
         <RouterLink
           to="/quiz"
-          class="font-label text-label-sm uppercase tracking-wider transition-all duration-200 py-1.5 px-3.5 rounded-full flex items-center gap-1.5 border border-primary/20 bg-amber-50/70 hover:bg-amber-100/90 text-primary font-bold shadow-2xs group hover:scale-105 active:scale-95"
+          class="font-label text-[11px] xl:text-xs uppercase tracking-wider transition-all duration-200 py-1 xl:py-1.5 px-2.5 xl:px-3.5 rounded-full flex items-center gap-1.5 border border-primary/20 bg-amber-50/70 hover:bg-amber-100/90 text-primary font-bold shadow-2xs group hover:scale-105 active:scale-95"
           :class="isActive('/quiz') ? '!bg-primary !text-amber-200' : ''"
           title="Descubrí tu perfume ideal en 60 segundos"
         >

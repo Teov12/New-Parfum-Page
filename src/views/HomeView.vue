@@ -188,7 +188,7 @@ const trustBadges = [
   <div>
     <!-- HERO SECTION: INTERACTIVE IMAGE CAROUSEL (EDITORIAL SPLIT - BYREDO / LE LABO AESTHETIC) -->
     <header 
-      class="relative w-full min-h-[82vh] lg:min-h-[86vh] flex items-center bg-surface border-b border-outline-variant overflow-hidden group/hero select-none"
+      class="relative w-full min-h-[78vh] lg:min-h-[74vh] xl:min-h-[84vh] flex items-center bg-surface border-b border-outline-variant overflow-hidden group/hero select-none"
       @mouseenter="stopAutoplay"
       @mouseleave="startAutoplay"
       @touchstart.passive="onTouchStart"
@@ -220,13 +220,13 @@ const trustBadges = [
           </div>
 
           <!-- Slide Content: Editorial Split Grid -->
-          <div class="relative z-10 w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-14 lg:py-20 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 h-full items-center">
+          <div class="relative z-10 w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-10 sm:py-14 lg:py-10 xl:py-16 2xl:py-20 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-12 h-full items-center">
             
             <!-- Left Column: Pure Luxury Typography (7 cols on lg) -->
             <div class="lg:col-span-7 flex flex-col justify-center text-left">
               
               <!-- Editorial Kicker / Eyebrow with 6 Cuotas Badge -->
-              <div class="flex flex-wrap items-center gap-2.5 sm:gap-3 mb-4 sm:mb-6">
+              <div class="flex flex-wrap items-center gap-2.5 sm:gap-3 mb-3 sm:mb-5">
                 <span class="w-8 h-px bg-primary/40 hidden sm:inline-block"></span>
                 <span class="font-label text-xs sm:text-[13px] uppercase tracking-[0.25em] text-secondary font-medium">
                   {{ currentSlideData.tag || 'ALTA PERFUMERÍA' }}
@@ -239,21 +239,21 @@ const trustBadges = [
               </div>
 
               <!-- Editorial Headline -->
-              <h1 class="font-sans text-3xl sm:text-5xl lg:text-[54px] xl:text-[60px] text-primary mb-6 leading-[1.08] tracking-[-0.02em] font-normal">
+              <h1 class="font-sans text-3xl sm:text-4xl lg:text-[40px] xl:text-[52px] 2xl:text-[60px] text-primary mb-4 lg:mb-5 xl:mb-6 leading-[1.1] tracking-[-0.02em] font-normal">
                 {{ currentSlideData.title }} <br />
                 <span class="italic font-serif text-primary-container">{{ currentSlideData.highlight }}</span>
               </h1>
 
               <!-- Editorial Narrative -->
-              <p class="font-sans text-sm sm:text-base lg:text-lg text-secondary mb-8 sm:mb-10 max-w-xl leading-relaxed font-normal">
+              <p class="font-sans text-sm sm:text-base lg:text-sm xl:text-base 2xl:text-lg text-secondary mb-6 sm:mb-8 lg:mb-6 xl:mb-10 max-w-xl leading-relaxed font-normal">
                 {{ currentSlideData.description }}
               </p>
 
               <!-- CTAs: Sobrio y Elegante (Sin iconos de varita mágica ni botones inflados) -->
-              <div class="flex flex-wrap items-center gap-5 sm:gap-7">
+              <div class="flex flex-wrap items-center gap-4 sm:gap-6">
                 <RouterLink 
                   :to="currentSlideData.primaryCtaLink"
-                  class="inline-flex items-center justify-center bg-primary text-on-primary font-label text-xs uppercase tracking-[0.18em] py-4 px-8 sm:px-9 rounded-sm border border-primary hover:bg-primary-container hover:border-primary-container transition-all duration-300 text-center shadow-xs hover:shadow-md active:translate-y-0"
+                  class="inline-flex items-center justify-center bg-primary text-on-primary font-label text-xs uppercase tracking-[0.18em] py-3.5 sm:py-4 px-7 sm:px-9 rounded-sm border border-primary hover:bg-primary-container hover:border-primary-container transition-all duration-300 text-center shadow-xs hover:shadow-md active:translate-y-0"
                 >
                   <span>{{ currentSlideData.primaryCtaText }}</span>
                 </RouterLink>
@@ -269,7 +269,7 @@ const trustBadges = [
               </div>
 
               <!-- Commercial Highlights: 6 Cuotas & Transferencia -->
-              <div class="flex flex-wrap items-center gap-4 sm:gap-6 mt-8 sm:mt-10 pt-6 border-t border-outline-variant/60 max-w-lg">
+              <div class="flex flex-wrap items-center gap-3.5 sm:gap-6 mt-6 sm:mt-8 lg:mt-6 xl:mt-10 pt-4 sm:pt-6 border-t border-outline-variant/60 max-w-lg">
                 <div class="flex items-center gap-2 text-primary text-xs font-sans">
                   <span class="material-symbols-outlined text-base text-primary">credit_card</span>
                   <span>Hasta <strong>6 cuotas fijas sin interés</strong> (3 y 6)</span>
@@ -285,7 +285,7 @@ const trustBadges = [
 
             <!-- Right Column: Integrated Fragrance Showcase (5 cols on lg) - Byredo / Le Labo Editorial Frame -->
             <div class="hidden lg:flex lg:col-span-5 justify-center lg:justify-end items-center">
-              <div class="relative w-full max-w-[380px] xl:max-w-[410px]">
+              <div class="relative w-full max-w-[290px] lg:max-w-[310px] xl:max-w-[380px] 2xl:max-w-[410px]">
                 
                 <!-- Architectural Exhibition Frame -->
                 <div class="relative aspect-[4/5] bg-surface rounded-sm overflow-hidden border border-outline-variant/80 shadow-[0_12px_36px_rgba(46,25,17,0.06)] group">
