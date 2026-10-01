@@ -250,13 +250,11 @@ const whatsappSommelierUrl = computed(() => {
           </span>
         </div>
 
-        <!-- Segmented Hairline Progress -->
-        <div class="grid grid-cols-4 gap-2">
+        <!-- Continuous Progress Bar -->
+        <div class="w-full bg-surface-container h-2 rounded-full overflow-hidden border border-outline-variant/60 shadow-inner">
           <div 
-            v-for="(_, idx) in questions" 
-            :key="idx"
-            class="h-[2px] transition-all duration-500 ease-out"
-            :class="idx <= currentStep ? 'bg-primary' : 'bg-outline-variant/60'"
+            class="bg-gradient-to-r from-primary to-primary-container h-full rounded-full transition-all duration-500 ease-out"
+            :style="{ width: `${((currentStep + 1) / questions.length) * 100}%` }"
           ></div>
         </div>
       </div>
