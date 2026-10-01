@@ -8,7 +8,7 @@ import { Tenant } from '../models/Tenant.js'
 import { Product } from '../models/Product.js'
 import { Order } from '../models/Order.js'
 import { SiteContent } from '../models/SiteContent.js'
-import { DEFAULT_TENANT_CONFIG, clearTenantCache } from '../middleware/tenant.js'
+import { DEFAULT_TENANT_CONFIG, clearTenantCache, getLocalDefaultTenant } from '../middleware/tenant.js'
 import { isMongoConnected } from '../dbConnection.js'
 import { requireOwner, requireSuperadmin } from '../middleware/auth.js'
 import { PLATFORM, PLAN_IDS, getDefaultTenantId, getTenantLimits, getPublicPlans } from '../config/platform.js'
@@ -165,6 +165,10 @@ router.put('/settings', requireOwner, async (req, res) => {
       return res.status(403).json({ error: 'El dominio propio está disponible desde el plan Profesional. Cambiá de plan en Admin > Mi Plan.' })
     }
 
+    if (changes.invoicing?.enabled && !current.invoicing?.enabled && !getTenantLimits(current).invoicing) {
+      return res.status(403).json({ error: 'La facturación electrónica está disponible desde el plan Profesional.' })
+    }
+
     if (!tenantDoc) {
       tenantDoc = new Tenant({
         ...current,
@@ -190,6 +194,10 @@ router.get('/all', requireSuperadmin, async (req, res) => {
     }
 
     const tenants = await Tenant.find().sort({ createdAt: -1 }).lean()
+    // La tienda principal puede seguir guardada en tenant.json: se lista igual
+    if (!tenants.some(t => t.tenantId === getDefaultTenantId())) {
+      tenants.push({ ...getLocalDefaultTenant(), billing: { status: 'exempt' } })
+    }
     const productCounts = await Product.aggregate([{ $group: { _id: '$tenantId', count: { $sum: 1 } } }])
     const countByTenant = Object.fromEntries(productCounts.map(p => [p._id, p.count]))
 

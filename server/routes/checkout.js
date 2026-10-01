@@ -5,12 +5,12 @@ import { MercadoPagoConfig, Preference, Payment } from 'mercadopago'
 import { getOrderByIdOrNumber, updateOrder } from '../db.js'
 import { requireOwner } from '../middleware/auth.js'
 import { placeOrder, toCustomerOrder } from '../services/orderService.js'
-import { findCoupon } from '../services/coupons.js'
+import { checkCoupon } from '../services/coupons.js'
+import { afterOrderCreated, afterOrderPaid } from '../services/orderEvents.js'
 import { publicOrderLimiter } from './orders.js'
 import { requireStoreOpen } from '../middleware/tenant.js'
 import { decryptSecret } from '../services/secrets.js'
 import { getDefaultTenantId, getPlan, isBillingExempt, getStoreUrl } from '../config/platform.js'
-import { sendOrderConfirmationEmail, sendStoreOwnerNewOrderAlert } from '../services/mailer.js'
 
 const router = express.Router()
 
@@ -87,8 +87,8 @@ const applyMercadoPagoPayment = async ({ paymentInfo, tenantId, tenant }) => {
     notes: appendNote(order, `Pago aprobado por Mercado Pago (Operación #${paymentInfo.id}, Método: ${paymentInfo.payment_method_id || 'tarjeta'})`)
   }, tenantId)
 
-  sendOrderConfirmationEmail({ order: updated, tenant }).catch(e => {
-    console.warn('[Mailer] Error en confirmación de pago aprobado:', e.message)
+  afterOrderPaid({ order: updated, tenant }).catch(e => {
+    console.warn('[Checkout] Error en tareas de pago aprobado:', e.message)
   })
 
   return { status: 'approved', order: updated }
@@ -124,9 +124,10 @@ router.get('/config', (req, res) => {
 
 // POST /api/checkout/coupon - Validar un cupón de la tienda actual
 router.post('/coupon', checkoutLimiter, requireStoreOpen, (req, res) => {
-  const coupon = findCoupon(req.tenant, req.body?.code)
+  const subtotal = req.body?.subtotal !== undefined ? Number(req.body.subtotal) || 0 : null
+  const { coupon, error } = checkCoupon(req.tenant, req.body?.code, subtotal)
   if (!coupon) {
-    return res.status(404).json({ success: false, message: 'El cupón ingresado no es válido o ha expirado.' })
+    return res.status(404).json({ success: false, message: error })
   }
   res.json({ success: true, coupon })
 })
@@ -233,13 +234,8 @@ router.post('/create-preference', publicOrderLimiter, requireStoreOpen, async (r
       trusted: false
     })
 
-    // Notificaciones iniciales por email
-    sendOrderConfirmationEmail({ order, tenant }).catch(e => {
-      console.warn('[Mailer] Error en confirmación de orden:', e.message)
-    })
-    sendStoreOwnerNewOrderAlert({ order, tenant }).catch(e => {
-      console.warn('[Mailer] Error en alerta de orden:', e.message)
-    })
+    // Emails, cupón, carrito recuperado y alertas de stock
+    afterOrderCreated({ order, tenant })
 
     // Si la perfumería aún no configuró sus credenciales de MP, respondemos con modo simulación/fallback
     if (!accessToken) {

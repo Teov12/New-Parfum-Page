@@ -183,7 +183,7 @@ const handleSubscribe = () => {
           </div>
           <div class="p-3 bg-surface rounded-2xl border border-outline-variant shadow-2xs">
             <span class="material-symbols-outlined text-lg text-primary mb-1">credit_card</span>
-            <p class="font-label text-[10px] uppercase text-secondary">3 y 6 Cuotas Sin Interés</p>
+            <p class="font-label text-[10px] uppercase text-secondary">Hasta {{ tenantStore.maxInstallments }} cuotas</p>
           </div>
         </div>
       </div>
@@ -193,10 +193,27 @@ const handleSubscribe = () => {
     <!-- Bottom Copyright Subfooter -->
     <div class="border-t border-outline-variant bg-surface py-6">
       <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-label text-secondary uppercase tracking-wider">
-        <p>© {{ new Date().getFullYear() }} {{ tenantStore.storeName }}. Todos los derechos reservados.</p>
-        <div class="flex flex-wrap gap-4 sm:gap-6 items-center">
-          <a href="#" class="hover:text-primary transition-colors">Términos y Condiciones</a>
-          <a href="#" class="hover:text-primary transition-colors">Privacidad</a>
+        <div class="space-y-1 text-center sm:text-left">
+          <p>© {{ new Date().getFullYear() }} {{ tenantStore.storeName }}. Todos los derechos reservados.</p>
+          <p v-if="tenantStore.legal?.legalName || tenantStore.legal?.cuit" class="normal-case tracking-normal text-[11px]">
+            {{ tenantStore.legal.legalName }}<span v-if="tenantStore.legal.cuit"> · CUIT {{ tenantStore.legal.cuit }}</span><span v-if="tenantStore.legal.address"> · {{ tenantStore.legal.address }}</span>
+          </p>
+        </div>
+        <div class="flex flex-wrap justify-center gap-4 sm:gap-6 items-center">
+          <RouterLink to="/terminos" class="hover:text-primary transition-colors">Términos y Condiciones</RouterLink>
+          <RouterLink to="/privacidad" class="hover:text-primary transition-colors">Privacidad</RouterLink>
+          <RouterLink to="/devoluciones" class="hover:text-primary transition-colors">Cambios y devoluciones</RouterLink>
+          <RouterLink to="/arrepentimiento" class="hover:text-primary transition-colors font-bold">Botón de arrepentimiento</RouterLink>
+          <a href="https://www.argentina.gob.ar/produccion/defensadelconsumidor/formulario" target="_blank" rel="noopener" class="hover:text-primary transition-colors">Defensa del Consumidor</a>
+          <a v-if="tenantStore.legal?.fiscalDataUrl" :href="tenantStore.legal.fiscalDataUrl" target="_blank" rel="noopener" title="Data Fiscal ARCA">
+            <img
+              v-if="tenantStore.legal.fiscalDataImageUrl"
+              :src="tenantStore.legal.fiscalDataImageUrl"
+              alt="Data Fiscal"
+              class="h-12 w-auto"
+            />
+            <span v-else class="hover:text-primary transition-colors">Data Fiscal</span>
+          </a>
         </div>
       </div>
     </div>

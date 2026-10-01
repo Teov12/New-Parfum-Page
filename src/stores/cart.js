@@ -1,6 +1,14 @@
 import { defineStore } from 'pinia'
 import { useShippingStore } from './shipping'
 import { useTenantStore } from './tenant'
+import { trackEvent } from '@/utils/tracking'
+
+// Stock disponible de una presentación: su stock propio o el general del perfume
+export const availableStock = (product, sizeObj) => {
+  if (sizeObj && typeof sizeObj === 'object' && typeof sizeObj.stock === 'number') return Math.max(0, sizeObj.stock)
+  if (product?.stock === undefined || product?.stock === null) return Infinity
+  return Math.max(0, Number(product.stock))
+}
 
 export const useCartStore = defineStore('cart', {
   state: () => ({
@@ -84,9 +92,20 @@ export const useCartStore = defineStore('cart', {
       localStorage.setItem('gicca_cart_coupon', JSON.stringify(this.coupon))
     },
 
+    // Devuelve { added, message }: no deja sumar más unidades que el stock disponible
     addItem(product, chosenSize = null, quantity = 1) {
       const sizeObj = chosenSize || product.sizes.find(s => s.default) || product.sizes[0]
       const sizeLabel = typeof sizeObj === 'string' ? sizeObj : sizeObj.size
+
+      const available = availableStock(product, sizeObj)
+      const ownSizeStock = typeof sizeObj === 'object' && typeof sizeObj.stock === 'number'
+      const inCart = this.items
+        .filter(i => i.id === product.id && (ownSizeStock ? i.size === sizeLabel : true))
+        .reduce((acc, i) => acc + i.quantity, 0)
+      if (available - inCart <= 0) {
+        return { added: false, message: available === 0 ? 'Este perfume está sin stock.' : 'Ya tenés en la bolsa todo el stock disponible.' }
+      }
+      quantity = Math.min(quantity, available - inCart)
       const sizePrice = typeof sizeObj === 'object' ? sizeObj.price : product.price
       const sizeTransferPrice = typeof sizeObj === 'object' && sizeObj.transferPrice !== undefined && sizeObj.transferPrice !== null
         ? Number(sizeObj.transferPrice)
@@ -116,6 +135,8 @@ export const useCartStore = defineStore('cart', {
 
       this.persist()
       this.isDrawerOpen = true
+      trackEvent('AddToCart', { id: product.id, name: product.name, brand: product.brand, price: typeof sizeObj === 'object' ? sizeObj.price : product.price, quantity })
+      return { added: true, quantity }
     },
 
     removeItem(productId, size) {
@@ -144,7 +165,7 @@ export const useCartStore = defineStore('cart', {
         const res = await fetch('/api/checkout/coupon', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code: clean })
+          body: JSON.stringify({ code: clean, subtotal: this.subtotal })
         })
         const data = await res.json().catch(() => ({}))
         if (!res.ok || !data.coupon) {

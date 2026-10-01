@@ -25,6 +25,15 @@ const isOnboardingOpen = ref(false)
 // Rol del usuario: el equipo (staff) no ve configuración, finanzas ni suscripción
 const isOwner = computed(() => adminAuthStore.adminUser?.role !== 'staff')
 
+// Herramientas de crecimiento (solo el dueño)
+const growthLinks = [
+  { to: '/admin/cupones', icon: 'sell', label: 'Cupones' },
+  { to: '/admin/envios', icon: 'local_shipping', label: 'Envíos' },
+  { to: '/admin/marketing', icon: 'campaign', label: 'Marketing' },
+  { to: '/admin/legales', icon: 'gavel', label: 'Legales' },
+  { to: '/admin/facturacion', icon: 'receipt', label: 'Facturación' }
+]
+
 // Estado de la suscripción para el aviso de prueba / tienda pausada
 const billing = ref(null)
 const fetchBilling = async () => {
@@ -283,6 +292,25 @@ const closeMobileDrawer = () => {
               >
                 {{ ordersStore.stats.overallProfitMargin }}%
               </span>
+            </RouterLink>
+          </div>
+
+          <!-- Group: Crecimiento -->
+          <div v-if="isOwner" class="space-y-1 pt-2 border-t border-outline-variant/60">
+            <div v-if="!isSidebarCollapsed" class="px-3 pb-2 text-[10px] font-label uppercase tracking-[0.2em] text-secondary/80 font-bold">
+              Crecimiento
+            </div>
+            <RouterLink
+              v-for="link in growthLinks"
+              :key="link.to"
+              :to="link.to"
+              class="group flex items-center gap-3 px-3 py-2.5 rounded-xl font-label text-xs uppercase tracking-wider transition-all relative"
+              :class="isSidebarCollapsed ? 'justify-center' : ''"
+              active-class="bg-primary text-on-primary font-bold shadow-xs !text-amber-200"
+              :title="link.label"
+            >
+              <span class="material-symbols-outlined text-xl flex-shrink-0 group-hover:scale-110 transition-transform">{{ link.icon }}</span>
+              <span v-if="!isSidebarCollapsed" class="truncate flex-grow">{{ link.label }}</span>
             </RouterLink>
           </div>
 
@@ -629,6 +657,18 @@ const closeMobileDrawer = () => {
                   >
                     <span class="material-symbols-outlined text-xl">storefront</span>
                     <span>Configuración Tienda</span>
+                  </RouterLink>
+
+                  <RouterLink
+                    v-for="link in (isOwner ? growthLinks : [])"
+                    :key="link.to"
+                    :to="link.to"
+                    @click="closeMobileDrawer"
+                    class="flex items-center gap-3 p-3 rounded-xl font-label text-xs uppercase tracking-wider text-primary hover:bg-surface-container transition-colors"
+                    active-class="bg-primary text-on-primary font-bold shadow-xs !text-amber-200"
+                  >
+                    <span class="material-symbols-outlined text-xl">{{ link.icon }}</span>
+                    <span>{{ link.label }}</span>
                   </RouterLink>
 
                   <RouterLink

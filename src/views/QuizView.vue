@@ -222,7 +222,11 @@ const restart = () => {
 const handleAddRecommended = (product = matchResult.value) => {
   if (!product) return
   const defaultSize = product.sizes?.find(s => s.default) || product.sizes?.[0]
-  cartStore.addItem(product, defaultSize, 1)
+  const result = cartStore.addItem(product, defaultSize, 1)
+  if (!result.added) {
+    toastStore.show(result.message, 'error')
+    return
+  }
   toastStore.show(`¡${product.name} agregado a tu bolsa!`, 'success')
 }
 

@@ -2,7 +2,8 @@
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter, RouterLink } from "vue-router";
 import { useProductStore } from "@/stores/products";
-import { useCartStore } from "@/stores/cart";
+import { useCartStore, availableStock } from "@/stores/cart";
+import { trackEvent } from "@/utils/tracking";
 import { useWishlistStore } from "@/stores/wishlist";
 import { useToastStore } from "@/stores/toast";
 import OlfactivePyramid from "@/components/product/OlfactivePyramid.vue";
@@ -224,6 +225,8 @@ const updateSeoMetadata = () => {
   ];
 
   script.textContent = JSON.stringify(schemaData);
+
+  trackEvent("ViewContent", { id: p.id, name: p.name, brand: p.brand, price: currentPrice.value || p.price });
 };
 
 onMounted(() => {
@@ -313,18 +316,30 @@ const relatedProducts = computed(() => {
     .slice(0, 4);
 });
 
+const isOutOfStock = computed(() =>
+  Boolean(product.value) && availableStock(product.value, selectedSize.value) <= 0,
+);
+
 const handleAddToCart = () => {
   if (!product.value) return;
-  cartStore.addItem(product.value, selectedSize.value, quantity.value);
+  const result = cartStore.addItem(product.value, selectedSize.value, quantity.value);
+  if (!result.added) {
+    toastStore.show(result.message, "error");
+    return;
+  }
   toastStore.show(
-    `¡Agregaste ${quantity.value}x ${product.value.name} (${selectedSize.value?.size || ""}) a tu bolsa!`,
+    `¡Agregaste ${result.quantity}x ${product.value.name} (${selectedSize.value?.size || ""}) a tu bolsa!`,
     "success",
   );
 };
 
 const handleBuyNow = () => {
   if (!product.value) return;
-  cartStore.addItem(product.value, selectedSize.value, quantity.value);
+  const result = cartStore.addItem(product.value, selectedSize.value, quantity.value);
+  if (!result.added && !cartStore.items.some((i) => i.id === product.value.id)) {
+    toastStore.show(result.message, "error");
+    return;
+  }
   cartStore.closeDrawer();
   router.push("/checkout");
 };
@@ -692,19 +707,21 @@ const calculateShipping = async () => {
               <!-- Add to Cart CTA (Píldora) -->
               <button
                 @click="handleAddToCart"
-                class="flex-grow bg-primary-container text-on-primary font-label text-xs uppercase tracking-wider sm:tracking-widest py-3.5 px-3 sm:px-6 rounded-full border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm text-center"
+                :disabled="isOutOfStock"
+                class="disabled:opacity-50 disabled:cursor-not-allowed flex-grow bg-primary-container text-on-primary font-label text-xs uppercase tracking-wider sm:tracking-widest py-3.5 px-3 sm:px-6 rounded-full border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm text-center"
               >
                 <span class="material-symbols-outlined text-base"
                   >shopping_bag</span
                 >
-                <span>Agregar a la Bolsa</span>
+                <span>{{ isOutOfStock ? 'Sin stock' : 'Agregar a la Bolsa' }}</span>
               </button>
             </div>
 
             <!-- Direct Buy Now CTA (Píldora) -->
             <button
               @click="handleBuyNow"
-              class="w-full bg-transparent text-primary font-label text-xs uppercase tracking-widest py-3 rounded-full border border-primary hover:bg-surface-container transition-all flex items-center justify-center gap-2 shadow-2xs"
+              :disabled="isOutOfStock"
+              class="disabled:opacity-50 disabled:cursor-not-allowed w-full bg-transparent text-primary font-label text-xs uppercase tracking-widest py-3 rounded-full border border-primary hover:bg-surface-container transition-all flex items-center justify-center gap-2 shadow-2xs"
             >
               <span>Comprar Ahora</span>
               <span class="material-symbols-outlined text-sm"

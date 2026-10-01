@@ -8,7 +8,8 @@ import {
 } from '../db.js'
 import { requireAuth, getAuthorizedUser } from '../middleware/auth.js'
 import { placeOrder, toCustomerOrder } from '../services/orderService.js'
-import { sendOrderConfirmationEmail, sendStoreOwnerNewOrderAlert } from '../services/mailer.js'
+import { afterOrderCreated, afterOrderPaid, invoiceOrder } from '../services/orderEvents.js'
+import { sendOrderConfirmationEmail } from '../services/mailer.js'
 
 const router = express.Router()
 
@@ -129,13 +130,12 @@ router.post('/', publicOrderLimiter, async (req, res) => {
     }
     const created = await placeOrder({ orderData, tenant: req.tenant, tenantId: req.tenantId, trusted })
 
-    // Disparar notificaciones transaccionales por email (asíncronas sin bloquear respuesta)
-    sendOrderConfirmationEmail({ order: created, tenant: req.tenant }).catch(e => {
-      console.warn('[Mailer] Error en confirmación de orden:', e.message)
-    })
-    sendStoreOwnerNewOrderAlert({ order: created, tenant: req.tenant }).catch(e => {
-      console.warn('[Mailer] Error en alerta a dueño de tienda:', e.message)
-    })
+    // Emails, uso de cupón, carrito recuperado y alertas de stock (sin bloquear la respuesta)
+    afterOrderCreated({ order: created, tenant: req.tenant })
+    // Venta manual ya cobrada: dispara la factura automática (el cliente ya recibió su email)
+    if (trusted && created.paymentStatus === 'paid') {
+      afterOrderPaid({ order: created, tenant: req.tenant, notify: false }).catch(e => console.warn('[Orders] afterOrderPaid:', e.message))
+    }
 
     res.status(201).json(trusted ? created : toCustomerOrder(created))
   } catch (err) {
@@ -163,12 +163,31 @@ router.post('/:id/resend-email', requireAuth, async (req, res) => {
   }
 })
 
+// POST /api/orders/:id/invoice - Emitir la factura electrónica ARCA del pedido
+router.post('/:id/invoice', requireAuth, async (req, res) => {
+  try {
+    const order = await getOrderByIdOrNumber(req.params.id, req.tenantId)
+    if (!order) {
+      return res.status(404).json({ error: 'Pedido no encontrado' })
+    }
+    const updated = await invoiceOrder({ order, tenant: req.tenant })
+    res.json({ success: true, order: updated, invoice: updated.invoice })
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message || 'No se pudo emitir la factura' })
+  }
+})
+
 // PUT /api/orders/:id - Update order status, tracking, fulfillment, etc. (Admin only)
 router.put('/:id', requireAuth, async (req, res) => {
   try {
+    const before = await getOrderByIdOrNumber(req.params.id, req.tenantId)
     const updated = await updateOrder(req.params.id, req.body, req.tenantId)
     if (!updated) {
       return res.status(404).json({ error: 'Pedido no encontrado' })
+    }
+    // Pago confirmado a mano por el dueño (ej: transferencia): email al cliente y factura automática
+    if (before?.paymentStatus !== 'paid' && updated.paymentStatus === 'paid') {
+      afterOrderPaid({ order: updated, tenant: req.tenant }).catch(e => console.warn('[Orders] afterOrderPaid:', e.message))
     }
     res.json(updated)
   } catch (err) {

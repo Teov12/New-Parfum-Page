@@ -26,6 +26,45 @@ const isDeleteModalOpen = ref(false)
 const orderToDelete = ref(null)
 const isDeleting = ref(false)
 
+// Exporta las ventas filtradas para Excel / Google Sheets (separador ; y BOM para acentos)
+const exportOrdersCsv = () => {
+  const columns = [
+    ['Pedido', o => o.orderNumber],
+    ['Fecha', o => new Date(o.createdAt || o.date).toLocaleString('es-AR')],
+    ['Cliente', o => `${o.customer?.firstName || ''} ${o.customer?.lastName || ''}`.trim()],
+    ['Email', o => o.customer?.email],
+    ['Teléfono', o => o.customer?.phone],
+    ['DNI', o => o.customer?.dni],
+    ['Dirección', o => [o.customer?.address, o.customer?.apartment, o.customer?.city, o.customer?.province, o.customer?.postalCode].filter(Boolean).join(', ')],
+    ['Productos', o => (o.items || []).map(i => `${i.quantity}x ${i.name} ${i.size}`).join(' | ')],
+    ['Subtotal', o => o.subtotal],
+    ['Descuentos', o => o.discountAmount],
+    ['Cupón', o => o.couponCode],
+    ['Envío', o => o.shippingCost],
+    ['Total', o => o.total],
+    ['Costo', o => o.totalCost],
+    ['Ganancia', o => o.profit],
+    ['Medio de pago', o => o.paymentMethod],
+    ['Estado de pago', o => o.paymentStatus],
+    ['Estado de envío', o => o.fulfillmentStatus],
+    ['Envío elegido', o => o.shippingMethod],
+    ['Seguimiento', o => o.trackingCode],
+    ['Factura', o => (o.invoice?.cae ? `${o.invoice.type} ${o.invoice.pointOfSale}-${o.invoice.number}` : '')]
+  ]
+  const escapeCell = (value) => {
+    const text = String(value ?? '')
+    return /[";\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
+  }
+  const rows = [columns.map(c => c[0]), ...filteredOrders.value.map(o => columns.map(c => c[1](o)))]
+  const csv = String.fromCharCode(0xFEFF) + rows.map(r => r.map(escapeCell).join(';')).join('\n')
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `ventas-${new Date().toISOString().slice(0, 10)}.csv`
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
 // Filtered Orders
 const filteredOrders = computed(() => {
   return ordersStore.items.filter(o => {
@@ -193,8 +232,18 @@ const handleDeleteOrder = async () => {
         </div>
       </div>
 
+      <!-- Exportar ventas filtradas -->
+      <button
+        @click="exportOrdersCsv"
+        :disabled="filteredOrders.length === 0"
+        class="w-full sm:w-auto bg-surface hover:bg-surface-container text-primary border border-outline-variant hover:border-primary font-label text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-2xs flex-shrink-0 disabled:opacity-50"
+      >
+        <span class="material-symbols-outlined text-base">download</span>
+        <span>Exportar CSV</span>
+      </button>
+
       <!-- Main Button: Nueva Venta Manual -->
-      <button 
+      <button
         @click="isManualOrderModalOpen = true"
         class="w-full sm:w-auto bg-primary hover:bg-primary-container text-on-primary font-label text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs hover:shadow-md active:scale-95 border border-primary/20 flex-shrink-0"
       >

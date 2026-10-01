@@ -7,11 +7,14 @@ import { useCartStore } from '@/stores/cart'
 import { useShippingStore } from '@/stores/shipping'
 import { useToastStore } from '@/stores/toast'
 import { useTenantStore } from '@/stores/tenant'
+import { useCustomerStore } from '@/stores/customer'
+import { trackEvent } from '@/utils/tracking'
 
 const cartStore = useCartStore()
 const shippingStore = useShippingStore()
 const toastStore = useToastStore()
 const tenantStore = useTenantStore()
+const customerStore = useCustomerStore()
 const router = useRouter()
 const route = useRoute()
 
@@ -136,6 +139,27 @@ const onPostalCodeInput = () => {
 onMounted(async () => {
   // El código postal siempre inicia vacío al montar el checkout
   postalCode.value = ''
+
+  if (cartStore.items.length > 0) {
+    trackEvent('InitiateCheckout', {
+      value: cartStore.subtotal,
+      items: cartStore.items.map(i => ({ id: i.id, name: i.name, brand: i.brand, size: i.size, price: i.price, quantity: i.quantity }))
+    })
+  }
+
+  // Cliente con cuenta: se completan sus datos guardados
+  customerStore.fetchMe().then((customer) => {
+    if (!customer) return
+    const a = customer.address || {}
+    const prefill = {
+      firstName: customer.firstName, lastName: customer.lastName, phone: customer.phone,
+      email: customer.email, dni: customer.dni, address: a.address, apartment: a.apartment,
+      city: a.city, province: a.province
+    }
+    Object.entries(prefill).forEach(([field, value]) => {
+      if (value && !values[field]) setFieldValue(field, value)
+    })
+  })
   
   // Detectar retorno desde Mercado Pago o pasarela de pago
   const urlParams = new URLSearchParams(window.location.search)
@@ -165,6 +189,7 @@ onMounted(async () => {
       if (res.ok) {
         const ord = await res.json()
         const isPaid = ord.paymentStatus === 'paid'
+        if (isPaid) trackPurchase(ord)
         const waNumber = (tenantStore.whatsappNumber || '').replace(/\D/g, '')
         const msg = isPaid
           ? `¡Hola! Acabo de abonar mi pedido #${ord.orderNumber} con Mercado Pago por $${(ord.total || 0).toLocaleString('es-AR')}. ¿Cuándo se despacha?`
@@ -225,7 +250,30 @@ const selectShippingOption = async (optionId) => {
   }
 }
 
+const saveAbandonedCart = () => {
+  if (!email.value || cartStore.items.length === 0) return
+  fetch('/api/carts/abandoned', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: email.value,
+      firstName: firstName.value,
+      items: cartStore.items.map(i => ({ id: i.id, size: i.size, quantity: i.quantity }))
+    })
+  }).catch(() => {})
+}
+
+const trackPurchase = (order) => {
+  if (!order) return
+  trackEvent('Purchase', {
+    orderNumber: order.orderNumber,
+    value: order.total,
+    items: (order.items || []).map(i => ({ id: i.id, name: i.name, brand: i.brand, size: i.size, price: i.price, quantity: i.quantity }))
+  })
+}
+
 const handleStep1Submit = handleSubmit(async (formValues) => {
+  saveAbandonedCart()
   if (!shippingStore.selectedOption) {
     await fetchAndreaniQuotes()
   }
@@ -348,6 +396,7 @@ const handleFinalOrder = async () => {
   }
 
   const orderNumber = created.orderNumber
+  trackPurchase(created)
   const messageText = buildWhatsAppMessage(orderNumber, created)
   const waNumber = (tenantStore.whatsappNumber || '').replace(/\D/g, '')
   const whatsappUrl = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(messageText)}` : ''

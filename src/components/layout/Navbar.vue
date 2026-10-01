@@ -111,8 +111,18 @@ const isActive = (path) => {
           <span class="material-symbols-outlined text-2xl">search</span>
         </button>
 
+        <!-- Mi cuenta -->
+        <RouterLink
+          to="/cuenta"
+          class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
+          aria-label="Mi cuenta"
+          title="Mi cuenta"
+        >
+          <span class="material-symbols-outlined text-2xl">person</span>
+        </RouterLink>
+
         <!-- Wishlist Link -->
-        <RouterLink 
+        <RouterLink
           to="/catalogo?wishlist=true" 
           class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center transition-all duration-200 relative hidden sm:flex hover:scale-110 active:scale-95"
           aria-label="Lista de Deseos"

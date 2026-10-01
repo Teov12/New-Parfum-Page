@@ -201,6 +201,7 @@ watch(() => props.isOpen, (open) => {
 
           return {
             size: num || 100,
+            stock: typeof s.stock === 'number' ? s.stock : null,
             transferPrice: transfer,
             price: s.price || null,
             costPrice: s.costPrice !== undefined ? s.costPrice : Math.round(((transfer || s.price) || 0) * 0.45),
@@ -490,11 +491,13 @@ const handleSubmitProduct = async () => {
         const listPrice = Number(s.price) || (transfer ? Math.round(transfer / factor) : 0)
         const cost = Number(s.costPrice) || Math.round(((transfer || listPrice) || 0) * 0.45)
         const sizeLabel = String(s.size).includes('ml') ? String(s.size) : `${s.size} ml`
+        const sizeStock = s.stock === '' || s.stock === null || s.stock === undefined ? undefined : Math.max(0, Number(s.stock) || 0)
         return {
           size: sizeLabel,
           price: listPrice,
           transferPrice: transfer,
           costPrice: cost,
+          ...(sizeStock !== undefined ? { stock: sizeStock } : {}),
           default: idx === 0
         }
       })
@@ -780,6 +783,8 @@ const handleSubmitProduct = async () => {
                   <div class="flex items-center gap-1.5">
                     <input v-model="sizeObj.size" type="text" placeholder="100 ml" class="w-full bg-surface-container/70 border border-outline-variant rounded-xl p-2.5 text-xs font-sans text-center focus:border-primary focus:outline-none font-medium" />
                   </div>
+                  <label class="block text-[10px] font-label uppercase tracking-wider text-secondary mt-2 mb-1" title="Si lo completás, esta presentación lleva su propio stock">Stock propio</label>
+                  <input v-model.number="sizeObj.stock" type="number" min="0" placeholder="General" class="w-full bg-surface-container/70 border border-outline-variant rounded-xl p-2 text-xs font-sans text-center focus:border-primary focus:outline-none" />
                 </div>
 
                 <!-- PRECIO TRANSFERENCIA (En mano / Efectivo) - Principal -->

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, defineAsyncComponent } from 'vue'
+import { computed, onMounted, watch, defineAsyncComponent } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import { useProductStore } from '@/stores/products'
 import { useSiteContentStore } from '@/stores/siteContent'
@@ -8,6 +8,7 @@ import Navbar from '@/components/layout/Navbar.vue'
 import Footer from '@/components/layout/Footer.vue'
 import CartDrawer from '@/components/cart/CartDrawer.vue'
 import ToastContainer from '@/components/ui/ToastContainer.vue'
+import { initTracking, trackEvent } from '@/utils/tracking'
 
 const PlatformLandingView = defineAsyncComponent(() => import('@/views/platform/PlatformLandingView.vue'))
 const StoreUnavailable = defineAsyncComponent(() => import('@/components/layout/StoreUnavailable.vue'))
@@ -28,12 +29,20 @@ const showPlatformLanding = computed(() =>
 // Tienda pausada o inexistente: se muestra un aviso en lugar de la vidriera
 const showStoreUnavailable = computed(() =>
   !tenantStore.isPlatformHost && !isAdminRoute.value && !isPlatformRoute.value &&
+  !(tenantStore.isSuspended && route.meta.alwaysAvailable) &&
   (tenantStore.isSuspended || tenantStore.isNotFound)
 )
 
 const showStoreChrome = computed(() =>
   !isAdminRoute.value && !isPlatformRoute.value && !showPlatformLanding.value && !showStoreUnavailable.value
 )
+
+// Píxeles de marketing de la tienda: solo en la vidriera, con una página vista por navegación
+watch(() => route.fullPath, () => {
+  if (!showStoreChrome.value) return
+  initTracking(tenantStore.marketing)
+  trackEvent('PageView')
+})
 
 onMounted(() => {
   tenantStore.fetchCurrentTenant()

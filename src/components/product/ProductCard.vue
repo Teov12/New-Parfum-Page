@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import { useCartStore } from '@/stores/cart'
+import { useCartStore, availableStock } from '@/stores/cart'
 import { useWishlistStore } from '@/stores/wishlist'
 import { useToastStore } from '@/stores/toast'
 
@@ -33,8 +33,14 @@ const selectedSize = ref(
 
 const isBursting = ref(false)
 
+const isOutOfStock = computed(() => availableStock(props.product, selectedSize.value) <= 0)
+
 const handleQuickAdd = () => {
-  cartStore.addItem(props.product, selectedSize.value, 1)
+  const result = cartStore.addItem(props.product, selectedSize.value, 1)
+  if (!result.added) {
+    toastStore.show(result.message, 'error')
+    return
+  }
   toastStore.show(`¡${props.product.name} (${selectedSize.value.size}) añadido a tu bolsa!`, 'success')
 }
 
@@ -122,7 +128,7 @@ const handleWishlist = () => {
             class="w-full bg-primary-container hover:bg-inverse-surface text-on-primary font-label text-xs font-bold py-2.5 px-4 rounded-md transition-all duration-300 flex items-center justify-center gap-2 shadow-xs hover:shadow-md active:scale-[0.98]"
           >
             <span class="material-symbols-outlined text-sm">shopping_bag</span>
-            <span>Añadir • ${{ selectedSize.price.toLocaleString('es-AR') }}</span>
+            <span>{{ isOutOfStock ? 'Sin stock' : `Añadir • $${selectedSize.price.toLocaleString('es-AR')}` }}</span>
           </button>
         </div>
       </div>

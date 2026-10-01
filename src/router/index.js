@@ -80,6 +80,37 @@ const routes = [
     component: QuizView,
     meta: { title: 'Test Olfativo: Descubrí tu Perfume Ideal | {store}' }
   },
+  {
+    path: '/cuenta',
+    name: 'account',
+    component: () => import('../views/AccountView.vue'),
+    meta: { title: 'Mi cuenta | {store}' }
+  },
+  // Información legal obligatoria: disponible aunque la tienda esté pausada
+  {
+    path: '/terminos',
+    name: 'legal-terms',
+    component: () => import('../views/LegalPageView.vue'),
+    meta: { title: 'Términos y condiciones | {store}', legalDoc: 'terminos', alwaysAvailable: true }
+  },
+  {
+    path: '/privacidad',
+    name: 'legal-privacy',
+    component: () => import('../views/LegalPageView.vue'),
+    meta: { title: 'Política de privacidad | {store}', legalDoc: 'privacidad', alwaysAvailable: true }
+  },
+  {
+    path: '/devoluciones',
+    name: 'legal-returns',
+    component: () => import('../views/LegalPageView.vue'),
+    meta: { title: 'Cambios y devoluciones | {store}', legalDoc: 'devoluciones', alwaysAvailable: true }
+  },
+  {
+    path: '/arrepentimiento',
+    name: 'withdrawal',
+    component: () => import('../views/WithdrawalView.vue'),
+    meta: { title: 'Botón de arrepentimiento | {store}', alwaysAvailable: true }
+  },
   // Sitio de la plataforma (alta de nuevas perfumerías)
   {
     path: '/plataforma',
@@ -147,6 +178,36 @@ const routes = [
         name: 'admin-settings',
         component: () => import('../views/admin/AdminSettingsView.vue'),
         meta: { title: 'Mi Tienda & Pagos | Admin {store}', requiresAuth: true }
+      },
+      {
+        path: 'cupones',
+        name: 'admin-coupons',
+        component: () => import('../views/admin/AdminCouponsView.vue'),
+        meta: { title: 'Cupones | Admin {store}', requiresAuth: true }
+      },
+      {
+        path: 'envios',
+        name: 'admin-shipping',
+        component: () => import('../views/admin/AdminShippingView.vue'),
+        meta: { title: 'Envíos | Admin {store}', requiresAuth: true }
+      },
+      {
+        path: 'marketing',
+        name: 'admin-marketing',
+        component: () => import('../views/admin/AdminMarketingView.vue'),
+        meta: { title: 'Marketing | Admin {store}', requiresAuth: true }
+      },
+      {
+        path: 'legales',
+        name: 'admin-legal',
+        component: () => import('../views/admin/AdminLegalView.vue'),
+        meta: { title: 'Legales | Admin {store}', requiresAuth: true }
+      },
+      {
+        path: 'facturacion',
+        name: 'admin-invoicing',
+        component: () => import('../views/admin/AdminInvoicingView.vue'),
+        meta: { title: 'Facturación | Admin {store}', requiresAuth: true }
       },
       {
         path: 'plan',

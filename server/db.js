@@ -586,8 +586,9 @@ export const createOrder = async (orderData, tenantId = 'gicca', options = {}) =
   } else {
     const coupon = findCoupon(orderData.couponCode)
     if (coupon) {
-      couponCode = coupon.code
       couponDiscount = calculateCouponDiscount(coupon, subtotal)
+      // Solo cuenta como uso del cupón si efectivamente descontó (ej: se cumplió el monto mínimo)
+      if (couponDiscount > 0) couponCode = coupon.code
     }
     transferDiscount = paymentMethod === 'transfer' ? transferSavings : 0
     discountAmount = Math.min(subtotal, couponDiscount + transferDiscount)
@@ -715,13 +716,16 @@ const syncStockWithPaymentStatus = async (existing, nextStatus, tenantId) => {
 
 // Campos que nunca se modifican desde una actualización
 const IMMUTABLE_ORDER_FIELDS = ['_id', '__v', 'id', 'tenantId', 'orderNumber', 'accessToken', 'stockReleased', 'createdAt']
+// Campos que solo escribe el servidor (la factura la emite ARCA, no se carga a mano)
+const SERVER_ONLY_ORDER_FIELDS = ['invoice']
 
-export const updateOrder = async (id, updateData, tenantId = 'gicca') => {
+export const updateOrder = async (id, updateData, tenantId = 'gicca', { internal = false } = {}) => {
   const existing = await getOrderByIdOrNumber(id, tenantId)
   if (!existing) return null
 
   const changes = { ...updateData }
   IMMUTABLE_ORDER_FIELDS.forEach(field => delete changes[field])
+  if (!internal) SERVER_ONLY_ORDER_FIELDS.forEach(field => delete changes[field])
   if (changes.paymentStatus && !PAYMENT_STATUSES.includes(changes.paymentStatus)) delete changes.paymentStatus
   if (changes.fulfillmentStatus && !FULFILLMENT_STATUSES.includes(changes.fulfillmentStatus)) delete changes.fulfillmentStatus
 

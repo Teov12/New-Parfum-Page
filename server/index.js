@@ -16,11 +16,17 @@ import platformRoutes from './routes/platform.js'
 import billingRoutes from './routes/billing.js'
 import staffRoutes from './routes/staff.js'
 import mercadopagoOAuthRoutes from './routes/mercadopagoOAuth.js'
+import couponRoutes from './routes/coupons.js'
+import legalRoutes from './routes/legal.js'
+import customerRoutes from './routes/customers.js'
+import cartRoutes from './routes/carts.js'
+import feedRoutes from './routes/feeds.js'
 import { tenantMiddleware } from './middleware/tenant.js'
 import { connectDatabase } from './dbConnection.js'
 import { getProducts, cancelStaleMercadoPagoOrders } from './db.js'
 import { enforceBilling } from './services/billing.js'
 import { refreshExpiringConnections } from './services/mercadopagoOAuth.js'
+import { sendAbandonedCartReminders, purgeOldCarts } from './services/abandonedCarts.js'
 import { renderStoreHtml, renderRobots, escapeXml } from './services/seo.js'
 import { getStoreUrl, PLATFORM } from './config/platform.js'
 import swaggerUi from 'swagger-ui-express'
@@ -112,6 +118,11 @@ app.use('/api/platform', platformRoutes)
 app.use('/api/billing', billingRoutes)
 app.use('/api/staff', staffRoutes)
 app.use('/api/mercadopago/oauth', mercadopagoOAuthRoutes)
+app.use('/api/coupons', couponRoutes)
+app.use('/api/legal', legalRoutes)
+app.use('/api/customers', customerRoutes)
+app.use('/api/carts', cartRoutes)
+app.use('/feeds', feedRoutes)
 
 // robots.txt de cada tienda
 app.get('/robots.txt', (req, res) => {
@@ -227,7 +238,7 @@ if (fs.existsSync(distPath)) {
     }
   }))
   app.use(async (req, res, next) => {
-    if (req.method !== 'GET' || req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+    if (req.method !== 'GET' || req.path.startsWith('/api') || req.path.startsWith('/uploads') || req.path.startsWith('/feeds')) {
       return next()
     }
     try {
@@ -252,6 +263,9 @@ const runJob = (name, fn) => fn()
 setInterval(() => runJob('pedidos de Mercado Pago vencidos cancelados', () => cancelStaleMercadoPagoOrders(STALE_ORDER_HOURS)), 30 * 60 * 1000).unref()
 // Tiendas con prueba vencida o pago atrasado: se pausan
 setInterval(() => runJob('tiendas pausadas por suscripción', enforceBilling), 60 * 60 * 1000).unref()
+// Recordatorio único de carritos abandonados y limpieza de carritos viejos
+setInterval(() => runJob('recordatorios de carrito enviados', sendAbandonedCartReminders), 15 * 60 * 1000).unref()
+setInterval(() => runJob('carritos viejos eliminados', purgeOldCarts), 24 * 60 * 60 * 1000).unref()
 // Tokens de Mercado Pago (OAuth) próximos a vencer: se renuevan
 setInterval(() => runJob('conexiones de Mercado Pago renovadas', refreshExpiringConnections), 12 * 60 * 60 * 1000).unref()
 

@@ -1,17 +1,45 @@
 <script setup>
-import { ref } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useShippingStore } from '@/stores/shipping'
 import { useToastStore } from '@/stores/toast'
 import { useTenantStore } from '@/stores/tenant'
+import { useProductStore } from '@/stores/products'
 
 const tenantStore = useTenantStore()
 
 const cartStore = useCartStore()
 const shippingStore = useShippingStore()
 const toastStore = useToastStore()
+const productStore = useProductStore()
 const router = useRouter()
+const route = useRoute()
+
+// Link del email de carrito abandonado: /carrito?recuperar=<token>
+onMounted(async () => {
+  const token = route.query.recuperar
+  if (!token) return
+  try {
+    const res = await fetch(`/api/carts/recover/${encodeURIComponent(token)}`)
+    if (!res.ok) throw new Error()
+    const { items } = await res.json()
+    if (productStore.items.length === 0) await productStore.fetchProducts()
+    let restored = 0
+    for (const item of items) {
+      const product = productStore.items.find(p => p.id === item.id)
+      const size = product?.sizes?.find(s => s.size === item.size)
+      if (!product || !size || cartStore.items.some(i => i.id === item.id && i.size === item.size)) continue
+      if (cartStore.addItem(product, size, item.quantity).added) restored++
+    }
+    cartStore.closeDrawer()
+    if (restored > 0) toastStore.show('¡Recuperamos tu carrito!', 'success')
+  } catch {
+    toastStore.show('No pudimos recuperar el carrito. Puede que haya vencido.', 'info')
+  } finally {
+    router.replace({ query: {} })
+  }
+})
 
 const couponInput = ref('')
 const couponMessage = ref(null)

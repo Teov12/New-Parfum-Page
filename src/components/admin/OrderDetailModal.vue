@@ -23,6 +23,28 @@ const toastStore = useToastStore()
 const ordersStore = useOrdersStore()
 const isGeneratingShipment = ref(false)
 const isResendingEmail = ref(false)
+const isInvoicing = ref(false)
+
+// Factura electrónica ARCA del pedido
+const handleIssueInvoice = async () => {
+  if (!confirm(`¿Emitir la factura electrónica del pedido #${props.order.orderNumber} por $${Number(props.order.total).toLocaleString('es-AR')}?`)) return
+  isInvoicing.value = true
+  try {
+    const res = await fetch(`/api/orders/${props.order.id || props.order.orderNumber}/invoice`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('gicca_admin_token') || ''}` }
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'No se pudo emitir la factura')
+    toastStore.show(`Factura ${data.invoice.type} ${String(data.invoice.pointOfSale).padStart(5, '0')}-${String(data.invoice.number).padStart(8, '0')} emitida (CAE ${data.invoice.cae})`, 'success')
+    await ordersStore.fetchOrders()
+    Object.assign(props.order, data.order)
+  } catch (err) {
+    toastStore.show(err.message, 'error')
+  } finally {
+    isInvoicing.value = false
+  }
+}
 
 const handleResendEmail = async () => {
   if (!props.order) return
@@ -185,7 +207,26 @@ const sendWhatsAppTracking = (order) => {
             </div>
           </div>
 
+          <!-- Factura electrónica -->
+          <div v-if="order.invoice?.cae" class="bg-emerald-50/70 p-4 rounded-xl border border-emerald-200 text-xs text-emerald-950 space-y-1">
+            <p class="font-label text-[10px] uppercase tracking-widest font-bold flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm">receipt</span> Factura {{ order.invoice.type }} {{ String(order.invoice.pointOfSale).padStart(5, '0') }}-{{ String(order.invoice.number).padStart(8, '0') }}
+            </p>
+            <p>CAE {{ order.invoice.cae }} · vence {{ order.invoice.caeExpiresAt }} · {{ order.invoice.production ? 'Producción' : 'Homologación' }}</p>
+          </div>
+          <p v-else-if="order.invoice?.error" class="text-xs bg-rose-50 border border-rose-200 text-rose-900 rounded-xl p-3">Último intento de factura: {{ order.invoice.error }}</p>
+
           <div class="flex flex-wrap gap-2 justify-end pt-2">
+            <button
+              v-if="!order.invoice?.cae && order.paymentStatus === 'paid'"
+              @click="handleIssueInvoice"
+              :disabled="isInvoicing"
+              class="bg-surface hover:bg-surface-container border border-outline-variant hover:border-primary text-primary font-label text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl flex items-center gap-1.5 shadow-2xs transition-all disabled:opacity-50"
+            >
+              <span class="material-symbols-outlined text-sm">receipt</span>
+              <span>{{ isInvoicing ? 'Emitiendo...' : 'Emitir factura' }}</span>
+            </button>
+
             <!-- Generar Despacho Andreani Button -->
             <button 
               v-if="!order.trackingCode"
