@@ -239,16 +239,24 @@ const whatsappSommelierUrl = computed(() => {
   <div class="bg-surface-container-low min-h-[85vh] py-12 sm:py-16">
     <div class="max-w-4xl mx-auto px-margin-mobile md:px-margin-desktop">
       
-      <!-- Quiz Progress Bar -->
-      <div v-if="currentStep < questions.length" class="mb-8 sm:mb-12 text-center">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-surface border border-outline-variant text-[11px] font-label uppercase tracking-widest text-secondary shadow-2xs mb-3 font-semibold">
-          <span class="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
-          <span>Paso {{ currentStep + 1 }} de {{ questions.length }} • Sommelier Olfativo</span>
+      <!-- Minimalist Editorial Step Indicator -->
+      <div v-if="currentStep < questions.length" class="mb-10 sm:mb-14 max-w-md mx-auto">
+        <div class="flex items-center justify-between text-secondary mb-3 px-0.5">
+          <span class="font-mono text-xs tracking-[0.24em] text-primary font-medium">
+            0{{ currentStep + 1 }} <span class="text-secondary/40 font-light">/</span> 0{{ questions.length }}
+          </span>
+          <span class="font-label text-[11px] uppercase tracking-[0.22em] text-secondary font-medium">
+            Cuestionario Olfativo
+          </span>
         </div>
-        <div class="w-full bg-surface-container h-2 rounded-full overflow-hidden max-w-md mx-auto border border-outline-variant/60 shadow-inner">
+
+        <!-- Segmented Hairline Progress -->
+        <div class="grid grid-cols-4 gap-2">
           <div 
-            class="bg-gradient-to-r from-primary to-primary-container h-full rounded-full transition-all duration-500 ease-out"
-            :style="{ width: `${((currentStep + 1) / questions.length) * 100}%` }"
+            v-for="(_, idx) in questions" 
+            :key="idx"
+            class="h-[2px] transition-all duration-500 ease-out"
+            :class="idx <= currentStep ? 'bg-primary' : 'bg-outline-variant/60'"
           ></div>
         </div>
       </div>
