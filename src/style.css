@@ -287,62 +287,85 @@ html {
   animation: heroFadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.48s both;
 }
 
+@keyframes heroFrameSlide {
+  0% {
+    opacity: 0;
+    transform: translate3d(24px, 0, 0) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.hero-frame-enter {
+  animation: heroFrameSlide 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+}
+
 /* ============================================================
    VUE TRANSITIONS
    ============================================================ */
 
-/* Hero Carousel Directional Slide Transitions (Left / Right) - Ultra Fluid 60FPS GPU */
+/* Hero Carousel Directional Slide Transitions (Left / Right) - Ultra Fluid Cinematic Crossfade + Parallax Drift */
 .hero-slide-next-enter-active,
+.hero-slide-prev-enter-active {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  contain: layout paint;
+}
+
 .hero-slide-next-leave-active,
-.hero-slide-prev-enter-active,
 .hero-slide-prev-leave-active {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  transition: transform 0.52s cubic-bezier(0.25, 1, 0.5, 1);
-  will-change: transform;
+  z-index: 5;
+  pointer-events: none;
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  transform: translate3d(0, 0, 0);
   contain: layout paint;
 }
 
-.hero-slide-next-enter-active,
-.hero-slide-prev-enter-active {
-  z-index: 10;
-}
-
-.hero-slide-next-leave-active,
-.hero-slide-prev-leave-active {
-  z-index: 5;
-  pointer-events: none;
-}
-
-/* Siguiente: entra desde la derecha (+100%) hacia el centro (0), la anterior sale hacia la izquierda (-100%) */
+/* Siguiente: entra con sutil deriva desde la derecha (32px) y crossfade suave */
 .hero-slide-next-enter-from {
-  transform: translate3d(100%, 0, 0);
+  opacity: 0;
+  transform: translate3d(32px, 0, 0);
 }
 
 .hero-slide-next-enter-to,
 .hero-slide-next-leave-from,
 .hero-slide-prev-enter-to,
 .hero-slide-prev-leave-from {
+  opacity: 1;
   transform: translate3d(0, 0, 0);
 }
 
 .hero-slide-next-leave-to {
-  transform: translate3d(-100%, 0, 0);
+  opacity: 0;
+  transform: translate3d(-32px, 0, 0);
 }
 
-/* Anterior: entra desde la izquierda (-100%) hacia el centro (0), la anterior sale hacia la derecha (+100%) */
+/* Anterior: entra con sutil deriva desde la izquierda (-32px) y crossfade suave */
 .hero-slide-prev-enter-from {
-  transform: translate3d(-100%, 0, 0);
+  opacity: 0;
+  transform: translate3d(-32px, 0, 0);
 }
 
 .hero-slide-prev-leave-to {
-  transform: translate3d(100%, 0, 0);
+  opacity: 0;
+  transform: translate3d(32px, 0, 0);
 }
 
 /* Page View Transition */
@@ -499,34 +522,56 @@ html {
 
 .reveal-init {
   opacity: 0;
-  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1), transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: opacity, transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .reveal-up {
-  transform: translateY(28px);
+  transform: translate3d(0, 16px, 0);
 }
 
 .reveal-down {
-  transform: translateY(-28px);
+  transform: translate3d(0, -16px, 0);
 }
 
 .reveal-left {
-  transform: translateX(-28px);
+  transform: translate3d(-18px, 0, 0);
 }
 
 .reveal-right {
-  transform: translateX(28px);
+  transform: translate3d(18px, 0, 0);
 }
 
 .reveal-zoom {
-  transform: scale(0.94);
+  transform: scale(0.97);
 }
 
 .reveal-active,
 .reveal-init.reveal-active {
   opacity: 1;
   transform: translate3d(0, 0, 0) scale(1);
+}
+
+/* ============================================================
+   FAQ ACCORDION SMOOTH EXPANSION
+   ============================================================ */
+
+.faq-accordion-grid {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease;
+  opacity: 0;
+}
+
+.faq-accordion-grid.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.faq-accordion-inner {
+  overflow: hidden;
 }
 
 /* Soften motion for reduced motion preference without disabling the reveal */

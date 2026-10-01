@@ -182,6 +182,34 @@ const trustBadges = [
   { icon: 'credit_card', title: 'Hasta 6 Cuotas', desc: '3 y 6 cuotas fijas sin interés con tarjetas bancarias.' },
   { icon: 'support_agent', title: 'Atención por WhatsApp', desc: 'Te asesoramos para que elijas tu perfume ideal.' }
 ]
+
+const openHomeFaq = ref(1)
+const toggleHomeFaq = (id) => {
+  openHomeFaq.value = openHomeFaq.value === id ? null : id
+}
+
+const homeFaqs = [
+  {
+    id: 1,
+    q: '¿Cómo garantizan que todos los perfumes son 100% originales?',
+    a: 'Importamos únicamente a través de canales oficiales autorizados. Cada frasco incluye estampilla fiscal de importación, celofán de fábrica inalterado y Batch Code verificable en bases de datos mundiales como CheckFresh.'
+  },
+  {
+    id: 2,
+    q: '¿Cómo funcionan las 6 cuotas fijas y los medios de pago?',
+    a: 'Podés abonar en hasta 6 cuotas fijas sin interés (3 y 6 cuotas) con tarjetas de crédito bancarias mediante Mercado Pago sobre el precio de lista, o acceder a un 28% de descuento directo abonando con Transferencia Bancaria.'
+  },
+  {
+    id: 3,
+    q: '¿Qué son los decants o muestras fraccionadas?',
+    a: 'Son presentaciones fraccionadas de 5ml o 10ml extraídas minuciosamente de los frascos originales en vaporizadores de vidrio herméticos. Te permiten probar una fragancia de alta gama durante semanas antes de adquirir la botella completa.'
+  },
+  {
+    id: 4,
+    q: '¿Cuáles son los tiempos y costos de envío?',
+    a: 'Enviamos a todo el país a través de Andreani asegurado con código de seguimiento en tiempo real. En CABA y GBA las entregas demoran entre 24 y 48 hs hábiles, y al interior entre 3 y 5 días. En compras superiores al monto mínimo el envío es 100% bonificado.'
+  }
+]
 </script>
 
 <template>
@@ -226,7 +254,7 @@ const trustBadges = [
             <div class="lg:col-span-7 flex flex-col justify-center text-left">
               
               <!-- Editorial Kicker / Eyebrow with 6 Cuotas Badge -->
-              <div class="flex flex-wrap items-center gap-2.5 sm:gap-3 mb-3 sm:mb-5">
+              <div class="flex flex-wrap items-center gap-2.5 sm:gap-3 mb-3 sm:mb-5 hero-tag-enter">
                 <span class="w-8 h-px bg-primary/40 hidden sm:inline-block"></span>
                 <span class="font-label text-xs sm:text-[13px] uppercase tracking-[0.25em] text-secondary font-medium">
                   {{ currentSlideData.tag || 'ALTA PERFUMERÍA' }}
@@ -239,18 +267,20 @@ const trustBadges = [
               </div>
 
               <!-- Editorial Headline -->
-              <h1 class="font-sans text-3xl sm:text-4xl lg:text-[40px] xl:text-[52px] 2xl:text-[60px] text-primary mb-4 lg:mb-5 xl:mb-6 leading-[1.1] tracking-[-0.02em] font-normal">
-                {{ currentSlideData.title }} <br />
-                <span class="italic font-serif text-primary-container">{{ currentSlideData.highlight }}</span>
+              <h1 class="font-sans text-3xl sm:text-4xl lg:text-[40px] xl:text-[52px] 2xl:text-[60px] text-primary mb-4 lg:mb-5 xl:mb-6 font-normal hero-title-enter">
+                <span class="block tracking-tight leading-[1.18]">{{ currentSlideData.title }}</span>
+                <span class="block mt-2.5 sm:mt-3.5 lg:mt-4 italic font-serif text-primary-container tracking-normal leading-[1.22]">
+                  {{ currentSlideData.highlight }}
+                </span>
               </h1>
 
               <!-- Editorial Narrative -->
-              <p class="font-sans text-sm sm:text-base lg:text-sm xl:text-base 2xl:text-lg text-secondary mb-6 sm:mb-8 lg:mb-6 xl:mb-10 max-w-xl leading-relaxed font-normal">
+              <p class="font-sans text-sm sm:text-base lg:text-sm xl:text-base 2xl:text-lg text-secondary mb-6 sm:mb-8 lg:mb-6 xl:mb-10 max-w-xl leading-relaxed font-normal hero-desc-enter">
                 {{ currentSlideData.description }}
               </p>
 
               <!-- CTAs: Sobrio y Elegante (Sin iconos de varita mágica ni botones inflados) -->
-              <div class="flex flex-wrap items-center gap-4 sm:gap-6">
+              <div class="flex flex-wrap items-center gap-4 sm:gap-6 hero-cta-enter">
                 <RouterLink 
                   :to="currentSlideData.primaryCtaLink"
                   class="inline-flex items-center justify-center bg-primary text-on-primary font-label text-xs uppercase tracking-[0.18em] py-3.5 sm:py-4 px-7 sm:px-9 rounded-sm border border-primary hover:bg-primary-container hover:border-primary-container transition-all duration-300 text-center shadow-xs hover:shadow-md active:translate-y-0"
@@ -269,7 +299,7 @@ const trustBadges = [
               </div>
 
               <!-- Commercial Highlights: 6 Cuotas & Transferencia -->
-              <div class="flex flex-wrap items-center gap-3.5 sm:gap-6 mt-6 sm:mt-8 lg:mt-6 xl:mt-10 pt-4 sm:pt-6 border-t border-outline-variant/60 max-w-lg">
+              <div class="flex flex-wrap items-center gap-3.5 sm:gap-6 mt-6 sm:mt-8 lg:mt-6 xl:mt-10 pt-4 sm:pt-6 border-t border-outline-variant/60 max-w-lg hero-stats-enter">
                 <div class="flex items-center gap-2 text-primary text-xs font-sans">
                   <span class="material-symbols-outlined text-base text-primary">credit_card</span>
                   <span>Hasta <strong>6 cuotas fijas sin interés</strong> (3 y 6)</span>
@@ -285,7 +315,7 @@ const trustBadges = [
 
             <!-- Right Column: Integrated Fragrance Showcase (5 cols on lg) - Byredo / Le Labo Editorial Frame -->
             <div class="hidden lg:flex lg:col-span-5 justify-center lg:justify-end items-center">
-              <div class="relative w-full max-w-[290px] lg:max-w-[310px] xl:max-w-[380px] 2xl:max-w-[410px]">
+              <div class="relative w-full max-w-[290px] lg:max-w-[310px] xl:max-w-[380px] 2xl:max-w-[410px] hero-frame-enter">
                 
                 <!-- Architectural Exhibition Frame -->
                 <div class="relative aspect-[4/5] bg-surface rounded-sm overflow-hidden border border-outline-variant/80 shadow-[0_12px_36px_rgba(46,25,17,0.06)] group">
@@ -296,11 +326,6 @@ const trustBadges = [
                     decoding="async"
                     @error="(e) => e.target.src = 'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=800&q=85'"
                   />
-                  
-                  <!-- Corner Exhibition Monogram / Accent -->
-                  <div class="absolute top-4 left-4 z-10 px-2.5 py-1 bg-surface/90 backdrop-blur-xs border border-outline-variant/60 rounded-xs">
-                    <span class="font-mono text-[10px] tracking-widest uppercase text-secondary font-medium">GICCA — 0{{ currentSlide + 1 }}</span>
-                  </div>
                 </div>
 
                 <!-- Curatorial Caption below the frame (Museum Plaque Aesthetic) -->
@@ -529,6 +554,50 @@ const trustBadges = [
               <span class="material-symbols-outlined text-xs">arrow_forward</span>
             </span>
           </RouterLink>
+        </div>
+      </div>
+    </section>
+
+    <!-- FREQUENTLY ASKED QUESTIONS SECTION -->
+    <section class="py-16 md:py-24 max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop border-t border-outline-variant">
+      <div v-reveal="{ direction: 'up' }" class="text-center mb-12">
+        <span class="font-label text-xs uppercase tracking-[0.25em] text-secondary mb-2 block font-semibold">Dudas Frecuentes</span>
+        <h2 class="font-serif text-3xl sm:text-4xl font-normal text-primary">Preguntas Frecuentes</h2>
+        <div class="w-12 h-0.5 bg-primary rounded-full mx-auto mt-3"></div>
+      </div>
+
+      <div class="space-y-3.5">
+        <div 
+          v-for="(faq, idx) in homeFaqs" 
+          :key="faq.id"
+          v-reveal="{ delay: idx * 70, direction: 'up' }"
+          class="bg-surface-container border border-outline-variant/80 rounded-xl overflow-hidden transition-all duration-300 shadow-2xs hover:shadow-xs"
+          :class="openHomeFaq === faq.id ? 'border-primary/40 bg-surface' : ''"
+        >
+          <button 
+            @click="toggleHomeFaq(faq.id)"
+            class="w-full text-left p-5 sm:p-6 flex justify-between items-center gap-4 font-sans text-base sm:text-lg text-primary font-medium cursor-pointer transition-colors"
+            :aria-expanded="openHomeFaq === faq.id"
+          >
+            <span>{{ faq.q }}</span>
+            <div 
+              class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0 transition-transform duration-300 ease-out"
+              :class="openHomeFaq === faq.id ? 'rotate-180 bg-primary/10 text-primary' : 'text-secondary'"
+            >
+              <span class="material-symbols-outlined text-lg">expand_more</span>
+            </div>
+          </button>
+          
+          <div 
+            class="faq-accordion-grid"
+            :class="{ 'is-open': openHomeFaq === faq.id }"
+          >
+            <div class="faq-accordion-inner">
+              <div class="px-5 sm:px-6 pb-6 font-sans text-sm text-secondary leading-relaxed border-t border-outline-variant/60 pt-4 bg-surface/50">
+                {{ faq.a }}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

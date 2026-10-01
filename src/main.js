@@ -36,10 +36,10 @@ app.directive('reveal', {
           if (entry.isIntersecting) {
             const trigger = () => {
               el.classList.add('reveal-active')
-              // Clean up reveal classes after transition ends so hover transforms (e.g. -translate-y-1) work natively
+              // Clean up directional and init offset classes once entered so hover transforms operate cleanly
               el._revealCleanupTimeout = setTimeout(() => {
-                el.classList.remove('reveal-init', 'reveal-active', `reveal-${direction}`)
-              }, 800)
+                el.classList.remove('reveal-init', `reveal-${direction}`)
+              }, 700)
             }
 
             if (delay > 0) {
@@ -52,8 +52,8 @@ app.directive('reveal', {
         })
       },
       {
-        threshold: 0.05,
-        rootMargin: '0px 0px -15px 0px'
+        threshold: 0.04,
+        rootMargin: '0px 0px -30px 0px'
       }
     )
 

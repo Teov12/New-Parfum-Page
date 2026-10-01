@@ -1,12 +1,23 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 import { useToastStore } from '@/stores/toast'
 
+const route = useRoute()
 const toastStore = useToastStore()
 const isSending = ref(false)
-const openFaq = ref(null)
+const openFaq = ref(1)
+
+onMounted(() => {
+  if (route.hash === '#faq') {
+    const el = document.getElementById('faq')
+    if (el) {
+      setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 100)
+    }
+  }
+})
 
 const validationSchema = yup.object({
   name: yup.string().trim().required('El nombre completo es obligatorio').min(3, 'Mínimo 3 letras'),
@@ -258,32 +269,42 @@ Hola! Les escribo a través del formulario de la web para hacerles una consulta.
 
       <!-- FAQ ACCORDION SECTION -->
       <div id="faq" class="max-w-3xl mx-auto border-t border-outline-variant pt-16">
-        <div class="text-center mb-12">
+        <div v-reveal="{ direction: 'up' }" class="text-center mb-12">
           <span class="font-label text-xs uppercase tracking-widest text-secondary mb-2 block">Dudas Comunes</span>
           <h2 class="font-sans text-3xl sm:text-4xl text-primary font-normal">Preguntas Frecuentes</h2>
         </div>
 
         <div class="space-y-4">
           <div 
-            v-for="faq in faqs" 
+            v-for="(faq, idx) in faqs" 
             :key="faq.id"
-            class="bg-surface-container border border-outline-variant rounded-xs overflow-hidden transition-colors shadow-2xs"
+            v-reveal="{ delay: idx * 80, direction: 'up' }"
+            class="bg-surface-container border border-outline-variant rounded-xl overflow-hidden transition-all duration-300 shadow-2xs hover:shadow-xs"
+            :class="openFaq === faq.id ? 'border-primary/40 bg-surface' : ''"
           >
             <button 
               @click="toggleFaq(faq.id)"
-              class="w-full text-left p-5 sm:p-6 flex justify-between items-center gap-4 font-sans text-lg text-primary font-medium"
+              class="w-full text-left p-5 sm:p-6 flex justify-between items-center gap-4 font-sans text-base sm:text-lg text-primary font-medium cursor-pointer transition-colors"
+              :aria-expanded="openFaq === faq.id"
             >
               <span>{{ faq.q }}</span>
-              <span class="material-symbols-outlined text-xl transition-transform" :class="openFaq === faq.id ? 'rotate-180' : ''">
-                expand_more
-              </span>
+              <div 
+                class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0 transition-transform duration-300 ease-out"
+                :class="openFaq === faq.id ? 'rotate-180 bg-primary/10 text-primary' : 'text-secondary'"
+              >
+                <span class="material-symbols-outlined text-lg">expand_more</span>
+              </div>
             </button>
             
             <div 
-              v-if="openFaq === faq.id"
-              class="px-5 sm:px-6 pb-6 font-sans text-sm text-secondary leading-relaxed border-t border-outline-variant pt-4 bg-surface/50"
+              class="faq-accordion-grid"
+              :class="{ 'is-open': openFaq === faq.id }"
             >
-              {{ faq.a }}
+              <div class="faq-accordion-inner">
+                <div class="px-5 sm:px-6 pb-6 font-sans text-sm text-secondary leading-relaxed border-t border-outline-variant/60 pt-4 bg-surface/50">
+                  {{ faq.a }}
+                </div>
+              </div>
             </div>
           </div>
         </div>
