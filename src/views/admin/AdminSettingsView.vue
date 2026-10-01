@@ -1,10 +1,24 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useTenantStore } from '@/stores/tenant'
 import { useToastStore } from '@/stores/toast'
+import { useAdminAuthStore } from '@/stores/adminAuth'
 
 const tenantStore = useTenantStore()
 const toastStore = useToastStore()
+const adminAuthStore = useAdminAuthStore()
+const route = useRoute()
+const router = useRouter()
+
+const authHeaders = () => ({
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${localStorage.getItem('gicca_admin_token') || ''}`
+})
+
+const platformInfo = ref({ name: '', domain: '', dnsTarget: '', mpOAuthEnabled: false })
+const storeUrl = ref('')
+const limits = ref({ customDomain: true })
 
 const isSaving = ref(false)
 const isUploadingIcon = ref(false)
@@ -42,12 +56,39 @@ const form = ref({
     bankName: '',
     accountHolder: '',
     cuit: '',
+    notificationEmail: '',
     cardFeeRate: 28,
+    maxInstallments: 6,
     freeShippingThreshold: 250000,
     mpAccessToken: '',
-    mpPublicKey: ''
+    mpAccessTokenSet: false,
+    mpAccessTokenHint: '',
+    mpPublicKey: '',
+    mpConnection: { method: '', nickname: '' },
+    andreani: {
+      username: '',
+      password: '',
+      passwordSet: false,
+      clientCode: '',
+      contractDomicilio: '',
+      contractSucursal: '',
+      contractUrgente: '',
+      originZip: '',
+      sandbox: true,
+      disabled: false
+    }
+  },
+  seo: {
+    title: '',
+    description: '',
+    keywords: '',
+    ogImage: ''
   }
 })
+
+// Mercado Pago queda conectado por token guardado (manual u OAuth) o por uno recién pegado
+const mpConnected = computed(() => Boolean(form.value.commercial.mpAccessTokenSet || form.value.commercial.mpAccessToken))
+const mpConnectedByOAuth = computed(() => form.value.commercial.mpConnection?.method === 'oauth')
 
 const isTestingMp = ref(false)
 const mpTestResult = ref(null)
@@ -88,77 +129,126 @@ const verifyDomainDns = async () => {
   }
 }
 
+const applySettings = (tenant) => {
+  credentialsForm.value.email = tenant.adminEmail || credentialsForm.value.email
+  storeUrl.value = tenant.storeUrl || ''
+  limits.value = tenant.limits || limits.value
+  form.value.name = tenant.name || ''
+  form.value.domain = tenant.domain || ''
+  form.value.subdomain = tenant.subdomain || ''
+  form.value.branding = {
+    ...form.value.branding,
+    ...(tenant.branding || {}),
+    instagram: tenant.branding?.instagram || tenant.branding?.instagramUrl || ''
+  }
+  form.value.seo = { ...form.value.seo, ...(tenant.seo || {}) }
+  const commercial = tenant.commercial || {}
+  form.value.commercial = {
+    ...form.value.commercial,
+    ...commercial,
+    mpAccessToken: '',
+    andreani: { ...form.value.commercial.andreani, ...(commercial.andreani || {}), password: '' }
+  }
+}
+
+const loadSettings = async () => {
+  const res = await fetch('/api/tenant/settings', { headers: authHeaders() })
+  if (!res.ok) throw new Error('No se pudo cargar la configuración')
+  const data = await res.json()
+  if (data?.tenant) applySettings(data.tenant)
+  if (data?.platform) platformInfo.value = { ...platformInfo.value, ...data.platform }
+}
+
 onMounted(async () => {
   try {
-    const token = localStorage.getItem('gicca_admin_token') || ''
-    const res = await fetch('/api/tenant/settings', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-    if (res.ok) {
-      const data = await res.json()
-      if (data?.tenant) {
-        credentialsForm.value.email = data.tenant.adminEmail || ''
-        form.value.name = data.tenant.name || 'Gicca Perfumes'
-        form.value.domain = data.tenant.domain || ''
-        form.value.subdomain = data.tenant.subdomain || ''
-        if (data.tenant.branding) {
-          form.value.branding = {
-            tagline: data.tenant.branding.tagline || '',
-            logoUrl: data.tenant.branding.logoUrl || '',
-            iconUrl: data.tenant.branding.iconUrl || '',
-            storeIcon: data.tenant.branding.storeIcon || 'spa',
-            faviconUrl: data.tenant.branding.faviconUrl || '',
-            whatsappNumber: data.tenant.branding.whatsappNumber || '5493564622055',
-            instagram: data.tenant.branding.instagram || '@giccaparfum',
-            primaryColor: data.tenant.branding.primaryColor || '#D4AF37'
-          }
-        }
-        if (data.tenant.commercial) {
-          form.value.commercial = {
-            alias: data.tenant.commercial.alias || 'GICCA.PERFUMES.MP',
-            cbu: data.tenant.commercial.cbu || '0000003100010000000000',
-            bankName: data.tenant.commercial.bankName || 'Mercado Pago',
-            accountHolder: data.tenant.commercial.accountHolder || 'Gicca Perfumes S.A.',
-            cuit: data.tenant.commercial.cuit || '30-71829401-9',
-            cardFeeRate: data.tenant.commercial.cardFeeRate ?? 28,
-            freeShippingThreshold: data.tenant.commercial.freeShippingThreshold ?? 250000,
-            mpAccessToken: data.tenant.commercial.mpAccessToken || '',
-            mpPublicKey: data.tenant.commercial.mpPublicKey || ''
-          }
-        }
-        return
-      }
-    }
+    await loadSettings()
   } catch (e) {
-    console.warn('Fallback loading tenant:', e)
+    toastStore.show(e.message, 'error')
   }
 
-  await tenantStore.fetchCurrentTenant()
-  form.value.name = tenantStore.name || 'Gicca Perfumes'
-  form.value.branding = {
-    tagline: tenantStore.branding?.tagline || '',
-    logoUrl: tenantStore.branding?.logoUrl || '',
-    iconUrl: tenantStore.branding?.iconUrl || '',
-    storeIcon: tenantStore.branding?.storeIcon || 'spa',
-    faviconUrl: tenantStore.branding?.faviconUrl || '',
-    whatsappNumber: tenantStore.branding?.whatsappNumber || '5493564622055',
-    instagram: tenantStore.branding?.instagram || '@giccaparfum',
-    primaryColor: tenantStore.branding?.primaryColor || '#D4AF37'
-  }
-  form.value.commercial = {
-    alias: tenantStore.commercial?.alias || 'GICCA.PERFUMES.MP',
-    cbu: tenantStore.commercial?.cbu || '0000003100010000000000',
-    bankName: tenantStore.commercial?.bankName || 'Mercado Pago',
-    accountHolder: tenantStore.commercial?.accountHolder || 'Gicca Perfumes S.A.',
-    cuit: tenantStore.commercial?.cuit || '30-71829401-9',
-    cardFeeRate: tenantStore.commercial?.cardFeeRate ?? 20,
-    freeShippingThreshold: tenantStore.commercial?.freeShippingThreshold ?? 250000,
-    mpAccessToken: tenantStore.commercial?.mpAccessToken || '',
-    mpPublicKey: tenantStore.commercial?.mpPublicKey || ''
+  fetch('/api/platform/info')
+    .then(r => r.ok ? r.json() : null)
+    .then(info => { if (info) platformInfo.value = { ...platformInfo.value, mpOAuthEnabled: info.mpOAuthEnabled } })
+    .catch(() => {})
+
+  // Vuelta desde la autorización de Mercado Pago
+  if (route.query.mp === 'conectado') {
+    toastStore.show('¡Tu cuenta de Mercado Pago quedó conectada!', 'success')
+    router.replace({ query: {} })
+  } else if (route.query.mp === 'error') {
+    toastStore.show(`No se pudo conectar Mercado Pago: ${route.query.detalle || 'intentá de nuevo'}`, 'error')
+    router.replace({ query: {} })
   }
 })
+
+// Conexión de Mercado Pago en un clic (OAuth de la plataforma)
+const isConnectingMp = ref(false)
+const connectMercadoPago = async () => {
+  isConnectingMp.value = true
+  try {
+    const res = await fetch('/api/mercadopago/oauth/start', { headers: authHeaders() })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'No se pudo iniciar la conexión')
+    window.location.href = data.url
+  } catch (err) {
+    toastStore.show(err.message, 'error')
+    isConnectingMp.value = false
+  }
+}
+
+const disconnectMercadoPago = async () => {
+  if (!confirm('¿Desconectar Mercado Pago? Tus clientes no van a poder pagar con tarjeta hasta que lo vuelvas a conectar.')) return
+  try {
+    await tenantStore.updateSettings({ commercial: { clearMpCredentials: true } })
+    await loadSettings()
+    toastStore.show('Mercado Pago desconectado', 'info')
+  } catch (err) {
+    toastStore.show(err.message, 'error')
+  }
+}
+
+// Equipo: usuarios con acceso a pedidos y catálogo
+const staff = ref([])
+const staffLimit = ref(null)
+const staffForm = ref({ name: '', email: '', password: '' })
+const isSavingStaff = ref(false)
+
+const loadStaff = async () => {
+  const res = await fetch('/api/staff', { headers: authHeaders() })
+  if (!res.ok) return
+  const data = await res.json()
+  staff.value = data.staff || []
+  staffLimit.value = data.limit
+}
+
+const addStaffMember = async () => {
+  isSavingStaff.value = true
+  try {
+    const res = await fetch('/api/staff', { method: 'POST', headers: authHeaders(), body: JSON.stringify(staffForm.value) })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'No se pudo crear el usuario')
+    staffForm.value = { name: '', email: '', password: '' }
+    toastStore.show('Usuario agregado. Compartile su email y contraseña.', 'success')
+    await loadStaff()
+  } catch (err) {
+    toastStore.show(err.message, 'error')
+  } finally {
+    isSavingStaff.value = false
+  }
+}
+
+const removeStaffMember = async (member) => {
+  if (!confirm(`¿Quitar el acceso de ${member.email}?`)) return
+  const res = await fetch(`/api/staff/${member.id}`, { method: 'DELETE', headers: authHeaders() })
+  if (res.ok) {
+    toastStore.show('Acceso quitado', 'info')
+    await loadStaff()
+  } else {
+    toastStore.show('No se pudo quitar el acceso', 'error')
+  }
+}
+
+onMounted(loadStaff)
 
 // Acceso al panel: email y contraseña propios del dueño de la tienda
 const credentialsForm = ref({ email: '', currentPassword: '', newPassword: '', confirmPassword: '' })
@@ -189,7 +279,9 @@ const handleSaveCredentials = async () => {
     const data = await res.json()
     if (!res.ok) throw new Error(data.error || 'No se pudieron actualizar las credenciales')
     credentialsForm.value = { email, currentPassword: '', newPassword: '', confirmPassword: '' }
-    toastStore.show(data.message || 'Credenciales actualizadas', 'success')
+    toastStore.show('Credenciales actualizadas. Ingresá con tu nuevo email y contraseña.', 'success')
+    adminAuthStore.logout(false)
+    router.push('/admin/login')
   } catch (err) {
     toastStore.show(err.message, 'error')
   } finally {
@@ -198,7 +290,7 @@ const handleSaveCredentials = async () => {
 }
 
 const handleTestMercadoPago = async () => {
-  if (!form.value.commercial.mpAccessToken) {
+  if (!mpConnected.value) {
     toastStore.show('Ingresá primero el Access Token de Mercado Pago', 'error')
     return
   }
@@ -269,13 +361,18 @@ const clearCustomIcon = () => {
 const handleSave = async () => {
   isSaving.value = true
   try {
+    // Las credenciales vacías no se envían: el servidor conserva las guardadas
+    const { mpAccessTokenSet, mpAccessTokenHint, mpConnection, andreani, ...commercial } = form.value.commercial
+    const { passwordSet, ...andreaniData } = andreani
     await tenantStore.updateSettings({
       name: form.value.name,
       domain: form.value.domain,
       subdomain: form.value.subdomain,
       branding: form.value.branding,
-      commercial: form.value.commercial
+      seo: form.value.seo,
+      commercial: { ...commercial, andreani: andreaniData }
     })
+    await loadSettings()
 
     toastStore.show('¡Configuración de la tienda, dominio y medios de pago guardada!', 'success')
   } catch (err) {
@@ -440,7 +537,7 @@ const handleSave = async () => {
                       <span class="material-symbols-outlined text-base">{{ form.branding.storeIcon || 'spa' }}</span>
                     </div>
                     <span class="font-sans text-sm font-bold text-primary truncate">
-                      {{ form.name || 'Gicca Perfumes' }}
+                      {{ form.name || 'Mi Tienda' }}
                     </span>
                   </div>
                 </div>
@@ -462,7 +559,7 @@ const handleSave = async () => {
                       {{ (form.name || 'G').charAt(0).toUpperCase() }}
                     </div>
                     <span class="text-xs text-slate-800 truncate font-sans">
-                      {{ form.name || 'Gicca Perfumes' }} | Boutique
+                      {{ form.name || 'Mi Tienda' }} | Boutique
                     </span>
                   </div>
                 </div>
@@ -486,7 +583,7 @@ const handleSave = async () => {
               <input
                 v-model="form.name"
                 type="text"
-                placeholder="Ej. Gicca Perfumes Boutique"
+                placeholder="Ej. Aromas de París"
                 class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
               />
             </div>
@@ -511,7 +608,7 @@ const handleSave = async () => {
                 <input
                   v-model="form.branding.whatsappNumber"
                   type="text"
-                  placeholder="5493564622055"
+                  placeholder="5491122334455"
                   class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
                 />
                 <p class="text-[10px] text-secondary mt-1">Con código de país y área (sin espacios ni guiones).</p>
@@ -524,7 +621,7 @@ const handleSave = async () => {
                 <input
                   v-model="form.branding.instagram"
                   type="text"
-                  placeholder="@giccaparfum"
+                  placeholder="@tuperfumeria"
                   class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
                 />
               </div>
@@ -569,7 +666,62 @@ const handleSave = async () => {
                 placeholder="250000"
                 class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
               />
-              <p class="text-[10px] text-secondary mt-1">Superando este monto, Andreani es bonificado.</p>
+              <p class="text-[10px] text-secondary mt-1">Superando este monto, Andreani es bonificado. Poné 0 si no ofrecés envío gratis.</p>
+            </div>
+
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">
+                Cuotas máximas con tarjeta
+              </label>
+              <input
+                v-model.number="form.commercial.maxInstallments"
+                type="number"
+                min="1"
+                max="24"
+                class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">
+                Email para avisos de ventas
+              </label>
+              <input
+                v-model="form.commercial.notificationEmail"
+                type="email"
+                placeholder="ventas@miperfumeria.com"
+                class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
+              />
+              <p class="text-[10px] text-secondary mt-1">Recibís cada venta y tus clientes te responden a este email.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta SEO -->
+        <div class="bg-surface border border-outline-variant rounded-2xl p-6 sm:p-8 space-y-4 shadow-xs">
+          <div class="flex items-center gap-3 border-b border-outline-variant pb-3">
+            <span class="material-symbols-outlined text-xl text-primary">travel_explore</span>
+            <div>
+              <h2 class="font-sans text-base font-bold text-primary">Google y vista previa al compartir</h2>
+              <p class="text-[11px] text-secondary">Cómo aparece tu tienda en Google, WhatsApp e Instagram.</p>
+            </div>
+          </div>
+          <div>
+            <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">Título</label>
+            <input v-model="form.seo.title" type="text" maxlength="70" placeholder="Ej. Aromas de París | Perfumes importados originales" class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm focus:border-primary focus:outline-none" />
+          </div>
+          <div>
+            <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">Descripción</label>
+            <textarea v-model="form.seo.description" rows="3" maxlength="300" placeholder="Qué vendés, envíos, cuotas..." class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm focus:border-primary focus:outline-none"></textarea>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">Palabras clave</label>
+              <input v-model="form.seo.keywords" type="text" placeholder="perfumes árabes, decants..." class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm focus:border-primary focus:outline-none" />
+            </div>
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">Imagen para compartir (URL)</label>
+              <input v-model="form.seo.ogImage" type="text" placeholder="https://..." class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm focus:border-primary focus:outline-none" />
             </div>
           </div>
         </div>
@@ -615,7 +767,9 @@ const handleSave = async () => {
                   <span>{{ isCheckingDns ? 'Comprobando...' : 'Verificar DNS' }}</span>
                 </button>
               </div>
-              <p class="text-[11px] text-secondary mt-1">Escribe tu dominio sin https:// ni barras (ej: giccaperfumes.com.ar).</p>
+              <p class="text-[11px] text-secondary mt-1">Escribe tu dominio sin https:// ni barras (ej: miperfumeria.com.ar).</p>
+              <p v-if="storeUrl" class="text-[11px] text-secondary mt-1">Dirección actual de tu tienda: <a :href="storeUrl" target="_blank" class="underline font-mono">{{ storeUrl }}</a></p>
+              <p v-if="!limits.customDomain" class="text-[11px] text-amber-800 mt-1">El dominio propio está disponible desde el plan Profesional.</p>
             </div>
 
             <!-- Alerta Diagnóstico DNS -->
@@ -639,7 +793,7 @@ const handleSave = async () => {
                   <div class="flex justify-between border-b border-outline-variant/60 pb-1 text-secondary">
                     <span>Tipo: <strong>A</strong></span>
                     <span>Host: <strong>@</strong></span>
-                    <span>Destino: <strong>IP de tu VPS / Servidor</strong></span>
+                    <span>Destino: <strong>{{ platformInfo.dnsTarget || 'IP del servidor de la plataforma' }}</strong></span>
                   </div>
                   <div class="flex justify-between pt-1 text-secondary">
                     <span>Tipo: <strong>CNAME</strong></span>
@@ -678,7 +832,7 @@ const handleSave = async () => {
                 <input
                   v-model="form.commercial.alias"
                   type="text"
-                  placeholder="GICCA.PERFUMES.MP"
+                  placeholder="MI.PERFUMERIA.MP"
                   class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 font-mono text-sm focus:border-primary focus:outline-none font-bold text-emerald-800"
                 />
               </div>
@@ -717,7 +871,7 @@ const handleSave = async () => {
                 <input
                   v-model="form.commercial.accountHolder"
                   type="text"
-                  placeholder="Gicca Perfumes S.A."
+                  placeholder="Nombre del titular de la cuenta"
                   class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
                 />
               </div>
@@ -735,6 +889,35 @@ const handleSave = async () => {
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- Andreani -->
+        <div class="bg-surface border border-outline-variant rounded-2xl p-6 sm:p-8 space-y-4 shadow-xs">
+          <div class="flex items-center justify-between border-b border-outline-variant pb-3">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-xl text-rose-700">local_shipping</span>
+              <h2 class="font-sans text-base font-bold text-primary">Andreani</h2>
+            </div>
+            <label class="flex items-center gap-2 text-xs text-secondary cursor-pointer">
+              <input v-model="form.commercial.andreani.disabled" type="checkbox" class="rounded border-outline-variant" />
+              No ofrecer Andreani
+            </label>
+          </div>
+          <p class="text-xs text-secondary leading-relaxed">
+            Con tu cuenta de Andreani las cotizaciones son las de tu contrato y podés generar etiquetas desde Ventas. Sin cuenta, mostramos tarifas de referencia.
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input v-model="form.commercial.andreani.username" type="text" autocomplete="off" placeholder="Usuario API" class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-xs focus:border-primary focus:outline-none" />
+            <input v-model="form.commercial.andreani.password" type="password" autocomplete="new-password" :placeholder="form.commercial.andreani.passwordSet ? 'Contraseña guardada (vacío = mantener)' : 'Contraseña API'" class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-xs focus:border-primary focus:outline-none" />
+            <input v-model="form.commercial.andreani.clientCode" type="text" placeholder="Código de cliente" class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-xs focus:border-primary focus:outline-none" />
+            <input v-model="form.commercial.andreani.originZip" type="text" placeholder="CP de origen (ej. 5000)" class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-xs focus:border-primary focus:outline-none" />
+            <input v-model="form.commercial.andreani.contractDomicilio" type="text" placeholder="Contrato a domicilio" class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-xs focus:border-primary focus:outline-none" />
+            <input v-model="form.commercial.andreani.contractSucursal" type="text" placeholder="Contrato a sucursal" class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-xs focus:border-primary focus:outline-none" />
+          </div>
+          <label class="flex items-center gap-2 text-xs text-secondary cursor-pointer">
+            <input v-model="form.commercial.andreani.sandbox" type="checkbox" class="rounded border-outline-variant" />
+            Modo prueba (sandbox de Andreani)
+          </label>
         </div>
 
         <!-- Acceso al panel -->
@@ -774,6 +957,32 @@ const handleSave = async () => {
           </button>
         </form>
 
+        <!-- Equipo -->
+        <div class="bg-surface border border-outline-variant rounded-2xl p-6 sm:p-8 space-y-4 shadow-xs">
+          <div class="flex items-center justify-between border-b border-outline-variant pb-3">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-xl text-primary">group</span>
+              <h2 class="font-sans text-base font-bold text-primary">Equipo</h2>
+            </div>
+            <span class="text-[10px] font-mono text-secondary">{{ staff.length }} / {{ staffLimit ?? '∞' }}</span>
+          </div>
+          <p class="text-xs text-secondary">Usuarios que gestionan pedidos y catálogo, sin acceso a configuración, cobros ni finanzas.</p>
+          <ul v-if="staff.length" class="divide-y divide-outline-variant/60 text-xs">
+            <li v-for="member in staff" :key="member.id" class="flex items-center justify-between py-2">
+              <span><strong>{{ member.name || member.email }}</strong> <span class="text-secondary">{{ member.name ? member.email : '' }}</span></span>
+              <button type="button" @click="removeStaffMember(member)" class="text-rose-700 underline">Quitar</button>
+            </li>
+          </ul>
+          <form @submit.prevent="addStaffMember" class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input v-model="staffForm.name" type="text" placeholder="Nombre" class="bg-surface-container border border-outline-variant rounded-xl p-2.5 text-xs focus:border-primary focus:outline-none" />
+            <input v-model="staffForm.email" type="email" required placeholder="Email" class="bg-surface-container border border-outline-variant rounded-xl p-2.5 text-xs focus:border-primary focus:outline-none" />
+            <input v-model="staffForm.password" type="password" required minlength="8" autocomplete="new-password" placeholder="Contraseña (8+)" class="bg-surface-container border border-outline-variant rounded-xl p-2.5 text-xs focus:border-primary focus:outline-none" />
+            <button type="submit" :disabled="isSavingStaff" class="sm:col-span-3 px-4 py-2.5 rounded-xl border border-outline-variant hover:border-primary text-primary font-label text-xs uppercase tracking-wider font-bold disabled:opacity-50">
+              {{ isSavingStaff ? 'Agregando...' : 'Agregar usuario' }}
+            </button>
+          </form>
+        </div>
+
         <!-- 2. Pasarela Mercado Pago -->
         <div class="bg-surface border border-outline-variant rounded-2xl p-6 sm:p-8 space-y-5 shadow-xs">
           <div class="flex items-center justify-between border-b border-outline-variant pb-3">
@@ -783,16 +992,37 @@ const handleSave = async () => {
             </div>
             <span
               class="text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full"
-              :class="form.commercial.mpAccessToken ? 'bg-blue-100 text-blue-800' : 'bg-surface-container text-secondary'"
+              :class="mpConnected ? 'bg-blue-100 text-blue-800' : 'bg-surface-container text-secondary'"
             >
-              {{ form.commercial.mpAccessToken ? 'Conectado' : 'Sin Configurar' }}
+              {{ mpConnected ? 'Conectado' : 'Sin Configurar' }}
             </span>
           </div>
 
           <div class="space-y-4">
             <p class="text-xs text-secondary leading-relaxed">
-              Ingresá tus credenciales de Mercado Pago para cobrar con tarjetas de crédito en hasta 3 o 6 cuotas directamente a tu cuenta bancaria.
+              Cobrá con tarjetas de crédito en cuotas directamente en tu cuenta de Mercado Pago.
             </p>
+
+            <div v-if="platformInfo.mpOAuthEnabled" class="p-4 rounded-xl border border-blue-200 bg-blue-50/60 space-y-3">
+              <template v-if="mpConnectedByOAuth">
+                <p class="text-xs text-blue-900">
+                  Cuenta conectada<span v-if="form.commercial.mpConnection.nickname">: <strong>{{ form.commercial.mpConnection.nickname }}</strong></span>
+                </p>
+                <button type="button" @click="disconnectMercadoPago" class="text-xs underline text-rose-700">Desconectar Mercado Pago</button>
+              </template>
+              <template v-else>
+                <button
+                  type="button"
+                  @click="connectMercadoPago"
+                  :disabled="isConnectingMp"
+                  class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#009ee3] hover:bg-[#0088c4] text-white font-label text-xs uppercase tracking-wider font-bold disabled:opacity-60"
+                >
+                  <span class="material-symbols-outlined text-base">link</span>
+                  {{ isConnectingMp ? 'Abriendo Mercado Pago...' : 'Conectar mi cuenta de Mercado Pago' }}
+                </button>
+                <p class="text-[11px] text-blue-900/80">Es la forma recomendada: no necesitás copiar credenciales. Si preferís, podés cargarlas manualmente abajo.</p>
+              </template>
+            </div>
 
             <div>
               <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">
@@ -801,7 +1031,8 @@ const handleSave = async () => {
               <input
                 v-model="form.commercial.mpAccessToken"
                 type="password"
-                placeholder="APP_USR-xxxxxxxxxxxxxxxx-xxxxxx..."
+                autocomplete="off"
+                :placeholder="form.commercial.mpAccessTokenSet ? `Guardado: ${form.commercial.mpAccessTokenHint} (dejalo vacío para mantenerlo)` : 'APP_USR-xxxxxxxxxxxxxxxx-xxxxxx...'"
                 class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 font-mono text-xs focus:border-primary focus:outline-none"
               />
               <p class="text-[10px] text-secondary mt-1">Obtenelo en: Mercado Pago Developers &gt; Tus Credenciales.</p>
@@ -824,7 +1055,7 @@ const handleSave = async () => {
               <button
                 type="button"
                 @click="handleTestMercadoPago"
-                :disabled="isTestingMp || !form.commercial.mpAccessToken"
+                :disabled="isTestingMp || !mpConnected"
                 class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-blue-600/30 bg-blue-50 text-blue-800 hover:bg-blue-100 font-label text-xs uppercase tracking-wider font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 <span v-if="isTestingMp" class="material-symbols-outlined text-sm animate-spin">progress_activity</span>

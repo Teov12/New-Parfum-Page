@@ -91,6 +91,37 @@ export const useAdminAuthStore = defineStore('adminAuth', () => {
   }
 
   /**
+   * Canjea el token de traspaso que se genera al crear una tienda nueva
+   */
+  const loginWithHandoff = async (handoffToken) => {
+    loginError.value = ''
+    isLoggingIn.value = true
+    try {
+      const res = await fetch('/api/auth/handoff', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: handoffToken })
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        loginError.value = data.error || 'El enlace de acceso venció. Ingresá con tu email y contraseña.'
+        return false
+      }
+      token.value = data.token
+      adminUser.value = data.user || null
+      localStorage.setItem('gicca_admin_token', data.token)
+      useToastStore().show('¡Tu tienda está lista! Completá estos datos para empezar a vender.', 'success')
+      loadDashboardData()
+      return true
+    } catch {
+      loginError.value = 'Error al conectar con el servidor'
+      return false
+    } finally {
+      isLoggingIn.value = false
+    }
+  }
+
+  /**
    * Logout and clear admin credentials
    */
   const logout = (notify = true) => {
@@ -131,6 +162,7 @@ export const useAdminAuthStore = defineStore('adminAuth', () => {
     isSuperadmin,
     verifySession,
     login,
+    loginWithHandoff,
     logout,
     loadDashboardData
   }

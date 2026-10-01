@@ -31,7 +31,7 @@ const availableIcons = [
 ]
 
 const form = ref({
-  name: tenantStore.name || 'Gicca Perfumes',
+  name: tenantStore.name || '',
   branding: {
     tagline: tenantStore.branding?.tagline || 'Alta Perfumería y Fragancias Exclusivas',
     storeIcon: tenantStore.branding?.storeIcon || 'spa',
@@ -39,15 +39,15 @@ const form = ref({
     primaryColor: tenantStore.branding?.primaryColor || '#2e1911',
     primaryContainer: tenantStore.branding?.primaryContainer || '#784233',
     surface: tenantStore.branding?.surface || '#fffdfa',
-    whatsappNumber: tenantStore.branding?.whatsappNumber || '5493564622055',
-    instagram: tenantStore.branding?.instagram || '@giccaparfum',
+    whatsappNumber: tenantStore.branding?.whatsappNumber || '',
+    instagram: tenantStore.branding?.instagram || '',
     onboardingCompleted: true
   },
   commercial: {
-    alias: tenantStore.commercial?.alias || 'GICCA.PERFUMES.MP',
+    alias: tenantStore.commercial?.alias || '',
     cbu: tenantStore.commercial?.cbu || '0000003100010000000000',
     bankName: tenantStore.commercial?.bankName || 'Mercado Pago',
-    accountHolder: tenantStore.commercial?.accountHolder || 'Gicca Perfumes S.A.',
+    accountHolder: tenantStore.commercial?.accountHolder || '',
     cardFeeRate: tenantStore.commercial?.cardFeeRate ?? 28,
     freeShippingThreshold: tenantStore.commercial?.freeShippingThreshold ?? 250000,
     mpAccessToken: tenantStore.commercial?.mpAccessToken || '',
@@ -163,7 +163,7 @@ const skipOnboarding = async () => {
             <input 
               v-model="form.name"
               type="text" 
-              placeholder="Ej. Gicca Perfumes, L'Aura Parfums, etc."
+              placeholder="Ej. Aromas de París, L'Aura Parfums, etc."
               class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
             />
             <p class="text-[11px] text-secondary mt-1">Este nombre se mostrará en el encabezado, footer, recibos de compra y meta-tags.</p>
@@ -259,7 +259,7 @@ const skipOnboarding = async () => {
                 <input 
                   v-model="form.commercial.alias"
                   type="text" 
-                  placeholder="ej. GICCA.PERFUMES.MP"
+                  placeholder="ej. MI.PERFUMERIA.MP"
                   class="w-full bg-surface border border-outline-variant rounded-xl p-2.5 text-xs font-mono focus:border-primary focus:outline-none"
                 />
               </div>
@@ -324,7 +324,7 @@ const skipOnboarding = async () => {
             <input 
               v-model="form.branding.whatsappNumber"
               type="text" 
-              placeholder="5493564622055"
+              placeholder="5491122334455"
               class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
             />
             <p class="text-[11px] text-secondary mt-1">Formato internacional con código de país sin signo + ni espacios (ej. 549...).</p>

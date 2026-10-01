@@ -4,6 +4,9 @@ import { RouterLink, useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useShippingStore } from '@/stores/shipping'
 import { useToastStore } from '@/stores/toast'
+import { useTenantStore } from '@/stores/tenant'
+
+const tenantStore = useTenantStore()
 
 const cartStore = useCartStore()
 const shippingStore = useShippingStore()
@@ -101,7 +104,7 @@ const proceedToCheckout = () => {
         <div class="lg:col-span-8 space-y-6">
           
           <!-- Free Shipping Progress Box -->
-          <div class="bg-surface border border-outline-variant rounded-xs p-6 shadow-xs">
+          <div v-if="cartStore.hasFreeShippingOffer" class="bg-surface border border-outline-variant rounded-xs p-6 shadow-xs">
             <div class="flex justify-between items-center text-xs font-label uppercase tracking-wider mb-2 text-primary">
               <span v-if="cartStore.amountForFreeShipping > 0">
                 Faltan <strong>${{ cartStore.amountForFreeShipping.toLocaleString('es-AR') }}</strong> para disfrutar de <strong>Envío Gratis</strong> en todo el país.
@@ -322,7 +325,8 @@ const proceedToCheckout = () => {
               </button>
 
               <a 
-                :href="`https://wa.me/5493564622055?text=${encodeURIComponent('Hola Gicca Perfumes, quiero consultar sobre mi pedido de: ' + cartStore.items.map(i => `${i.quantity}x ${i.name} (${i.size})`).join(', '))}`"
+                v-if="tenantStore.whatsappUrl"
+                :href="`${tenantStore.whatsappUrl}?text=${encodeURIComponent(`Hola ${tenantStore.storeName}, quiero consultar sobre mi pedido de: ${cartStore.items.map(i => `${i.quantity}x ${i.name} (${i.size})`).join(', ')}`)}`"
                 target="_blank"
                 class="w-full bg-surface text-primary font-label text-xs uppercase tracking-widest py-3.5 rounded-full border border-outline hover:bg-surface-container transition-all flex items-center justify-center gap-2 text-center shadow-2xs"
               >

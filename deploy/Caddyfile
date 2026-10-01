@@ -1,0 +1,26 @@
+# Proxy con SSL automático para la plataforma, sus subdominios y los dominios propios de las tiendas.
+# Requisitos:
+#   - DNS: tuplataforma.com y *.tuplataforma.com apuntando a este servidor (registro A).
+#   - Las tiendas con dominio propio apuntan su registro A a PLATFORM_DNS_TARGET (esta IP).
+#   - El backend corre en localhost:3001 (npm run build && npm start).
+#
+# Caddy solo emite un certificado si el backend confirma que el dominio pertenece a una tienda
+# (GET /api/platform/tls-check), así nadie puede generar certificados para dominios ajenos.
+
+{
+	on_demand_tls {
+		ask http://localhost:3001/api/platform/tls-check
+	}
+}
+
+https:// {
+	tls {
+		on_demand
+	}
+	encode gzip
+	reverse_proxy localhost:3001
+}
+
+http:// {
+	redir https://{host}{uri} permanent
+}

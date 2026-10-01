@@ -10,6 +10,9 @@ import ProductCard from "@/components/product/ProductCard.vue";
 import BatchCodeModal from "@/components/product/BatchCodeModal.vue";
 
 import { useShippingStore } from "@/stores/shipping";
+import { useTenantStore } from '@/stores/tenant'
+
+const tenantStore = useTenantStore()
 
 const route = useRoute();
 const router = useRouter();
@@ -86,12 +89,12 @@ const updateSeoMetadata = () => {
 
   const p = product.value;
   const concentrationText = p.concentration ? ` (${p.concentration})` : "";
-  const pageTitle = `${p.name} de ${p.brand}${concentrationText} | 100% Original - Gicca Perfumes`;
+  const pageTitle = `${p.name} de ${p.brand}${concentrationText} | 100% Original - ${tenantStore.storeName}`;
   document.title = pageTitle;
 
   const desc = p.description
-    ? `${p.description.slice(0, 140)}... Comprá ${p.name} original en Gicca Perfumes Argentina con cuotas sin interés y envíos asegurados.`
-    : `Comprá ${p.name} de ${p.brand} 100% original en Gicca Perfumes Argentina. Fragancia ${p.gender || "exclusiva"} con hasta 6 cuotas y envíos a todo el país.`;
+    ? `${p.description.slice(0, 140)}... Comprá ${p.name} original en ${tenantStore.storeName} con cuotas sin interés y envíos asegurados.`
+    : `Comprá ${p.name} de ${p.brand} 100% original en ${tenantStore.storeName}. Fragancia ${p.gender || "exclusiva"} con hasta 6 cuotas y envíos a todo el país.`;
 
   const setMetaTag = (attr, key, content) => {
     let el = document.querySelector(`meta[${attr}="${key}"]`);
@@ -119,7 +122,7 @@ const updateSeoMetadata = () => {
   setMetaTag(
     "property",
     "og:url",
-    `https://giccaparfum.com/producto/${p.slug || p.id}`,
+    `${window.location.origin}/producto/${p.slug || p.id}`,
   );
   setMetaTag("name", "twitter:title", pageTitle);
   setMetaTag("name", "twitter:description", desc);
@@ -141,7 +144,7 @@ const updateSeoMetadata = () => {
   }
   canonical.setAttribute(
     "href",
-    `https://giccaparfum.com/producto/${p.slug || p.id}`,
+    `${window.location.origin}/producto/${p.slug || p.id}`,
   );
 
   // Inject Schema.org JSON-LD for Google Rich Snippets
@@ -161,7 +164,7 @@ const updateSeoMetadata = () => {
       image:
         p.images && p.images.length > 0
           ? p.images
-          : ["https://giccaparfum.com/og-image.jpg"],
+          : [],
       description:
         p.description ||
         `Perfume ${p.name} original de ${p.brand}. Fragancia ${p.gender || "unisex"}.`,
@@ -173,10 +176,10 @@ const updateSeoMetadata = () => {
       category: "Fragrances > Perfumes",
       offers: {
         "@type": "Offer",
-        url: `https://giccaparfum.com/producto/${p.slug || p.id}`,
+        url: `${window.location.origin}/producto/${p.slug || p.id}`,
         priceCurrency: "ARS",
         price: currentPrice.value || p.price || 0,
-        priceValidUntil: "2026-12-31",
+        priceValidUntil: `${new Date().getFullYear() + 1}-12-31`,
         itemCondition: "https://schema.org/NewCondition",
         availability:
           p.stock > 0 || p.stock === undefined
@@ -184,7 +187,7 @@ const updateSeoMetadata = () => {
             : "https://schema.org/OutOfStock",
         seller: {
           "@type": "Organization",
-          name: "Gicca Perfumes",
+          name: tenantStore.storeName,
         },
       },
     },
@@ -196,25 +199,25 @@ const updateSeoMetadata = () => {
           "@type": "ListItem",
           position: 1,
           name: "Inicio",
-          item: "https://giccaparfum.com",
+          item: window.location.origin,
         },
         {
           "@type": "ListItem",
           position: 2,
           name: "Perfumes",
-          item: "https://giccaparfum.com/catalogo",
+          item: `${window.location.origin}/catalogo`,
         },
         {
           "@type": "ListItem",
           position: 3,
           name: p.brand,
-          item: `https://giccaparfum.com/catalogo?brand=${encodeURIComponent(p.brand)}`,
+          item: `${window.location.origin}/catalogo?brand=${encodeURIComponent(p.brand)}`,
         },
         {
           "@type": "ListItem",
           position: 4,
           name: p.name,
-          item: `https://giccaparfum.com/producto/${p.slug || p.id}`,
+          item: `${window.location.origin}/producto/${p.slug || p.id}`,
         },
       ],
     },

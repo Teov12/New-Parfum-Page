@@ -147,7 +147,7 @@ const handleSaveManualOrder = async () => {
       {
         id: prod?.id || 'custom',
         name: prod?.name || 'Perfume Original',
-        brand: prod?.brand || 'Gicca',
+        brand: prod?.brand || '',
         size: manualOrderForm.value.selectedProductSize,
         quantity: Number(manualOrderForm.value.quantity) || 1,
         price: Number(manualOrderForm.value.unitPrice) || 0,

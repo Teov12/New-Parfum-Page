@@ -10,6 +10,18 @@ import {
   deleteProduct
 } from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
+import { assertProductCapacity, seedStarterCatalog } from '../services/tenantService.js'
+
+// Límite de perfumes del plan: responde 403 con el mensaje para el panel
+const checkCapacity = async (req, res, adding) => {
+  try {
+    await assertProductCapacity(req.tenant, adding)
+    return true
+  } catch (err) {
+    res.status(err.status || 403).json({ error: err.message, code: 'plan_limit' })
+    return false
+  }
+}
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -120,6 +132,7 @@ router.post('/bulk', requireAuth, async (req, res) => {
     if (!Array.isArray(itemsToCreate) || itemsToCreate.length === 0) {
       return res.status(400).json({ error: 'La lista de perfumes es requerida' })
     }
+    if (!(await checkCapacity(req, res, itemsToCreate.length))) return
 
     const created = []
     const errors = []
@@ -162,23 +175,14 @@ router.post('/bulk', requireAuth, async (req, res) => {
 // POST /api/products/seed-starter - Cargar catálogo base sugerido (protegido con requireAuth)
 router.post('/seed-starter', requireAuth, async (req, res) => {
   try {
-    const tenantId = req.tenantId || 'gicca'
     const starterPath = path.join(__dirname, '..', 'data', 'starter-catalog.json')
     if (!fs.existsSync(starterPath)) {
       return res.status(404).json({ error: 'No se encontró el archivo de catálogo sugerido' })
     }
+    const starterCount = JSON.parse(fs.readFileSync(starterPath, 'utf-8')).length
+    if (!(await checkCapacity(req, res, starterCount))) return
 
-    const starterItems = JSON.parse(fs.readFileSync(starterPath, 'utf-8'))
-    const created = []
-    for (const item of starterItems) {
-      try {
-        const prod = await createProduct(item, tenantId)
-        created.push(prod)
-      } catch (err) {
-        console.warn(`[SeedStarter] Error creando ${item.name}:`, err.message)
-      }
-    }
-
+    const created = await seedStarterCatalog(req.tenantId)
     res.status(201).json({
       success: true,
       count: created.length,
@@ -305,6 +309,7 @@ router.post('/', requireAuth, async (req, res) => {
     if (!name || !brand || price === undefined) {
       return res.status(400).json({ error: 'Nombre, marca y precio son obligatorios' })
     }
+    if (!(await checkCapacity(req, res, 1))) return
 
     const newProduct = await createProduct(req.body, tenantId)
     res.status(201).json(newProduct)

@@ -2,6 +2,9 @@
 import { ref } from 'vue'
 import { useToastStore } from '@/stores/toast'
 import { useOrdersStore } from '@/stores/orders'
+import { useTenantStore } from '@/stores/tenant'
+
+const tenantStore = useTenantStore()
 
 const props = defineProps({
   isOpen: {
@@ -80,7 +83,7 @@ const openAndreaniTracking = (trackingCode) => {
 
 const sendWhatsAppTracking = (order) => {
   if (!order) return
-  const text = `Hola ${order.customer?.firstName}, te escribimos de Gicca Perfumes sobre tu orden #${order.orderNumber}.\n\nTu pedido se encuentra: *${order.fulfillmentStatus === 'shipped' ? 'DESPACHADO EN ANDREANI' : (order.fulfillmentStatus === 'delivered' ? 'ENTREGADO' : 'EN PREPARACIÓN')}*.\n${order.trackingCode ? `Código de Seguimiento Andreani: *${order.trackingCode}*\nPodés seguirlo en: https://www.andreani.com/#!/informacionEnvio/${order.trackingCode}` : ''}\n\nQuedamos a tu entera disposición.`
+  const text = `Hola ${order.customer?.firstName}, te escribimos de ${tenantStore.storeName} sobre tu orden #${order.orderNumber}.\n\nTu pedido se encuentra: *${order.fulfillmentStatus === 'shipped' ? 'DESPACHADO EN ANDREANI' : (order.fulfillmentStatus === 'delivered' ? 'ENTREGADO' : 'EN PREPARACIÓN')}*.\n${order.trackingCode ? `Código de Seguimiento Andreani: *${order.trackingCode}*\nPodés seguirlo en: https://www.andreani.com/#!/informacionEnvio/${order.trackingCode}` : ''}\n\nQuedamos a tu entera disposición.`
   const url = `https://wa.me/${order.customer?.phone?.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`
   window.open(url, '_blank')
 }

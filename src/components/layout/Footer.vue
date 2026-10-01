@@ -42,7 +42,7 @@ const handleSubscribe = () => {
               <span class="material-symbols-outlined text-xl">{{ tenantStore.branding?.storeIcon || 'spa' }}</span>
             </div>
             <h3 class="font-sans text-3xl text-primary font-normal tracking-tight">
-              {{ tenantStore.storeName || 'Gicca Perfumes' }}
+              {{ tenantStore.storeName }}
             </h3>
           </div>
           <p class="font-sans text-sm text-secondary leading-relaxed mb-6 max-w-sm">
@@ -62,7 +62,7 @@ const handleSubscribe = () => {
           <a href="#" class="w-10 h-10 rounded-full border border-outline flex items-center justify-center text-primary hover:bg-primary hover:text-surface transition-colors shadow-2xs" aria-label="TikTok">
             <span class="font-label text-xs font-bold">TT</span>
           </a>
-          <a href="https://wa.me/5493564622055" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full border border-outline flex items-center justify-center text-primary hover:bg-primary hover:text-surface transition-colors shadow-2xs" aria-label="WhatsApp">
+          <a v-if="tenantStore.whatsappUrl" :href="tenantStore.whatsappUrl" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full border border-outline flex items-center justify-center text-primary hover:bg-primary hover:text-surface transition-colors shadow-2xs" aria-label="WhatsApp">
             <span class="font-label text-xs font-bold">WA</span>
           </a>
         </div>
@@ -193,7 +193,7 @@ const handleSubscribe = () => {
     <!-- Bottom Copyright Subfooter -->
     <div class="border-t border-outline-variant bg-surface py-6">
       <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-label text-secondary uppercase tracking-wider">
-        <p>© {{ new Date().getFullYear() }} {{ tenantStore.storeName || 'Gicca Perfumes' }}. Todos los derechos reservados.</p>
+        <p>© {{ new Date().getFullYear() }} {{ tenantStore.storeName }}. Todos los derechos reservados.</p>
         <div class="flex flex-wrap gap-4 sm:gap-6 items-center">
           <a href="#" class="hover:text-primary transition-colors">Términos y Condiciones</a>
           <a href="#" class="hover:text-primary transition-colors">Privacidad</a>

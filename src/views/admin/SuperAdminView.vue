@@ -6,6 +6,7 @@ import { useToastStore } from '@/stores/toast'
 const toastStore = useToastStore()
 
 const tenants = ref([])
+const plans = ref([])
 const isLoading = ref(false)
 const searchQuery = ref('')
 const statusFilter = ref('all')
@@ -23,6 +24,7 @@ const emptyTenantForm = () => ({
   alias: '',
   adminEmail: '',
   adminPassword: '',
+  billingExempt: false,
   seedStarter: true
 })
 
@@ -42,7 +44,8 @@ const fetchTenants = async () => {
     }
     if (!res.ok) throw new Error('Error al obtener lista de perfumerías')
     const data = await res.json()
-    tenants.value = Array.isArray(data) ? data : [data]
+    tenants.value = Array.isArray(data) ? data : (data.tenants || [])
+    plans.value = data.plans || []
   } catch (err) {
     toastStore.show(err.message, 'error')
   } finally {
@@ -72,10 +75,13 @@ const filteredTenants = computed(() => {
 
 const stats = computed(() => {
   const list = tenants.value || []
-  const activeCount = list.filter(t => (t.status || 'active') === 'active').length
+  const activeCount = list.filter(t => (t.status || 'active') !== 'suspended').length
   const customDomainsCount = list.filter(t => Boolean(t.domain)).length
-  // Estimación MRR pro ($45.000 por tienda)
-  const estimatedMrr = activeCount * 45000
+  // MRR: suscripciones activas al precio de su plan
+  const priceByPlan = Object.fromEntries(plans.value.map(p => [p.id, p.price]))
+  const estimatedMrr = list
+    .filter(t => t.billingSummary?.status === 'active')
+    .reduce((sum, t) => sum + (priceByPlan[t.plan] || 0), 0)
 
   return {
     total: list.length,
@@ -145,7 +151,7 @@ const handleCreateTenant = async () => {
 
 const toggleTenantStatus = async (tenant) => {
   const currentStatus = tenant.status || 'active'
-  const newStatus = currentStatus === 'active' ? 'suspended' : 'active'
+  const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended'
   const confirmMsg = newStatus === 'suspended'
     ? `¿Estás seguro de pausar la perfumería "${tenant.name}"? Los clientes verán aviso de mantenimiento.`
     : `¿Reactivar la perfumería "${tenant.name}"?`
@@ -169,6 +175,49 @@ const toggleTenantStatus = async (tenant) => {
   } catch (err) {
     toastStore.show(err.message, 'error')
   }
+}
+
+const BILLING_LABELS = {
+  trialing: 'Prueba',
+  active: 'Pagando',
+  past_due: 'Pago atrasado',
+  cancelled: 'Cancelada',
+  exempt: 'Sin cargo'
+}
+
+const billingLabel = (t) => {
+  const summary = t.billingSummary
+  if (!summary) return '—'
+  const label = BILLING_LABELS[summary.status] || summary.status
+  return summary.status === 'trialing' && summary.trialDaysLeft !== null ? `${label} (${summary.trialDaysLeft}d)` : label
+}
+
+const updateBilling = async (tenant, body, successMsg) => {
+  try {
+    const token = localStorage.getItem('gicca_admin_token') || ''
+    const res = await fetch(`/api/tenant/${tenant.tenantId}/billing`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(body)
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'Error al actualizar la suscripción')
+    toastStore.show(successMsg || data.message, 'success')
+    await fetchTenants()
+  } catch (err) {
+    toastStore.show(err.message, 'error')
+  }
+}
+
+const extendTrial = (tenant) => {
+  const days = Number(prompt(`¿Cuántos días de prueba sumar a "${tenant.name}"?`, '14'))
+  if (days > 0) updateBilling(tenant, { extendTrialDays: days }, `Prueba extendida ${days} días`)
+}
+
+const toggleExempt = (tenant) => {
+  const exempt = tenant.billingSummary?.status === 'exempt'
+  if (!confirm(exempt ? `¿Volver a cobrarle la suscripción a "${tenant.name}"?` : `¿Eximir a "${tenant.name}" del pago (tienda piloto o propia)?`)) return
+  updateBilling(tenant, { billingStatus: exempt ? 'trialing' : 'exempt', extendTrialDays: exempt ? 7 : 0 })
 }
 
 // Restablece el email y la contraseña del dueño de una tienda (ej: si la olvidó)
@@ -199,7 +248,7 @@ const resetTenantAccess = async (tenant) => {
 }
 
 const deleteTenant = async (tenant) => {
-  if (tenant.tenantId === 'gicca') {
+  if (tenant.isDefaultStore) {
     toastStore.show('No es posible dar de baja la perfumería principal', 'warning')
     return
   }
@@ -358,7 +407,7 @@ const deleteTenant = async (tenant) => {
                 <th class="py-4 px-6">Perfumería</th>
                 <th class="py-4 px-6">Identificador & URL</th>
                 <th class="py-4 px-6">Dominio Propio</th>
-                <th class="py-4 px-6">Plan SaaS</th>
+                <th class="py-4 px-6">Plan & Cobro</th>
                 <th class="py-4 px-6">Estado</th>
                 <th class="py-4 px-6 text-right">Acciones</th>
               </tr>
@@ -395,7 +444,7 @@ const deleteTenant = async (tenant) => {
                   </span>
                   <div class="mt-1">
                     <a 
-                      :href="`/?tenant=${t.tenantId}`" 
+                      :href="t.storeUrl || `/?tenant=${t.tenantId}`" 
                       target="_blank"
                       class="text-[11px] text-amber-400 hover:underline inline-flex items-center gap-1"
                     >
@@ -425,15 +474,20 @@ const deleteTenant = async (tenant) => {
                   <span class="font-mono text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20">
                     Plan {{ t.plan || 'pro' }}
                   </span>
+                  <p class="text-[11px] text-white/50 mt-1">{{ billingLabel(t) }} · {{ t.productCount ?? 0 }} perfumes</p>
+                  <div class="mt-1 space-x-2 text-[11px]">
+                    <button @click="extendTrial(t)" class="text-sky-300 hover:underline">+ prueba</button>
+                    <button @click="toggleExempt(t)" class="text-amber-300 hover:underline">{{ t.billingSummary?.status === 'exempt' ? 'cobrar' : 'sin cargo' }}</button>
+                  </div>
                 </td>
 
                 <!-- Estado -->
                 <td class="py-4 px-6">
                   <span 
-                    :class="(t.status || 'active') === 'active' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border-rose-500/30'"
+                    :class="(t.status || 'active') !== 'suspended' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border-rose-500/30'"
                     class="font-mono text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full border inline-block"
                   >
-                    {{ (t.status || 'active') === 'active' ? 'Activo' : 'Suspendido' }}
+                    {{ (t.status || 'active') === 'suspended' ? 'Pausada' : ((t.status === 'trial') ? 'En prueba' : 'Activa') }}
                   </span>
                 </td>
 
@@ -441,14 +495,14 @@ const deleteTenant = async (tenant) => {
                 <td class="py-4 px-6 text-right space-x-1.5">
                   <button
                     @click="toggleTenantStatus(t)"
-                    :class="(t.status || 'active') === 'active' ? 'text-amber-400 hover:bg-amber-500/10' : 'text-emerald-400 hover:bg-emerald-500/10'"
+                    :class="(t.status || 'active') !== 'suspended' ? 'text-amber-400 hover:bg-amber-500/10' : 'text-emerald-400 hover:bg-emerald-500/10'"
                     class="px-2.5 py-1.5 rounded-lg border border-white/10 text-xs font-label uppercase tracking-wider transition-colors inline-flex items-center gap-1"
-                    :title="(t.status || 'active') === 'active' ? 'Pausar tienda' : 'Reactivar tienda'"
+                    :title="(t.status || 'active') !== 'suspended' ? 'Pausar tienda' : 'Reactivar tienda'"
                   >
                     <span class="material-symbols-outlined text-sm">
-                      {{ (t.status || 'active') === 'active' ? 'pause_circle' : 'play_circle' }}
+                      {{ (t.status || 'active') !== 'suspended' ? 'pause_circle' : 'play_circle' }}
                     </span>
-                    <span>{{ (t.status || 'active') === 'active' ? 'Pausar' : 'Activar' }}</span>
+                    <span>{{ (t.status || 'active') !== 'suspended' ? 'Pausar' : 'Activar' }}</span>
                   </button>
 
                   <button
@@ -461,7 +515,7 @@ const deleteTenant = async (tenant) => {
                   </button>
 
                   <button
-                    v-if="t.tenantId !== 'gicca'"
+                    v-if="!t.isDefaultStore"
                     @click="deleteTenant(t)"
                     class="p-1.5 text-white/40 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
                     title="Eliminar perfumería"
@@ -593,6 +647,18 @@ const deleteTenant = async (tenant) => {
                 class="w-full bg-[#11100F] border border-white/10 rounded-xl p-3 text-white placeholder:text-white/30 focus:border-amber-500 focus:outline-none text-xs font-mono"
               />
             </div>
+          </div>
+
+          <div class="bg-white/5 border border-white/10 rounded-xl p-3.5 flex items-center gap-3">
+            <input
+              v-model="newTenantForm.billingExempt"
+              type="checkbox"
+              id="billingExemptCheck"
+              class="rounded border-white/20 text-amber-600 focus:ring-amber-500 cursor-pointer"
+            />
+            <label for="billingExemptCheck" class="text-white/80 cursor-pointer leading-tight">
+              <strong>Sin cargo (tienda piloto):</strong> no tiene prueba ni suscripción. Si no lo marcás, arranca con la prueba gratis.
+            </label>
           </div>
 
           <div class="bg-white/5 border border-white/10 rounded-xl p-3.5 flex items-center gap-3">

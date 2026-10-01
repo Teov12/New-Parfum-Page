@@ -228,7 +228,7 @@ const handleAddRecommended = (product = matchResult.value) => {
 
 // WhatsApp Sommelier Consultation
 const whatsappSommelierUrl = computed(() => {
-  const phone = tenantStore.branding?.whatsappNumber || '5493564622055'
+  const phone = tenantStore.branding?.whatsappNumber || ''
   const recName = matchResult.value ? matchResult.value.name : 'una fragancia'
   const text = `Hola, realicé el test olfativo en su boutique web y me recomendó *${recName}* (${matchPercentage.value}% de afinidad).\n\nMis preferencias fueron:\n• Búsqueda: ${answers.value.gender}\n• Familia: ${answers.value.family}\n• Intensidad: ${answers.value.intensity}\n• Ocasión: ${answers.value.occasion}\n\n¿Tienen stock disponible o decants para probarlo? Muchas gracias.`
   return `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`

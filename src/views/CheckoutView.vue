@@ -152,8 +152,7 @@ onMounted(async () => {
         await fetch('/api/checkout/confirm-return', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'x-tenant-id': tenantStore.tenantId
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             orderNumber: returnOrderNumber,
@@ -246,10 +245,10 @@ const buildWhatsAppMessage = (orderNumber, serverOrder) => {
     return `   ${idx + 1}. *${item.name}* (${item.brand})\n      • Medida: ${item.size}\n      • Cantidad: ${item.quantity} un.\n      • Subtotal: $${(item.price * item.quantity).toLocaleString('es-AR')}`
   }).join('\n\n')
 
-  let paymentMethodLabel = 'Transferencia Bancaria (28% OFF)'
-  if (paymentMethod.value === 'credit_card') paymentMethodLabel = 'Tarjeta de Crédito (3 y 6 Cuotas Sin Interés)'
+  let paymentMethodLabel = 'Transferencia Bancaria'
+  if (paymentMethod.value === 'credit_card') paymentMethodLabel = `Tarjeta de Crédito (hasta ${tenantStore.maxInstallments} cuotas)`
 
-  const storeNameUpper = (tenantStore.storeName || 'Gicca Perfumes').toUpperCase()
+  const storeNameUpper = tenantStore.storeName.toUpperCase()
   let msg = `*NUEVO PEDIDO - ${storeNameUpper}*\n`
   msg += `━━━━━━━━━━━━━━━━━━━━━\n`
   msg += `*Nº de Orden:* #${orderNumber}\n`
@@ -336,8 +335,7 @@ const handleFinalOrder = async () => {
     const res = await fetch('/api/orders', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'x-tenant-id': tenantStore.tenantId
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(buildOrderRequest('transfer'))
     })
@@ -387,8 +385,7 @@ const handleMercadoPagoPayment = async () => {
     const res = await fetch('/api/checkout/create-preference', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'x-tenant-id': tenantStore.tenantId
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({ orderData })
     })
@@ -968,10 +965,10 @@ const handleMercadoPagoPayment = async () => {
                       3 y 6 Cuotas
                     </span>
                   </div>
-                  <p class="text-[11px] text-secondary">Abonás el precio de lista en hasta 3 o 6 cuotas fijas sin interés.</p>
+                  <p class="text-[11px] text-secondary">Abonás el precio de lista en hasta {{ tenantStore.maxInstallments }} cuotas con Mercado Pago.</p>
                   <div class="pt-1 text-[11px] text-amber-800 font-bold flex items-center gap-1">
                     <span class="material-symbols-outlined text-sm">credit_card</span>
-                    <span>Hasta 6 cuotas de ${{ Math.round(cartStore.subtotal / 6).toLocaleString('es-AR') }} (o 3 de ${{ Math.round(cartStore.subtotal / 3).toLocaleString('es-AR') }}) sin interés</span>
+                    <span>Hasta {{ tenantStore.maxInstallments }} cuotas de ${{ Math.round(cartStore.subtotal / tenantStore.maxInstallments).toLocaleString('es-AR') }}</span>
                   </div>
                 </div>
               </div>
@@ -997,9 +994,9 @@ const handleMercadoPagoPayment = async () => {
                   <div class="bg-surface p-3 rounded-xs border border-outline-variant/70 space-y-1">
                     <span class="text-[10px] text-secondary font-label uppercase block">Alias Bancario / CVU:</span>
                     <div class="flex items-center justify-between gap-1">
-                      <span class="font-mono font-bold text-primary truncate">{{ tenantStore.bankDetails.alias || 'GICCA.PERFUMES.MP' }}</span>
+                      <span class="font-mono font-bold text-primary truncate">{{ tenantStore.bankDetails.alias }}</span>
                       <button 
-                        @click="copyToClipboard(tenantStore.bankDetails.alias || 'GICCA.PERFUMES.MP', 'Alias')"
+                        @click="copyToClipboard(tenantStore.bankDetails.alias, 'Alias')"
                         type="button"
                         class="text-[10px] font-bold text-primary hover:text-emerald-700 uppercase tracking-wider px-2 py-1 bg-surface-container rounded-xs border border-outline-variant transition-colors flex items-center gap-1"
                       >
@@ -1028,7 +1025,7 @@ const handleMercadoPagoPayment = async () => {
 
                 <div class="flex flex-wrap justify-between gap-2 text-[11px] text-secondary border-t border-outline-variant/60 pt-2.5">
                   <div><strong>Banco:</strong> {{ tenantStore.bankDetails.bankName || 'Mercado Pago' }}</div>
-                  <div><strong>Titular:</strong> {{ tenantStore.bankDetails.accountHolder || 'Gicca Perfumes S.A.' }}</div>
+                  <div><strong>Titular:</strong> {{ tenantStore.bankDetails.accountHolder || tenantStore.storeName }}</div>
                 </div>
               </div>
 
@@ -1153,7 +1150,7 @@ const handleMercadoPagoPayment = async () => {
               </span>
             </div>
             <div v-if="paymentMethod === 'credit_card'" class="text-right text-[11px] text-secondary">
-              Hasta 6 cuotas de ${{ Math.round(finalTotal / 6).toLocaleString('es-AR') }} (o 3 de ${{ Math.round(finalTotal / 3).toLocaleString('es-AR') }}) sin interés
+              Hasta {{ tenantStore.maxInstallments }} cuotas de ${{ Math.round(finalTotal / tenantStore.maxInstallments).toLocaleString('es-AR') }}
             </div>
             <div v-else-if="transferDiscount > 0" class="text-right text-[11px] text-emerald-800 font-medium">
               Ahorro de ${{ transferDiscount.toLocaleString('es-AR') }} aplicado por pago mediante Transferencia directa

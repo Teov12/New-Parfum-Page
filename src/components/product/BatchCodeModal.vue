@@ -15,7 +15,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 const tenantStore = useTenantStore()
-const storeName = computed(() => tenantStore.storeName || 'Gicca Perfumes')
+const storeName = computed(() => tenantStore.storeName)
 
 const activeGuideTab = ref('bottle')
 const userBatchInput = ref('')

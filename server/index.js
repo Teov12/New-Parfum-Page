@@ -12,52 +12,85 @@ import orderRoutes from './routes/orders.js'
 import siteContentRoutes from './routes/siteContent.js'
 import tenantRoutes from './routes/tenants.js'
 import checkoutRoutes from './routes/checkout.js'
+import platformRoutes from './routes/platform.js'
+import billingRoutes from './routes/billing.js'
+import staffRoutes from './routes/staff.js'
+import mercadopagoOAuthRoutes from './routes/mercadopagoOAuth.js'
 import { tenantMiddleware } from './middleware/tenant.js'
 import { connectDatabase } from './dbConnection.js'
 import { getProducts, cancelStaleMercadoPagoOrders } from './db.js'
+import { enforceBilling } from './services/billing.js'
+import { refreshExpiringConnections } from './services/mercadopagoOAuth.js'
+import { renderStoreHtml, renderRobots, escapeXml } from './services/seo.js'
+import { getStoreUrl, PLATFORM } from './config/platform.js'
 import swaggerUi from 'swagger-ui-express'
 import { swaggerDocument } from './swagger.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const isProduction = process.env.NODE_ENV === 'production'
 
 // Conectar a base de datos (MongoDB si está configurado, o fallback JSON)
 connectDatabase()
+
+if (isProduction && !process.env.MONGODB_URI) {
+  console.warn('[Plataforma] Sin MONGODB_URI el servidor funciona como una sola tienda (modo archivos JSON): el registro de nuevas perfumerías queda deshabilitado.')
+}
 
 const app = express()
 const PORT = process.env.PORT || 3001
 
 // Detrás del proxy del hosting (Render, Railway, Nginx) para que los límites por IP usen la IP real
 app.set('trust proxy', Number(process.env.TRUST_PROXY ?? 1))
+app.disable('x-powered-by')
 
 // Middleware
-const allowedOrigins = process.env.CORS_ORIGIN 
-  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim()) 
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
   : '*'
 
 app.use(cors({
   origin: allowedOrigins === '*' ? '*' : allowedOrigins,
   credentials: true
 }))
-app.use(express.json({ limit: '20mb' }))
-app.use(express.urlencoded({ extended: true, limit: '20mb' }))
+app.use(express.json({ limit: '5mb' }))
+app.use(express.urlencoded({ extended: true, limit: '5mb' }))
+
+// Cabeceras de seguridad básicas
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN')
+  next()
+})
 
 // Multi-tenant Middleware (detecta automáticamente la tienda según dominio o cabecera x-tenant-id)
 app.use(tenantMiddleware)
 
-// Static uploads directory with cache
+// Imágenes subidas. Los SVG se sirven aislados para que no puedan ejecutar scripts en el dominio de una tienda.
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   maxAge: '7d',
-  immutable: true
+  immutable: true,
+  setHeaders: (res, filePath) => {
+    if (filePath.toLowerCase().endsWith('.svg')) {
+      res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; sandbox")
+    }
+  }
 }))
 
-// Direct favicon & touch icons serving with 7 days cache
+// Favicon de cada tienda (si cargó su ícono) o el genérico
 app.get(['/favicon.ico', '/favicon.png', '/apple-touch-icon.png'], (req, res) => {
+  const customIcon = req.tenant?.branding?.faviconUrl || req.tenant?.branding?.iconUrl
+  if (customIcon && !req.isPlatformHost) {
+    res.setHeader('Cache-Control', 'public, max-age=3600')
+    return res.redirect(302, customIcon)
+  }
+
   const fileName = path.basename(req.path)
   const distFile = path.join(__dirname, '..', 'dist', fileName)
   const pubFile = path.join(__dirname, '..', 'public', fileName)
   const target = fs.existsSync(distFile) ? distFile : (fs.existsSync(pubFile) ? pubFile : null)
-  
+
   if (target) {
     res.setHeader('Cache-Control', 'public, max-age=604800, immutable')
     return res.sendFile(target)
@@ -75,74 +108,55 @@ app.use('/api/upload', uploadRoutes)
 app.use('/api/shipping', shippingRoutes)
 app.use('/api/orders', orderRoutes)
 app.use('/api/site-content', siteContentRoutes)
+app.use('/api/platform', platformRoutes)
+app.use('/api/billing', billingRoutes)
+app.use('/api/staff', staffRoutes)
+app.use('/api/mercadopago/oauth', mercadopagoOAuthRoutes)
 
-// Helper to escape XML special entities
-const escapeXml = (unsafe) => {
-  if (!unsafe) return ''
-  return String(unsafe).replace(/[<>&'"]/g, (c) => {
-    switch (c) {
-      case '<': return '&lt;'
-      case '>': return '&gt;'
-      case '&': return '&amp;'
-      case '\'': return '&apos;'
-      case '"': return '&quot;'
-      default: return c
-    }
-  })
-}
+// robots.txt de cada tienda
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain').set('Cache-Control', 'public, max-age=3600').send(renderRobots({ tenant: req.tenant, req }))
+})
 
-// Dynamic XML Sitemap for Google Search & Google Images
+// Sitemap XML de cada tienda (Google Search & Google Images)
 app.get('/sitemap.xml', async (req, res) => {
   try {
-    const baseUrl = process.env.SITE_URL || 'https://giccaparfum.com'
-    const products = await getProducts()
+    const baseUrl = getStoreUrl(req.tenant, req)
+    const products = req.storeNotFound ? [] : await getProducts(req.tenantId)
     const today = new Date().toISOString().split('T')[0]
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`
     xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n`
 
-    // Static primary landing pages
-    const staticPages = [
-      { loc: `${baseUrl}/`, priority: '1.0', changefreq: 'daily' },
-      { loc: `${baseUrl}/catalogo`, priority: '0.9', changefreq: 'daily' },
-      { loc: `${baseUrl}/catalogo?category=arabes`, priority: '0.9', changefreq: 'daily' },
-      { loc: `${baseUrl}/catalogo?gender=man`, priority: '0.8', changefreq: 'weekly' },
-      { loc: `${baseUrl}/catalogo?gender=woman`, priority: '0.8', changefreq: 'weekly' },
-      { loc: `${baseUrl}/catalogo?gender=unisex`, priority: '0.8', changefreq: 'weekly' },
-      { loc: `${baseUrl}/quiz`, priority: '0.7', changefreq: 'monthly' },
-      { loc: `${baseUrl}/contacto`, priority: '0.6', changefreq: 'monthly' }
-    ]
+    const staticPages = req.isPlatformHost
+      ? [{ loc: `${baseUrl}/`, priority: '1.0', changefreq: 'weekly' }, { loc: `${baseUrl}/crear-tienda`, priority: '0.9', changefreq: 'monthly' }]
+      : [
+          { loc: `${baseUrl}/`, priority: '1.0', changefreq: 'daily' },
+          { loc: `${baseUrl}/catalogo`, priority: '0.9', changefreq: 'daily' },
+          { loc: `${baseUrl}/catalogo?gender=man`, priority: '0.8', changefreq: 'weekly' },
+          { loc: `${baseUrl}/catalogo?gender=woman`, priority: '0.8', changefreq: 'weekly' },
+          { loc: `${baseUrl}/catalogo?gender=unisex`, priority: '0.8', changefreq: 'weekly' },
+          { loc: `${baseUrl}/quiz`, priority: '0.7', changefreq: 'monthly' },
+          { loc: `${baseUrl}/contacto`, priority: '0.6', changefreq: 'monthly' }
+        ]
 
     for (const page of staticPages) {
-      xml += `  <url>\n`
-      xml += `    <loc>${escapeXml(page.loc)}</loc>\n`
-      xml += `    <lastmod>${today}</lastmod>\n`
-      xml += `    <changefreq>${page.changefreq}</changefreq>\n`
-      xml += `    <priority>${page.priority}</priority>\n`
-      xml += `  </url>\n`
+      xml += `  <url>\n    <loc>${escapeXml(page.loc)}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>${page.changefreq}</changefreq>\n    <priority>${page.priority}</priority>\n  </url>\n`
     }
 
-    // Dynamic Product pages from MongoDB Atlas with Image indexing
-    for (const p of products) {
-      const slug = p.slug || p.id
-      const lastModDate = p.updatedAt ? new Date(p.updatedAt).toISOString().split('T')[0] : today
-      const mainImage = p.images && p.images[0] ? p.images[0] : ''
-      const safeTitle = escapeXml(p.name || '')
-      const safeBrand = escapeXml(p.brand || '')
+    if (!req.isPlatformHost) {
+      for (const p of products) {
+        const slug = p.slug || p.id
+        const lastModDate = p.updatedAt ? new Date(p.updatedAt).toISOString().split('T')[0] : today
+        const mainImage = p.images && p.images[0] ? p.images[0] : ''
+        const imageUrl = mainImage && !/^https?:\/\//.test(mainImage) ? `${baseUrl}${mainImage}` : mainImage
 
-      xml += `  <url>\n`
-      xml += `    <loc>${escapeXml(`${baseUrl}/producto/${slug}`)}</loc>\n`
-      xml += `    <lastmod>${lastModDate}</lastmod>\n`
-      xml += `    <changefreq>weekly</changefreq>\n`
-      xml += `    <priority>0.9</priority>\n`
-      if (mainImage) {
-        xml += `    <image:image>\n`
-        xml += `      <image:loc>${escapeXml(mainImage)}</image:loc>\n`
-        xml += `      <image:title>Perfume ${safeTitle} - ${safeBrand}</image:title>\n`
-        xml += `      <image:caption>Perfume ${safeTitle} 100% Original en Gicca Perfumes Boutique</image:caption>\n`
-        xml += `    </image:image>\n`
+        xml += `  <url>\n    <loc>${escapeXml(`${baseUrl}/producto/${slug}`)}</loc>\n    <lastmod>${lastModDate}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n`
+        if (imageUrl) {
+          xml += `    <image:image>\n      <image:loc>${escapeXml(imageUrl)}</image:loc>\n      <image:title>${escapeXml(`${p.name || ''} - ${p.brand || ''}`)}</image:title>\n    </image:image>\n`
+        }
+        xml += `  </url>\n`
       }
-      xml += `  </url>\n`
     }
 
     xml += `</urlset>`
@@ -161,20 +175,22 @@ app.get('/api/health', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache')
   res.json({
     status: 'ok',
-    service: 'Gicca Perfumes Backend API',
+    service: `${PLATFORM.name} API`,
     uptime: Math.round(process.uptime()),
     timestamp: new Date().toISOString()
   })
 })
 
-// Swagger Documentation
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
-  customSiteTitle: 'Gicca Perfumes API Docs',
-  customCss: '.swagger-ui .topbar { display: none }'
-}))
-app.get('/api/docs.json', (req, res) => {
-  res.json(swaggerDocument)
-})
+// Documentación de la API (en producción solo si se habilita explícitamente)
+if (!isProduction || process.env.ENABLE_API_DOCS === 'true') {
+  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
+    customSiteTitle: 'API Docs',
+    customCss: '.swagger-ui .topbar { display: none }'
+  }))
+  app.get('/api/docs.json', (req, res) => {
+    res.json(swaggerDocument)
+  })
+}
 
 // 404 handler for unmatched API routes
 app.use('/api', (req, res) => {
@@ -188,7 +204,7 @@ app.use((err, req, res, next) => {
     return next(err)
   }
   res.status(err.status || 500).json({
-    error: process.env.NODE_ENV === 'production'
+    error: isProduction
       ? 'Ocurrió un error interno en el servidor.'
       : (err.message || 'Error interno del servidor')
   })
@@ -197,7 +213,11 @@ app.use((err, req, res, next) => {
 // Serve production frontend dist (SPA Mode) with optimized HTTP caching
 const distPath = path.join(__dirname, '..', 'dist')
 if (fs.existsSync(distPath)) {
+  const indexTemplate = fs.readFileSync(path.join(distPath, 'index.html'), 'utf-8')
+
   app.use(express.static(distPath, {
+    // index.html se arma por tienda (SEO + configuración pública), nunca se sirve estático
+    index: false,
     maxAge: '1y',
     immutable: true,
     setHeaders: (res, filePath) => {
@@ -206,24 +226,36 @@ if (fs.existsSync(distPath)) {
       }
     }
   }))
-  app.use((req, res, next) => {
-    if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
-      res.setHeader('Cache-Control', 'no-cache, must-revalidate')
-      return res.sendFile(path.join(distPath, 'index.html'))
+  app.use(async (req, res, next) => {
+    if (req.method !== 'GET' || req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+      return next()
     }
-    next()
+    try {
+      const html = await renderStoreHtml({ template: indexTemplate, tenant: req.tenant, req })
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate')
+      res.status(req.storeNotFound ? 404 : 200).type('html').send(html)
+    } catch (err) {
+      console.error('[SEO] Error renderizando la página:', err.message)
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate')
+      res.type('html').send(indexTemplate)
+    }
   })
 }
 
-// Pedidos de Mercado Pago nunca pagados: se cancelan y liberan su stock reservado
+// Tareas periódicas
 const STALE_ORDER_HOURS = Number(process.env.MP_PENDING_ORDER_TTL_HOURS) || 72
-setInterval(() => {
-  cancelStaleMercadoPagoOrders(STALE_ORDER_HOURS)
-    .then(count => { if (count > 0) console.log(`[Orders] ${count} pedido(s) de Mercado Pago vencidos fueron cancelados.`) })
-    .catch(err => console.error('[Orders] Error cancelando pedidos vencidos:', err.message))
-}, 30 * 60 * 1000).unref()
+const runJob = (name, fn) => fn()
+  .then(count => { if (count > 0) console.log(`[Jobs] ${name}: ${count}`) })
+  .catch(err => console.error(`[Jobs] Error en ${name}:`, err.message))
+
+// Pedidos de Mercado Pago nunca pagados: se cancelan y liberan su stock reservado
+setInterval(() => runJob('pedidos de Mercado Pago vencidos cancelados', () => cancelStaleMercadoPagoOrders(STALE_ORDER_HOURS)), 30 * 60 * 1000).unref()
+// Tiendas con prueba vencida o pago atrasado: se pausan
+setInterval(() => runJob('tiendas pausadas por suscripción', enforceBilling), 60 * 60 * 1000).unref()
+// Tokens de Mercado Pago (OAuth) próximos a vencer: se renuevan
+setInterval(() => runJob('conexiones de Mercado Pago renovadas', refreshExpiringConnections), 12 * 60 * 60 * 1000).unref()
 
 app.listen(PORT, () => {
-  console.log(`Servidor Backend Gicca Perfumes ejecutandose en http://localhost:${PORT}`)
-  console.log(`Swagger API Docs disponible en http://localhost:${PORT}/api/docs`)
+  console.log(`Servidor de ${PLATFORM.name} ejecutándose en http://localhost:${PORT}`)
+  if (!isProduction) console.log(`Swagger API Docs disponible en http://localhost:${PORT}/api/docs`)
 })

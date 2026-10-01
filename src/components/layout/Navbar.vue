@@ -69,7 +69,7 @@ const isActive = (path) => {
         </div>
 
         <span class="font-sans text-xl sm:text-2xl xl:text-3xl text-primary font-normal tracking-tight group-hover:text-primary-container transition-colors truncate max-w-[200px] sm:max-w-none">
-          {{ tenantStore.storeName || 'Gicca Perfumes' }}
+          {{ tenantStore.storeName }}
         </span>
       </RouterLink>
 
@@ -201,7 +201,7 @@ const isActive = (path) => {
               class="w-5 h-5 object-contain rounded-xs" 
             />
             <span v-else class="material-symbols-outlined text-base text-primary">{{ tenantStore.branding?.storeIcon || 'spa' }}</span>
-            <span>{{ tenantStore.storeName || 'Gicca Perfumes' }}</span>
+            <span>{{ tenantStore.storeName }}</span>
           </div>
           <RouterLink to="/quiz" @click="isMobileMenuOpen = false" class="text-primary underline font-bold hover:text-primary-container transition-colors">
             Quiz Olfativo

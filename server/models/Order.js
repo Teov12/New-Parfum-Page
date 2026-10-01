@@ -42,6 +42,8 @@ const orderSchema = new mongoose.Schema({
   paymentStatus: { type: String, default: 'pending', enum: ['pending', 'paid', 'cancelled', 'refunded'] },
   fulfillmentStatus: { type: String, default: 'unfulfilled', enum: ['unfulfilled', 'packing', 'shipped', 'delivered'] },
   trackingCode: { type: String, default: '' },
+  shippingCarrier: { type: String, default: '' },
+  shippingLabelUrl: { type: String, default: '' },
   notes: { type: String, default: '' },
   source: { type: String, default: 'web' },
   // Token secreto para que el comprador vea su comprobante sin exponer pedidos ajenos

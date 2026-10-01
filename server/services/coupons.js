@@ -1,4 +1,4 @@
-import { getDefaultTenantId } from '../middleware/tenant.js'
+import { getDefaultTenantId } from '../config/platform.js'
 
 // Cupones históricos de la tienda principal (antes vivían en el frontend).
 // Se usan solo mientras esa tienda no tenga cupones propios cargados.

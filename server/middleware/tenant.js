@@ -3,6 +3,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { Tenant } from '../models/Tenant.js'
 import { isMongoConnected } from '../dbConnection.js'
+import { PLATFORM, getDefaultTenantId } from '../config/platform.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -22,7 +23,7 @@ function getStoredLocalTenant() {
 // Cache en memoria para resolver dominios rápidamente sin golpear la base de datos en cada request
 const tenantCache = new Map()
 
-// Default fallback configuration para Gicca Perfumes
+// Configuración de respaldo de la tienda principal de la instalación (Gicca Perfumes)
 export const DEFAULT_TENANT_CONFIG = {
   tenantId: 'gicca',
   name: 'Gicca Perfumes',
@@ -58,19 +59,68 @@ export const DEFAULT_TENANT_CONFIG = {
     cardFeeRate: 28,
     andreaniContractNumber: '',
     freeShippingThreshold: 250000
+  },
+  seo: {
+    title: 'Gicca Perfumes | Perfumes Importados & Fragancias Árabes 100% Originales Argentina',
+    description: 'Boutique exclusiva de perfumes importados de diseñador y perfumería árabe en Argentina. 100% originales en caja sellada con batch code verificable. Hasta 6 cuotas sin interés y envíos asegurados a todo el país con Andreani.',
+    keywords: 'perfumes importados, perfumes arabes argentina, perfumes originales, comprar perfumes online, lattafa argentina, dior sauvage, bleu de chanel, perfumes cordoba, envios andreani, perfumes cuotas sin interes',
+    ogImage: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85'
   }
 }
 
-// Estados con tienda online (una tienda suspendida no se resuelve por dominio)
-const ONLINE_STATUSES = ['active', 'trial']
+// Cuánto tiempo se recuerda la tienda de un dominio (los cambios de estado se reflejan en este plazo)
+const HOST_CACHE_TTL_MS = 60 * 1000
 
-export const getDefaultTenantId = () => (process.env.DEFAULT_TENANT || 'gicca').toLowerCase().trim()
+export { getDefaultTenantId }
 
-const setRequestTenant = (req, tenant) => {
+const setRequestTenant = (req, tenant, flags = {}) => {
   req.tenant = tenant
   // Siempre el id de la tienda efectivamente resuelta: un id inexistente nunca debe
   // operar con credenciales de otra tienda ni crear datos "huérfanos"
   req.tenantId = tenant.tenantId
+  req.isPlatformHost = Boolean(flags.platformHost)
+  req.storeNotFound = Boolean(flags.notFound)
+  req.storeSuspended = tenant.status === 'suspended'
+  // Si la tienda salió del dominio de la petición, su URL pública puede tomarse de ese mismo host
+  req.tenantFromHost = Boolean(flags.fromHost)
+}
+
+const getDefaultTenant = async () => resolveTenantById(getDefaultTenantId())
+
+/**
+ * Resuelve la tienda a partir del dominio:
+ * - <PLATFORM_DOMAIN> o www.<PLATFORM_DOMAIN>: sitio de la plataforma (landing y alta de tiendas)
+ * - <sub>.<PLATFORM_DOMAIN>: tienda por subdominio
+ * - cualquier otro dominio: tienda con ese dominio propio
+ */
+const resolveByHost = async (host) => {
+  if (!isMongoConnected()) {
+    return { tenant: getLocalDefaultTenant() }
+  }
+
+  const platformDomain = PLATFORM.domain
+  if (platformDomain) {
+    if (host === platformDomain || host === `www.${platformDomain}`) {
+      return { tenant: await getDefaultTenant(), platformHost: true }
+    }
+    if (host.endsWith(`.${platformDomain}`)) {
+      const subdomain = host.slice(0, -(platformDomain.length + 1))
+      const doc = await Tenant.findOne({ subdomain }).lean()
+      return doc ? { tenant: doc } : { tenant: await getDefaultTenant(), notFound: true }
+    }
+  }
+
+  const bareHost = host.replace(/^www\./, '')
+  const byDomain = await Tenant.findOne({ domain: { $in: [host, bareHost] } }).lean()
+  if (byDomain) return { tenant: byDomain }
+
+  // Instalación sin dominio de plataforma: se mantiene la detección por primer segmento del host
+  if (!platformDomain) {
+    const bySubdomain = await Tenant.findOne({ subdomain: host.split('.')[0] }).lean()
+    if (bySubdomain) return { tenant: bySubdomain }
+  }
+
+  return { tenant: await getDefaultTenant() }
 }
 
 export const tenantMiddleware = async (req, res, next) => {
@@ -82,7 +132,7 @@ export const tenantMiddleware = async (req, res, next) => {
       return next()
     }
 
-    // 2. Prioridad: Query param '?tenant=...' (útil para pruebas en desarrollo)
+    // 2. Prioridad: Query param '?tenant=...' (vista previa desde la consola y webhooks)
     const queryTenant = req.query.tenant
     if (queryTenant) {
       setRequestTenant(req, await resolveTenantById(String(queryTenant).toLowerCase().trim()))
@@ -93,30 +143,17 @@ export const tenantMiddleware = async (req, res, next) => {
     const host = req.headers.host || req.hostname || ''
     const cleanHost = host.split(':')[0].toLowerCase() // Remover puerto
 
-    if (tenantCache.has(cleanHost)) {
-      setRequestTenant(req, tenantCache.get(cleanHost))
+    const cached = tenantCache.get(cleanHost)
+    if (cached && cached.expiresAt > Date.now()) {
+      setRequestTenant(req, cached.tenant, cached)
       return next()
     }
 
+    const resolved = { ...(await resolveByHost(cleanHost)), fromHost: true }
     if (isMongoConnected()) {
-      // Buscar por dominio exacto (ej: giccaparfumes.com.ar o royalparfum.com)
-      let tenantDoc = await Tenant.findOne({ 
-        $or: [
-          { domain: cleanHost },
-          { subdomain: cleanHost.split('.')[0] }
-        ],
-        status: { $in: ONLINE_STATUSES }
-      }).lean()
-
-      if (tenantDoc) {
-        tenantCache.set(cleanHost, tenantDoc)
-        setRequestTenant(req, tenantDoc)
-        return next()
-      }
+      tenantCache.set(cleanHost, { ...resolved, expiresAt: Date.now() + HOST_CACHE_TTL_MS })
     }
-
-    // 4. Fallback por defecto: tienda principal de la instalación
-    setRequestTenant(req, await resolveTenantById(getDefaultTenantId()))
+    setRequestTenant(req, resolved.tenant, resolved)
     next()
   } catch (err) {
     console.error('[Tenant Middleware] Error resolviendo tenant:', err.message)
@@ -139,16 +176,21 @@ export const getLocalDefaultTenant = () => {
     ...local,
     tenantId: base.tenantId,
     branding: { ...DEFAULT_TENANT_CONFIG.branding, ...(local.branding || {}) },
-    commercial: { ...DEFAULT_TENANT_CONFIG.commercial, ...(local.commercial || {}) }
+    commercial: { ...DEFAULT_TENANT_CONFIG.commercial, ...(local.commercial || {}) },
+    seo: { ...DEFAULT_TENANT_CONFIG.seo, ...(local.seo || {}) }
   }
 }
 
+/**
+ * Busca una tienda por id (cualquier estado: las suspendidas se marcan en req.storeSuspended).
+ * Un id inexistente resuelve a la tienda principal.
+ */
 export async function resolveTenantById(id) {
   const defaultId = getDefaultTenantId()
 
   if (isMongoConnected()) {
     try {
-      const doc = await Tenant.findOne({ tenantId: id, status: { $in: ONLINE_STATUSES } }).lean()
+      const doc = await Tenant.findOne({ tenantId: id }).lean()
       if (doc) return doc
 
       if (id !== defaultId) {
@@ -165,4 +207,17 @@ export async function resolveTenantById(id) {
 
 export const clearTenantCache = () => {
   tenantCache.clear()
+}
+
+/**
+ * Bloquea la venta en tiendas pausadas o inexistentes (el dueño autenticado sigue operando su panel).
+ */
+export const requireStoreOpen = (req, res, next) => {
+  if (req.storeNotFound) {
+    return res.status(404).json({ error: 'Esta tienda no existe.', code: 'store_not_found' })
+  }
+  if (req.storeSuspended) {
+    return res.status(423).json({ error: 'La tienda está pausada temporalmente y no está tomando pedidos.', code: 'store_suspended' })
+  }
+  next()
 }

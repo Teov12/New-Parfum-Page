@@ -74,14 +74,14 @@ const isUploadingStoreIcon = ref(false)
 const storeIconForm = ref({
   iconUrl: '',
   storeIcon: 'spa',
-  storeName: 'Gicca Perfumes'
+  storeName: ''
 })
 
 const syncStoreIconForm = () => {
   storeIconForm.value = {
     iconUrl: tenantStore.branding?.iconUrl || '',
     storeIcon: tenantStore.branding?.storeIcon || 'spa',
-    storeName: tenantStore.storeName || 'Gicca Perfumes'
+    storeName: tenantStore.storeName
   }
   selectedPaletteId.value = tenantStore.branding?.paletteId || 'amber'
   customPrimaryColor.value = tenantStore.branding?.primaryColor || '#2e1911'
@@ -809,7 +809,7 @@ const handleSaveEditorial = async () => {
                   <span class="material-symbols-outlined text-base">{{ storeIconForm.storeIcon || 'spa' }}</span>
                 </div>
                 <span class="font-sans text-base font-bold text-primary truncate">
-                  {{ tenantStore.storeName || 'Gicca Perfumes' }}
+                  {{ tenantStore.storeName }}
                 </span>
               </div>
             </div>
@@ -831,7 +831,7 @@ const handleSaveEditorial = async () => {
                   {{ (tenantStore.storeName || 'G').charAt(0).toUpperCase() }}
                 </div>
                 <span class="text-xs text-slate-800 font-sans truncate">
-                  {{ tenantStore.storeName || 'Gicca Perfumes' }} | Boutique
+                  {{ tenantStore.storeName }} | Boutique
                 </span>
               </div>
             </div>
@@ -851,7 +851,7 @@ const handleSaveEditorial = async () => {
                 </div>
                 <div>
                   <span class="font-serif text-xs font-bold text-primary block leading-none truncate">
-                    {{ tenantStore.storeName || 'Gicca Perfumes' }}
+                    {{ tenantStore.storeName }}
                   </span>
                   <span class="text-[9px] font-label uppercase tracking-wider text-secondary">
                     Atelier Admin OS
@@ -932,7 +932,7 @@ const handleSaveEditorial = async () => {
 
               <!-- Mini Component Simulation -->
               <div class="p-3 rounded-lg flex items-center justify-between border" :style="{ backgroundColor: preset.surface, borderColor: preset.previewColors[1] + '40' }">
-                <span class="text-xs font-serif font-bold" :style="{ color: preset.primary }">Gicca Boutique</span>
+                <span class="text-xs font-serif font-bold" :style="{ color: preset.primary }">{{ tenantStore.storeName }}</span>
                 <span class="text-[10px] font-label uppercase px-2.5 py-1 rounded-sm text-white font-medium shadow-2xs" :style="{ backgroundColor: preset.primary }">
                   Comprar
                 </span>

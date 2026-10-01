@@ -8,7 +8,7 @@ export const THEME_PRESETS = [
     id: 'amber',
     name: 'Ámbar & Café Boutique',
     subtitle: 'Estilo Byredo / Aesop Cálido',
-    description: 'Tonos terracota, café tostado y fondos manteca. La identidad clásica y distinguida de Gicca.',
+    description: 'Tonos terracota, café tostado y fondos manteca. Una identidad clásica y distinguida.',
     previewColors: ['#2e1911', '#784233', '#fffdfa', '#d4af37'],
     primary: '#2e1911',
     primaryRgb: '46 25 17',

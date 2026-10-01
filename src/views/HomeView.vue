@@ -4,6 +4,9 @@ import { RouterLink } from 'vue-router'
 import { useProductStore } from '@/stores/products'
 import { useSiteContentStore } from '@/stores/siteContent'
 import ProductCard from '@/components/product/ProductCard.vue'
+import { useTenantStore } from '@/stores/tenant'
+
+const tenantStore = useTenantStore()
 
 const productStore = useProductStore()
 const siteContentStore = useSiteContentStore()
@@ -268,7 +271,7 @@ const homeFaqs = [
           <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
             <img 
               :src="currentSlideData.image" 
-              :alt="`Gicca Perfumes - ${currentSlideData.title || ''} ${currentSlideData.highlight || ''}`"
+              :alt="`${tenantStore.storeName} - ${currentSlideData.title || ''} ${currentSlideData.highlight || ''}`"
               class="w-full h-full object-cover object-center opacity-80 sm:opacity-85 will-change-transform"
               :class="currentSlide % 2 === 0 ? 'animate-ken-burns' : 'animate-ken-burns-alt'"
               decoding="async"
@@ -521,7 +524,7 @@ const homeFaqs = [
           <img 
             v-if="cat.image"
             :src="cat.image" 
-            :alt="`Perfumes originales categoría ${cat.title} - Gicca Perfumes`"
+            :alt="`Perfumes originales categoría ${cat.title} - ${tenantStore.storeName}`"
             class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110 opacity-85"
           />
           <div class="absolute inset-0 bg-gradient-to-t from-primary via-primary/40 to-transparent"></div>

@@ -69,7 +69,7 @@ const goToCartPage = () => {
         </div>
 
         <!-- Free Shipping Goal Banner -->
-        <div class="px-6 py-3.5 bg-surface-container border-b border-outline-variant">
+        <div v-if="cartStore.hasFreeShippingOffer" class="px-6 py-3.5 bg-surface-container border-b border-outline-variant">
           <div class="flex justify-between items-center text-xs font-label uppercase tracking-wider mb-2 text-primary">
             <span v-if="cartStore.amountForFreeShipping > 0">
               Faltan <strong>${{ cartStore.amountForFreeShipping.toLocaleString('es-AR') }}</strong> para Envío Gratis

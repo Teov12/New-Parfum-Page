@@ -1,23 +1,24 @@
 import express from 'express'
 import {
-  quoteAndreaniShipping,
+  getAndreaniConfig,
   getAndreaniBranches,
   createAndreaniShipment,
   getAndreaniTracking,
   checkAndreaniConnection
 } from '../services/andreani.js'
-import { getOrders, updateOrder } from '../db.js'
+import { quoteShippingOptions } from '../services/shippingQuote.js'
+import { getOrderByIdOrNumber, updateOrder } from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
 
 const router = express.Router()
 
 /**
  * GET /api/shipping/status
- * Verifica el estado de conexión con la API de Andreani (Sandbox / Producción)
+ * Verifica el estado de conexión con la API de Andreani (Sandbox / Producción) de la tienda actual
  */
 router.get('/status', async (req, res) => {
   try {
-    const status = await checkAndreaniConnection()
+    const status = await checkAndreaniConnection(getAndreaniConfig(req.tenant))
     res.json(status)
   } catch (err) {
     res.status(500).json({ error: 'Error al verificar conexión con Andreani', message: err.message })
@@ -26,27 +27,26 @@ router.get('/status', async (req, res) => {
 
 /**
  * POST /api/shipping/quote
- * Cotiza las opciones de Andreani (domicilio, sucursal, urgente)
+ * Cotiza las opciones de envío de la tienda (Andreani + métodos propios)
  */
 router.post('/quote', async (req, res) => {
   try {
-    const { postalCode, cartTotal, weightGrams, volumeCm3 } = req.body
+    const { postalCode, cartTotal } = req.body
 
     if (!postalCode) {
       return res.status(400).json({ error: 'El código postal es requerido' })
     }
 
-    const result = await quoteAndreaniShipping({
+    const result = await quoteShippingOptions({
+      tenant: req.tenant,
       postalCode,
-      cartTotal: Number(cartTotal) || 0,
-      weightGrams: Number(weightGrams) || 500,
-      volumeCm3: Number(volumeCm3) || 1000
+      cartTotal: Number(cartTotal) || 0
     })
 
     res.json(result)
   } catch (err) {
-    console.error('Error al cotizar con Andreani:', err.message)
-    res.status(400).json({ error: err.message || 'Error al cotizar con Andreani' })
+    console.error('Error al cotizar envío:', err.message)
+    res.status(400).json({ error: err.message || 'Error al cotizar el envío' })
   }
 })
 
@@ -61,7 +61,8 @@ router.get('/estimate', async (req, res) => {
       return res.status(400).json({ error: 'El parámetro cp es requerido' })
     }
 
-    const result = await quoteAndreaniShipping({
+    const result = await quoteShippingOptions({
+      tenant: req.tenant,
       postalCode: cp,
       cartTotal: Number(total) || 0
     })
@@ -83,7 +84,7 @@ router.get('/sucursales', async (req, res) => {
       return res.status(400).json({ error: 'El código postal es requerido' })
     }
 
-    const branches = await getAndreaniBranches(cp)
+    const branches = await getAndreaniBranches(cp, getAndreaniConfig(req.tenant))
     res.json({
       success: true,
       postalCode: cp,
@@ -105,7 +106,7 @@ router.get('/tracking/:trackingCode', async (req, res) => {
       return res.status(400).json({ error: 'Código de tracking requerido' })
     }
 
-    const trackingInfo = await getAndreaniTracking(trackingCode)
+    const trackingInfo = await getAndreaniTracking(trackingCode, getAndreaniConfig(req.tenant))
     res.json(trackingInfo)
   } catch (err) {
     res.status(500).json({ error: err.message || 'Error al consultar tracking' })
@@ -114,7 +115,7 @@ router.get('/tracking/:trackingCode', async (req, res) => {
 
 /**
  * POST /api/shipping/generate
- * Genera la orden de despacho formal en Andreani para un pedido
+ * Genera la orden de despacho formal en Andreani para un pedido de la tienda actual
  */
 router.post('/generate', requireAuth, async (req, res) => {
   try {
@@ -123,15 +124,13 @@ router.post('/generate', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'El orderId es requerido' })
     }
 
-    const orders = await getOrders()
-    const order = orders.find(o => o.id === orderId || o.orderNumber === orderId)
-
+    const order = await getOrderByIdOrNumber(orderId, req.tenantId)
     if (!order) {
       return res.status(404).json({ error: 'Pedido no encontrado' })
     }
 
-    // Generar envío en Andreani
-    const shipmentResult = await createAndreaniShipment(order)
+    // Generar envío en Andreani con la cuenta de la tienda
+    const shipmentResult = await createAndreaniShipment(order, getAndreaniConfig(req.tenant))
 
     if (shipmentResult.success && shipmentResult.trackingCode) {
       // Actualizar la orden con el código de seguimiento
@@ -140,7 +139,7 @@ router.post('/generate', requireAuth, async (req, res) => {
         fulfillmentStatus: 'shipped',
         shippingCarrier: 'Andreani',
         shippingLabelUrl: shipmentResult.labelUrl || ''
-      })
+      }, req.tenantId)
     }
 
     res.json({

@@ -1,6 +1,9 @@
 <script setup>
 import { RouterLink } from 'vue-router'
 import { useSiteContentStore } from '@/stores/siteContent'
+import { useTenantStore } from '@/stores/tenant'
+
+const tenantStore = useTenantStore()
 
 const siteContentStore = useSiteContentStore()
 </script>
@@ -31,7 +34,7 @@ const siteContentStore = useSiteContentStore()
           </h2>
           <div class="space-y-4 font-sans text-secondary text-base leading-relaxed">
             <p>
-              En <strong>Gicca Perfumes</strong> nacimos con una propuesta clara: que puedas comprar tus perfumes favoritos de manera fácil, segura y con precios justos.
+              En <strong>{{ tenantStore.storeName }}</strong> nacimos con una propuesta clara: que puedas comprar tus perfumes favoritos de manera fácil, segura y con precios justos.
             </p>
             <p>
               Trabajamos con importadores y distribuidores directos para garantizar que cada perfume sea 100% legítimo, nuevo, sellado de fábrica y con su código de lote (batch code) verificable.
@@ -46,7 +49,7 @@ const siteContentStore = useSiteContentStore()
           <div class="aspect-[4/5] bg-surface-container border border-outline-variant rounded-xs overflow-hidden shadow-md">
             <img 
               :src="siteContentStore.editorial?.aboutImage || 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85'" 
-              alt="Fragancias originales en Gicca Perfumes"
+              :alt="`Fragancias originales en ${tenantStore.storeName}`"
               class="w-full h-full object-cover hover:scale-105 transition-transform duration-700 ease-out"
             />
           </div>

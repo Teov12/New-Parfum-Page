@@ -25,15 +25,27 @@ const extractToken = (req) => {
 
 const decodeToken = (token) => {
   const decoded = jwt.verify(token, JWT_SECRET)
-  if (decoded.v !== TOKEN_VERSION) {
+  if (decoded.v !== TOKEN_VERSION || decoded.purpose) {
     throw new Error('Formato de token obsoleto')
   }
   return decoded
 }
 
-// El superadmin opera sobre cualquier tienda; el dueño solo sobre la suya
-const canAccessTenant = (user, tenantId) => {
-  return user.role === 'superadmin' || (Boolean(user.tenantId) && user.tenantId === tenantId)
+const sameEmail = (a, b) => String(a || '').toLowerCase().trim() === String(b || '').toLowerCase().trim()
+
+// El superadmin opera sobre cualquier tienda; el dueño y su equipo solo sobre la suya.
+// Además la sesión deja de valer si al usuario le quitaron el acceso o le cambiaron el email.
+const canAccessTenant = (user, tenantId, tenant) => {
+  if (user.role === 'superadmin') return true
+  if (!user.tenantId || user.tenantId !== tenantId) return false
+
+  if (user.role === 'staff') {
+    return (tenant?.staff || []).some(m => m.active !== false && sameEmail(m.email, user.email))
+  }
+  if (user.role === 'owner' && tenant?.adminUser?.passwordHash) {
+    return sameEmail(tenant.adminUser.email, user.email)
+  }
+  return user.role === 'owner'
 }
 
 /**
@@ -57,9 +69,13 @@ export const requireAuth = (req, res, next) => {
     })
   }
 
-  if (!canAccessTenant(decoded, req.tenantId)) {
-    return res.status(403).json({
-      error: 'Tu cuenta no tiene acceso a esta tienda.'
+  if (!canAccessTenant(decoded, req.tenantId, req.tenant)) {
+    // Misma tienda pero acceso revocado: la sesión venció (el panel vuelve al login)
+    const revoked = decoded.tenantId && decoded.tenantId === req.tenantId
+    return res.status(revoked ? 401 : 403).json({
+      error: revoked
+        ? 'Tu sesión ya no es válida. Iniciá sesión nuevamente.'
+        : 'Tu cuenta no tiene acceso a esta tienda.'
     })
   }
 
@@ -80,6 +96,18 @@ export const requireSuperadmin = (req, res, next) => {
 }
 
 /**
+ * Solo el dueño de la tienda (o el superadmin): configuración, cobros, suscripción y equipo
+ */
+export const requireOwner = (req, res, next) => {
+  requireAuth(req, res, () => {
+    if (!['owner', 'superadmin'].includes(req.user?.role)) {
+      return res.status(403).json({ error: 'Solo el dueño de la tienda puede realizar esta acción.' })
+    }
+    next()
+  })
+}
+
+/**
  * Devuelve el usuario autenticado con acceso a la tienda actual, o null.
  * Para endpoints públicos que habilitan más opciones a un administrador (ej: ventas manuales).
  */
@@ -88,7 +116,7 @@ export const getAuthorizedUser = (req) => {
   if (!token) return null
   try {
     const decoded = decodeToken(token)
-    return canAccessTenant(decoded, req.tenantId) ? decoded : null
+    return canAccessTenant(decoded, req.tenantId, req.tenant) ? decoded : null
   } catch {
     return null
   }
@@ -96,4 +124,18 @@ export const getAuthorizedUser = (req) => {
 
 export const signAdminToken = (payload) => {
   return jwt.sign({ ...payload, v: TOKEN_VERSION }, JWT_SECRET, { expiresIn: '7d' })
+}
+
+/**
+ * Tokens de un solo propósito y corta duración (traspaso de sesión tras el registro, estado de OAuth).
+ * Nunca sirven como token de sesión: decodeToken rechaza cualquier token con 'purpose'.
+ */
+export const signPurposeToken = (payload, purpose, expiresIn = '10m') => {
+  return jwt.sign({ ...payload, purpose }, JWT_SECRET, { expiresIn })
+}
+
+export const verifyPurposeToken = (token, purpose) => {
+  const decoded = jwt.verify(String(token || ''), JWT_SECRET)
+  if (decoded.purpose !== purpose) throw new Error('Token con propósito inválido')
+  return decoded
 }

@@ -32,11 +32,12 @@ if (isCloudinaryConfigured) {
 
   uploadStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
-    params: {
-      folder: 'gicca_perfumes',
+    // Cada tienda sube a su propia carpeta
+    params: async (req) => ({
+      folder: `tenants/${req.tenantId}`,
       allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'svg', 'ico', 'avif'],
       resource_type: 'auto'
-    }
+    })
   })
   console.log('[Uploads] Almacenamiento activo: Cloudinary Cloud CDN')
 } else {
@@ -45,8 +46,11 @@ if (isCloudinaryConfigured) {
       cb(null, UPLOADS_DIR)
     },
     filename: function (req, file, cb) {
-      const ext = path.extname(file.originalname) || '.jpg'
-      const uniqueName = `perfume_${Date.now()}_${Math.random().toString(36).substr(2, 6)}${ext}`
+      // La extensión guardada siempre es de imagen (evita subir .html con un mimetype falso)
+      const rawExt = path.extname(file.originalname).toLowerCase()
+      const ext = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.ico', '.avif'].includes(rawExt) ? rawExt : '.jpg'
+      const safeTenant = String(req.tenantId || 'store').replace(/[^a-z0-9-]/gi, '')
+      const uniqueName = `${safeTenant}_perfume_${Date.now()}_${Math.random().toString(36).substr(2, 6)}${ext.toLowerCase()}`
       cb(null, uniqueName)
     }
   })

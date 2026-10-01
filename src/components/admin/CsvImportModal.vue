@@ -191,7 +191,7 @@ const downloadTemplate = () => {
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.setAttribute('href', url)
-  link.setAttribute('download', 'plantilla_perfumes_gicca.csv')
+  link.setAttribute('download', 'plantilla_perfumes.csv')
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)

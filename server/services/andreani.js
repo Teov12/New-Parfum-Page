@@ -11,28 +11,50 @@
  * 7. Descarga y visualización de rótulo / etiqueta de envío (GET /v2/ordenes-de-envio/{numeroDeEnvio}/etiquetas).
  */
 
-// Memoria caché para el token de Andreani
-let tokenCache = {
-  token: null,
-  expiresAt: 0
-}
+import { decryptSecret } from './secrets.js'
+
+// Caché de tokens de Andreani por cuenta (cada tienda puede tener sus propias credenciales)
+const tokenCache = new Map()
 
 /**
- * Obtiene la configuración activa leyendo directamente del entorno
+ * Configuración de Andreani para una tienda.
+ * - Credenciales propias de la tienda (Admin > Mi Tienda > Andreani) si están cargadas.
+ * - Las variables de entorno ANDREANI_* solo aplican a la tienda principal de la instalación:
+ *   otra perfumería nunca despacha con la cuenta de Andreani de la principal.
+ * Sin credenciales, la cotización usa la matriz zonal de tarifas de referencia.
  */
-export const getAndreaniConfig = () => {
-  const isSandbox = process.env.ANDREANI_SANDBOX !== 'false'
+export const getAndreaniConfig = (tenant = null) => {
+  const defaultTenantId = (process.env.DEFAULT_TENANT || 'gicca').toLowerCase().trim()
+  const useEnv = !tenant || tenant.tenantId === defaultTenantId
+  const own = tenant?.commercial?.andreani || {}
+  const hasOwnCredentials = Boolean(own.username && own.password)
+
+  const pick = (ownValue, envValue, fallback = '') => {
+    if (ownValue) return String(ownValue).trim()
+    if (useEnv && envValue) return String(envValue).trim()
+    return fallback
+  }
+
+  const sandboxSetting = hasOwnCredentials
+    ? own.sandbox !== false
+    : (useEnv ? process.env.ANDREANI_SANDBOX !== 'false' : true)
+
+  const threshold = Number(tenant?.commercial?.freeShippingThreshold)
   return {
-    sandbox: isSandbox,
-    baseUrl: isSandbox ? 'https://api.qa.andreani.com' : 'https://api.andreani.com',
-    username: process.env.ANDREANI_USERNAME?.trim() || '',
-    password: process.env.ANDREANI_PASSWORD?.trim() || '',
-    clientCode: process.env.ANDREANI_CLIENT_CODE?.trim() || '',
-    contractDomicilio: process.env.ANDREANI_CONTRACT_DOMICILIO?.trim() || '400006709',
-    contractSucursal: process.env.ANDREANI_CONTRACT_SUCURSAL?.trim() || '400006710',
-    contractUrgente: process.env.ANDREANI_CONTRACT_URGENTE?.trim() || '400006711',
-    originZip: process.env.ANDREANI_ORIGIN_ZIP?.trim() || '2400',
-    freeShippingThreshold: Number(process.env.FREE_SHIPPING_THRESHOLD) || 200000
+    sandbox: sandboxSetting,
+    baseUrl: sandboxSetting ? 'https://api.qa.andreani.com' : 'https://api.andreani.com',
+    username: hasOwnCredentials ? String(own.username).trim() : (useEnv ? process.env.ANDREANI_USERNAME?.trim() || '' : ''),
+    password: hasOwnCredentials ? decryptSecret(own.password) : (useEnv ? process.env.ANDREANI_PASSWORD?.trim() || '' : ''),
+    clientCode: pick(own.clientCode, process.env.ANDREANI_CLIENT_CODE),
+    contractDomicilio: pick(own.contractDomicilio, process.env.ANDREANI_CONTRACT_DOMICILIO, '400006709'),
+    contractSucursal: pick(own.contractSucursal, process.env.ANDREANI_CONTRACT_SUCURSAL, '400006710'),
+    contractUrgente: pick(own.contractUrgente, process.env.ANDREANI_CONTRACT_URGENTE, '400006711'),
+    originZip: pick(own.originZip, process.env.ANDREANI_ORIGIN_ZIP, '2400'),
+    // El umbral de envío gratis es el configurado por la tienda (mismo valor que usa el carrito)
+    // 0 = la tienda no ofrece envío gratis
+    freeShippingThreshold: tenant?.commercial?.freeShippingThreshold !== undefined && Number.isFinite(threshold)
+      ? (threshold > 0 ? threshold : Infinity)
+      : (Number(process.env.FREE_SHIPPING_THRESHOLD) || 200000)
   }
 }
 
@@ -88,16 +110,17 @@ export const getZoneInfoByPostalCode = (cpNumber) => {
  * Autentica contra la API de Andreani y obtiene el token de autorización (OAuth / JWT)
  * Guarda en caché el token con vencimiento.
  */
-export const getAndreaniToken = async () => {
-  const config = getAndreaniConfig()
+export const getAndreaniToken = async (config = getAndreaniConfig()) => {
+  const cacheKey = `${config.baseUrl}|${config.username}`
+  const cached = tokenCache.get(cacheKey)
 
   if (!config.username || !config.password) {
     return null
   }
 
   // Verificar si hay un token válido en caché
-  if (tokenCache.token && Date.now() < tokenCache.expiresAt) {
-    return tokenCache.token
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.token
   }
 
   try {
@@ -133,10 +156,10 @@ export const getAndreaniToken = async () => {
     }
 
     if (token) {
-      tokenCache = {
+      tokenCache.set(cacheKey, {
         token,
         expiresAt: Date.now() + 20 * 60 * 60 * 1000
-      }
+      })
       return token
     }
 
@@ -150,8 +173,7 @@ export const getAndreaniToken = async () => {
 /**
  * Consulta el estado de conexión y credenciales de Andreani
  */
-export const checkAndreaniConnection = async () => {
-  const config = getAndreaniConfig()
+export const checkAndreaniConnection = async (config = getAndreaniConfig()) => {
   const isConfigured = Boolean(config.username && config.password)
 
   let isConnected = false
@@ -159,7 +181,7 @@ export const checkAndreaniConnection = async () => {
   let message = 'Credenciales no configuradas. Operando con matriz tarifaria inteligente de respaldo.'
 
   if (isConfigured) {
-    token = await getAndreaniToken()
+    token = await getAndreaniToken(config)
     if (token) {
       isConnected = true
       message = `Conectado exitosamente con Andreani (${config.sandbox ? 'Entorno QA / Sandbox' : 'Entorno Producción'}).`
@@ -188,9 +210,8 @@ export const checkAndreaniConnection = async () => {
 /**
  * Consulta la tarifa en vivo a la API de Andreani para un contrato específico
  */
-export const fetchLiveTarifa = async ({ cpDestino, contrato, kilos = 0.5, volumen = 1000, valorDeclarado = 100000 }) => {
-  const config = getAndreaniConfig()
-  const token = await getAndreaniToken()
+export const fetchLiveTarifa = async ({ cpDestino, contrato, kilos = 0.5, volumen = 1000, valorDeclarado = 100000 }, config = getAndreaniConfig()) => {
+  const token = await getAndreaniToken(config)
 
   if (!token) {
     return null
@@ -261,13 +282,12 @@ const getFallbackPricing = (zoneCode) => {
 /**
  * Cotiza envíos con Andreani (API en vivo con fallback a matriz oficial)
  */
-export const quoteAndreaniShipping = async ({ postalCode, cartTotal = 0, weightGrams = 500, volumeCm3 = 1000 }) => {
+export const quoteAndreaniShipping = async ({ postalCode, cartTotal = 0, weightGrams = 500, volumeCm3 = 1000 }, config = getAndreaniConfig()) => {
   const cpNumber = normalizePostalCode(postalCode)
   if (!cpNumber) {
     throw new Error('Código postal no válido. Por favor ingresá un código postal argentino de 4 dígitos.')
   }
 
-  const config = getAndreaniConfig()
   const zoneInfo = getZoneInfoByPostalCode(cpNumber)
   const fallback = getFallbackPricing(zoneInfo.zoneCode)
 
@@ -280,11 +300,11 @@ export const quoteAndreaniShipping = async ({ postalCode, cartTotal = 0, weightG
   let isLiveRate = false
 
   try {
-    const token = await getAndreaniToken()
+    const token = await getAndreaniToken(config)
     if (token) {
       const [domRes, sucRes] = await Promise.allSettled([
-        fetchLiveTarifa({ cpDestino: cpNumber, contrato: config.contractDomicilio, kilos, volumen, valorDeclarado }),
-        fetchLiveTarifa({ cpDestino: cpNumber, contrato: config.contractSucursal, kilos, volumen, valorDeclarado })
+        fetchLiveTarifa({ cpDestino: cpNumber, contrato: config.contractDomicilio, kilos, volumen, valorDeclarado }, config),
+        fetchLiveTarifa({ cpDestino: cpNumber, contrato: config.contractSucursal, kilos, volumen, valorDeclarado }, config)
       ])
 
       if (domRes.status === 'fulfilled' && domRes.value) {
@@ -356,13 +376,12 @@ export const quoteAndreaniShipping = async ({ postalCode, cartTotal = 0, weightG
 /**
  * Consulta de sucursales Andreani por código postal (GET /v2/sucursales)
  */
-export const getAndreaniBranches = async (postalCode) => {
+export const getAndreaniBranches = async (postalCode, config = getAndreaniConfig()) => {
   const cpNumber = normalizePostalCode(postalCode)
   if (!cpNumber) {
     throw new Error('Código postal no válido para buscar sucursales.')
   }
 
-  const config = getAndreaniConfig()
   const zoneInfo = getZoneInfoByPostalCode(cpNumber)
 
   try {
@@ -444,9 +463,8 @@ export const getAndreaniBranches = async (postalCode) => {
 /**
  * Genera la orden de envío formal en Andreani (POST /v2/ordenes-de-envio)
  */
-export const createAndreaniShipment = async (order) => {
-  const config = getAndreaniConfig()
-  const token = await getAndreaniToken()
+export const createAndreaniShipment = async (order, config = getAndreaniConfig()) => {
+  const token = await getAndreaniToken(config)
 
   const customer = order.customer || {}
   const cpDestino = normalizePostalCode(customer.postalCode) || 1414
@@ -552,15 +570,14 @@ export const createAndreaniShipment = async (order) => {
 /**
  * Consulta de seguimiento y trazas en tiempo real (GET /v2/envios/{numeroDeEnvio}/trazas)
  */
-export const getAndreaniTracking = async (trackingCode) => {
+export const getAndreaniTracking = async (trackingCode, config = getAndreaniConfig()) => {
   if (!trackingCode) {
     throw new Error('Se requiere un código de seguimiento de Andreani.')
   }
 
-  const config = getAndreaniConfig()
 
   try {
-    const token = await getAndreaniToken()
+    const token = await getAndreaniToken(config)
     if (token) {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 6000)

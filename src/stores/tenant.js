@@ -26,78 +26,122 @@ export function applyDynamicFavicon(branding, storeName) {
   }
 }
 
+// Configuración pública que el servidor inyecta en el HTML (evita mostrar otra marca mientras carga)
+const bootTenant = typeof window !== 'undefined' ? window.__TENANT__ : null
+
+const emptyState = () => ({
+  tenantId: '',
+  name: '',
+  slug: '',
+  domain: '',
+  subdomain: '',
+  status: 'active',
+  isPlatformHost: false,
+  platform: { name: 'Perfumerías Online', domain: '' },
+  branding: {
+    tagline: '',
+    logoUrl: '',
+    iconUrl: '',
+    storeIcon: 'spa',
+    faviconUrl: '',
+    paletteId: 'amber',
+    primaryColor: '#2E1911',
+    primaryContainer: '#784233',
+    surface: '#fffdfa',
+    whatsappNumber: '',
+    instagram: '',
+    instagramUrl: ''
+  },
+  commercial: {
+    alias: '',
+    cbu: '',
+    bankName: '',
+    accountHolder: '',
+    cardFeeRate: 28,
+    maxInstallments: 6,
+    freeShippingThreshold: 250000
+  },
+  legal: {},
+  marketing: {}
+})
+
+const applyPayload = (state, data) => {
+  state.tenantId = data.tenantId
+  state.name = data.name || ''
+  state.slug = data.slug || ''
+  state.domain = data.domain || ''
+  state.subdomain = data.subdomain || ''
+  state.status = data.status || 'active'
+  state.isPlatformHost = Boolean(data.isPlatformHost)
+  state.platform = data.platform || state.platform
+  state.branding = { ...state.branding, ...(data.branding || {}) }
+  state.commercial = { ...state.commercial, ...(data.commercial || {}) }
+  state.legal = data.legal || {}
+  state.marketing = data.marketing || {}
+}
+
 export const useTenantStore = defineStore('tenant', {
-  state: () => ({
-    tenantId: 'gicca',
-    name: 'Gicca Perfumes',
-    slug: 'gicca',
-    domain: '',
-    subdomain: '',
-    branding: {
-      tagline: 'Alta Perfumería y Fragancias Exclusivas',
-      logoUrl: '',
-      iconUrl: '/uploads/perfume_1790448931002_az0ndj.png',
-      storeIcon: 'spa',
-      faviconUrl: '/favicon.png',
-      paletteId: 'amber',
-      primaryColor: '#2E1911',
-      primaryContainer: '#784233',
-      surface: '#fffdfa',
-      whatsappNumber: '5493564622055',
-      instagram: '@giccaparfum'
-    },
-    commercial: {
-      alias: 'GICCA.PERFUMES.MP',
-      cbu: '0000003100010000000000',
-      bankName: 'Mercado Pago',
-      accountHolder: 'Gicca Perfumes S.A.',
-      cardFeeRate: 28,
-      freeShippingThreshold: 250000
-    },
-    isLoaded: false,
-    loading: false,
-    error: null
-  }),
+  state: () => {
+    const state = {
+      ...emptyState(),
+      isLoaded: false,
+      loading: false,
+      error: null
+    }
+    if (bootTenant?.tenantId) {
+      applyPayload(state, bootTenant)
+      state.isLoaded = true
+    }
+    return state
+  },
 
   getters: {
-    storeName: (state) => state.name || 'Gicca Perfumes',
+    storeName: (state) => state.name || 'Mi Tienda',
     storeLogo: (state) => state.branding?.logoUrl || '',
     storeIconUrl: (state) => state.branding?.iconUrl || '',
     storeIcon: (state) => state.branding?.storeIcon || 'spa',
-    whatsappNumber: (state) => state.branding?.whatsappNumber || '5493564622055',
+    whatsappNumber: (state) => state.branding?.whatsappNumber || '',
     whatsappUrl: (state) => {
       const clean = (state.branding?.whatsappNumber || '').replace(/[^0-9]/g, '')
-      return `https://wa.me/${clean}`
+      return clean ? `https://wa.me/${clean}` : ''
     },
     instagramUrl: (state) => {
+      if (state.branding?.instagramUrl) return state.branding.instagramUrl
       const handle = (state.branding?.instagram || '').replace('@', '').trim()
-      return handle ? `https://instagram.com/${handle}` : 'https://instagram.com'
+      return handle ? `https://instagram.com/${handle}` : ''
+    },
+    instagramHandle: (state) => {
+      const raw = state.branding?.instagram || state.branding?.instagramUrl || ''
+      const handle = raw.replace(/^https?:\/\/(www\.)?instagram\.com\//, '').replace(/[@/]/g, '').trim()
+      return handle ? `@${handle}` : ''
     },
     cardFeeRate: (state) => Number(state.commercial?.cardFeeRate ?? 28),
-    freeShippingThreshold: (state) => Number(state.commercial?.freeShippingThreshold ?? 250000),
-    bankDetails: (state) => state.commercial || {}
+    maxInstallments: (state) => Number(state.commercial?.maxInstallments ?? 6),
+    // 0 = la tienda no ofrece envío gratis
+    freeShippingThreshold: (state) => {
+      const value = Number(state.commercial?.freeShippingThreshold ?? 250000)
+      return value > 0 ? value : Infinity
+    },
+    bankDetails: (state) => state.commercial || {},
+    isSuspended: (state) => state.status === 'suspended',
+    isNotFound: (state) => state.status === 'not_found',
+    platformName: (state) => state.platform?.name || 'Perfumerías Online'
   },
 
   actions: {
-    async fetchCurrentTenant() {
-      if (this.isLoaded) return
+    async fetchCurrentTenant(force = false) {
+      if (this.isLoaded && !force) {
+        applyDynamicFavicon(this.branding, this.name)
+        applyTheme(this.branding)
+        return
+      }
       this.loading = true
       try {
         const res = await fetch('/api/tenant/current')
         if (res.ok) {
           const data = await res.json()
           if (data && data.tenantId) {
-            this.tenantId = data.tenantId
-            this.name = data.name || this.name
-            this.slug = data.slug || this.slug
-            this.domain = data.domain || ''
-            this.subdomain = data.subdomain || ''
-            if (data.branding) {
-              this.branding = { ...this.branding, ...data.branding }
-            }
-            if (data.commercial) {
-              this.commercial = { ...this.commercial, ...data.commercial }
-            }
+            applyPayload(this, data)
             applyDynamicFavicon(this.branding, this.name)
             applyTheme(this.branding)
           }
@@ -152,8 +196,11 @@ export const useTenantStore = defineStore('tenant', {
           this.branding = { ...this.branding, ...result.tenant.branding }
         }
         if (result.tenant.commercial) {
-          this.commercial = { ...this.commercial, ...result.tenant.commercial }
+          const { alias, cbu, bankName, accountHolder, cardFeeRate, maxInstallments, freeShippingThreshold } = result.tenant.commercial
+          this.commercial = { ...this.commercial, alias, cbu, bankName, accountHolder, cardFeeRate, maxInstallments, freeShippingThreshold }
         }
+        if (result.tenant.legal) this.legal = { ...this.legal, ...result.tenant.legal }
+        if (result.tenant.marketing) this.marketing = { ...this.marketing, ...result.tenant.marketing }
         applyDynamicFavicon(this.branding, this.name)
         applyTheme(this.branding)
       }

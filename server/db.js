@@ -824,11 +824,9 @@ export const getSiteContent = async (tenantId = 'gicca') => {
   const currentTenant = tenantId || 'gicca'
   if (isMongoConnected()) {
     try {
-      let doc = await SiteContent.findOne({ key: 'global_content', tenantId: currentTenant }).lean()
-      // Fallback a contenido base si el tenant es nuevo y aún no tiene contenido propio guardado
-      if (!doc && currentTenant !== 'gicca') {
-        doc = await SiteContent.findOne({ key: 'global_content' }).lean()
-      }
+      // Si la tienda aún no guardó contenido propio, se usa la plantilla base de server/data/site-content.json
+      // (nunca el contenido personalizado de otra tienda)
+      const doc = await SiteContent.findOne({ key: 'global_content', tenantId: currentTenant }).lean()
       if (doc) {
         return {
           heroSlides: Array.isArray(doc.heroSlides) ? doc.heroSlides : [],

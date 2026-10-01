@@ -6,79 +6,63 @@ import CartView from '../views/CartView.vue'
 import CheckoutView from '../views/CheckoutView.vue'
 import ContactView from '../views/ContactView.vue'
 import QuizView from '../views/QuizView.vue'
+import { useTenantStore } from '@/stores/tenant'
 
+// Los títulos usan {store}: se reemplaza por el nombre de la tienda actual
 const routes = [
   {
     path: '/',
     name: 'home',
     component: HomeView,
-    meta: { 
-      title: 'Gicca Perfumes | Perfumes Importados & Árabes 100% Originales en Argentina',
-      description: 'Tienda online de perfumes importados y árabes 100% originales en Argentina. Lattafa, Afnan, Armaf, Dior y más. Hasta 6 cuotas sin interés, 20% OFF por transferencia y envíos a todo el país.'
-    }
+    meta: { title: '{store} | Perfumes Originales' }
   },
   {
     path: '/catalogo',
     name: 'catalog',
     component: CatalogView,
-    meta: { 
-      title: 'Catálogo de Perfumes Importados y Árabes | Gicca Perfumes Argentina',
-      description: 'Explorá perfumes árabes, fragancias masculinas, femeninas y decants 100% originales. Comprá en cuotas sin interés con envíos a toda la Argentina.'
-    }
+    meta: { title: 'Catálogo de Perfumes | {store}' }
   },
   {
     path: '/producto/:slug',
     name: 'product-detail',
     component: ProductDetailView,
-    meta: { 
-      title: 'Perfume Original | Gicca Perfumes Argentina',
-      description: 'Fragancias 100% originales en caja cerrada con batch code y garantía de autenticidad en Gicca Perfumes.'
-    }
+    meta: { title: 'Perfume Original | {store}' }
   },
   {
     path: '/carrito',
     name: 'cart',
     component: CartView,
-    meta: { 
-      title: 'Bolsa de Compras | Gicca Perfumes',
-      robots: 'noindex, follow'
-    }
+    meta: { title: 'Bolsa de Compras | {store}' }
   },
   {
     path: '/checkout',
     name: 'checkout',
     component: CheckoutView,
-    meta: { 
-      title: 'Finalizar Compra Segura | Gicca Perfumes',
-      robots: 'noindex, nofollow'
-    }
+    meta: { title: 'Finalizar Compra Segura | {store}' }
   },
   {
     path: '/checkout/success',
     name: 'checkout-success',
     component: CheckoutView,
-    meta: { 
-      title: '¡Pago Aprobado con Éxito! | Gicca Perfumes',
-      robots: 'noindex, nofollow'
-    }
+    meta: { title: '¡Gracias por tu compra! | {store}' }
   },
   {
     path: '/checkout/pending',
     name: 'checkout-pending',
     component: CheckoutView,
-    meta: { 
-      title: 'Pago en Proceso | Gicca Perfumes',
-      robots: 'noindex, nofollow'
-    }
+    meta: { title: 'Pago en Proceso | {store}' }
   },
   {
     path: '/checkout/failure',
     name: 'checkout-failure',
     component: CheckoutView,
-    meta: { 
-      title: 'Pago No Concretado | Gicca Perfumes',
-      robots: 'noindex, nofollow'
-    }
+    meta: { title: 'Pago No Concretado | {store}' }
+  },
+  {
+    path: '/pedido/:orderNumber',
+    name: 'order-status',
+    component: () => import('../views/OrderStatusView.vue'),
+    meta: { title: 'Estado de tu pedido | {store}' }
   },
   {
     path: '/nosotros',
@@ -88,33 +72,40 @@ const routes = [
     path: '/contacto',
     name: 'contact',
     component: ContactView,
-    meta: { 
-      title: 'Contacto & Asesoramiento en Fragancias | Gicca Perfumes Argentina',
-      description: '¿Buscás un perfume en particular? Contactanos por WhatsApp o correo para recibir asesoramiento personalizado en fragancias importadas y árabes.'
-    }
+    meta: { title: 'Contacto & Asesoramiento | {store}' }
   },
   {
     path: '/quiz',
     name: 'quiz',
     component: QuizView,
-    meta: { 
-      title: 'Test Olfativo: Descubrí tu Perfume Ideal en 60s | Gicca Perfumes',
-      description: 'Respondé 4 preguntas simples y encontrá el perfume que mejor combina con tu personalidad, estación del año y estilo de vida.'
-    }
+    meta: { title: 'Test Olfativo: Descubrí tu Perfume Ideal | {store}' }
+  },
+  // Sitio de la plataforma (alta de nuevas perfumerías)
+  {
+    path: '/plataforma',
+    name: 'platform-landing',
+    component: () => import('../views/platform/PlatformLandingView.vue'),
+    meta: { title: '{platform} | Creá la tienda online de tu perfumería', platform: true }
+  },
+  {
+    path: '/crear-tienda',
+    name: 'platform-signup',
+    component: () => import('../views/platform/SignupView.vue'),
+    meta: { title: 'Creá tu tienda | {platform}', platform: true }
   },
   // Superadmin SaaS Command Center
   {
     path: '/superadmin',
     name: 'superadmin',
     component: () => import('../views/admin/SuperAdminView.vue'),
-    meta: { title: 'Consola Superadmin SaaS | Gestión de Perfumerías', requiresAuth: true }
+    meta: { title: 'Consola de la Plataforma | {platform}', requiresAuth: true }
   },
   // Admin Login (Standalone)
   {
     path: '/admin/login',
     name: 'admin-login',
     component: () => import('../views/admin/AdminLoginView.vue'),
-    meta: { title: 'Acceso Administración | Gicca Perfumes' }
+    meta: { title: 'Acceso Administración | {store}' }
   },
   // Admin Dashboard (Layout with Child Views)
   {
@@ -130,32 +121,38 @@ const routes = [
         path: 'ventas',
         name: 'admin-sales',
         component: () => import('../views/admin/AdminSalesView.vue'),
-        meta: { title: 'Ventas & Pedidos | Admin Gicca', requiresAuth: true }
+        meta: { title: 'Ventas & Pedidos | Admin {store}', requiresAuth: true }
       },
       {
         path: 'productos',
         name: 'admin-products',
         component: () => import('../views/admin/AdminProductsView.vue'),
-        meta: { title: 'Perfumes & Catálogo | Admin Gicca', requiresAuth: true }
+        meta: { title: 'Perfumes & Catálogo | Admin {store}', requiresAuth: true }
       },
       {
         path: 'finanzas',
         name: 'admin-finances',
         component: () => import('../views/admin/AdminFinancesView.vue'),
-        meta: { title: 'Finanzas & Rentabilidad | Admin Gicca', requiresAuth: true }
+        meta: { title: 'Finanzas & Rentabilidad | Admin {store}', requiresAuth: true }
       },
       {
         path: 'diseno',
         alias: 'diseño',
         name: 'admin-design',
         component: () => import('../views/admin/AdminDesignView.vue'),
-        meta: { title: 'Diseño & Contenido | Admin Gicca', requiresAuth: true }
+        meta: { title: 'Diseño & Contenido | Admin {store}', requiresAuth: true }
       },
       {
         path: 'tienda',
         name: 'admin-settings',
         component: () => import('../views/admin/AdminSettingsView.vue'),
-        meta: { title: 'Mi Tienda & Pagos | Admin Gicca', requiresAuth: true }
+        meta: { title: 'Mi Tienda & Pagos | Admin {store}', requiresAuth: true }
+      },
+      {
+        path: 'plan',
+        name: 'admin-plan',
+        component: () => import('../views/admin/AdminPlanView.vue'),
+        meta: { title: 'Mi Plan | Admin {store}', requiresAuth: true }
       }
     ]
   }
@@ -184,7 +181,10 @@ const router = createRouter({
 // Navigation Guards: Page Title & Auth Protection
 router.beforeEach((to, from, next) => {
   if (to.meta.title) {
+    const tenantStore = useTenantStore()
     document.title = to.meta.title
+      .replace('{store}', tenantStore.storeName)
+      .replace('{platform}', tenantStore.platformName)
   }
 
   const token = localStorage.getItem('gicca_admin_token')
@@ -201,7 +201,8 @@ router.beforeEach((to, from, next) => {
   }
 
   // If already logged in and heading to login screen, redirect to sales
-  if (to.name === 'admin-login' && token) {
+  // (salvo que traiga un acceso nuevo desde el registro de la tienda)
+  if (to.name === 'admin-login' && token && !to.hash.includes('acceso=')) {
     next({ name: 'admin-sales' })
     return
   }

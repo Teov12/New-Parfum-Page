@@ -22,6 +22,47 @@ const isSidebarCollapsed = ref(
 const isMobileDrawerOpen = ref(false)
 const isOnboardingOpen = ref(false)
 
+// Rol del usuario: el equipo (staff) no ve configuración, finanzas ni suscripción
+const isOwner = computed(() => adminAuthStore.adminUser?.role !== 'staff')
+
+// Estado de la suscripción para el aviso de prueba / tienda pausada
+const billing = ref(null)
+const fetchBilling = async () => {
+  try {
+    const res = await fetch('/api/billing', {
+      headers: { Authorization: `Bearer ${adminAuthStore.token}` }
+    })
+    if (res.ok) billing.value = await res.json()
+  } catch {
+    billing.value = null
+  }
+}
+
+const billingBanner = computed(() => {
+  const b = billing.value
+  if (!b || b.exempt) return null
+  if (b.storeStatus === 'suspended') {
+    return {
+      tone: 'danger',
+      text: b.suspendedReason === 'manual'
+        ? 'Tu tienda está pausada por la plataforma. Escribinos para reactivarla.'
+        : 'Tu tienda está pausada: la prueba gratis terminó o hay un pago pendiente. Activá tu plan para volver a vender.'
+    }
+  }
+  if (b.status === 'trialing' && b.trialDaysLeft !== null) {
+    return {
+      tone: b.trialDaysLeft <= 3 ? 'warning' : 'info',
+      text: b.trialDaysLeft === 0
+        ? 'Tu prueba gratis termina hoy. Activá tu plan para no pausar la tienda.'
+        : `Te quedan ${b.trialDaysLeft} día${b.trialDaysLeft === 1 ? '' : 's'} de prueba gratis del plan ${b.plan.name}.`
+    }
+  }
+  if (['past_due', 'cancelled'].includes(b.status)) {
+    return { tone: 'warning', text: 'Hay un problema con el cobro de tu suscripción. Revisalo para que la tienda siga online.' }
+  }
+  return null
+})
+
 watch(() => tenantStore.isLoaded, (loaded) => {
   if (loaded && tenantStore.branding && tenantStore.branding.onboardingCompleted === false) {
     isOnboardingOpen.value = true
@@ -42,6 +83,7 @@ onMounted(async () => {
     productStore.fetchProducts()
     productStore.fetchStats()
     tenantStore.fetchCurrentTenant()
+    fetchBilling()
   } else {
     router.push('/admin/login')
   }
@@ -84,6 +126,14 @@ const currentPageInfo = computed(() => {
       subtitle: 'Personalización editorial, banners y catálogo visual',
       icon: 'palette',
       badge: 'Editor Visual'
+    }
+  }
+  if (path.includes('/admin/plan')) {
+    return {
+      title: 'Mi Plan',
+      subtitle: 'Suscripción, prueba gratis y límites de tu tienda',
+      icon: 'workspace_premium',
+      badge: billing.value?.plan?.name || 'Plan'
     }
   }
   if (path.includes('/admin/tienda')) {
@@ -132,7 +182,7 @@ const closeMobileDrawer = () => {
             <div v-if="!isSidebarCollapsed" class="min-w-0 overflow-hidden transition-all">
               <div class="flex items-center gap-1.5">
                 <h1 class="font-serif font-bold text-base text-primary tracking-wide truncate group-hover:text-primary-container transition-colors">
-                  {{ tenantStore.storeName || 'Gicca Perfumes' }}
+                  {{ tenantStore.storeName || 'Mi Tienda' }}
                 </h1>
               </div>
               <p class="font-label text-[10px] uppercase tracking-[0.2em] text-secondary truncate">
@@ -216,7 +266,8 @@ const closeMobileDrawer = () => {
             </RouterLink>
 
             <!-- Finanzas -->
-            <RouterLink 
+            <RouterLink
+              v-if="isOwner"
               to="/admin/finanzas"
               class="group flex items-center gap-3 px-3 py-2.5 rounded-xl font-label text-xs uppercase tracking-wider transition-all relative"
               :class="isSidebarCollapsed ? 'justify-center' : ''"
@@ -255,7 +306,8 @@ const closeMobileDrawer = () => {
             </RouterLink>
 
             <!-- Tienda -->
-            <RouterLink 
+            <RouterLink
+              v-if="isOwner"
               to="/admin/tienda"
               class="group flex items-center gap-3 px-3 py-2.5 rounded-xl font-label text-xs uppercase tracking-wider transition-all relative"
               :class="isSidebarCollapsed ? 'justify-center' : ''"
@@ -267,8 +319,29 @@ const closeMobileDrawer = () => {
               <span v-if="!isSidebarCollapsed" class="truncate flex-grow">Ajustes & Pagos</span>
             </RouterLink>
 
+            <!-- Mi Plan -->
+            <RouterLink
+              v-if="isOwner"
+              to="/admin/plan"
+              class="group flex items-center gap-3 px-3 py-2.5 rounded-xl font-label text-xs uppercase tracking-wider transition-all relative"
+              :class="isSidebarCollapsed ? 'justify-center' : ''"
+              active-class="bg-primary text-on-primary font-bold shadow-xs !text-amber-200"
+              exact-active-class="bg-primary text-on-primary font-bold shadow-xs !text-amber-200"
+              title="Mi Plan y Suscripción"
+            >
+              <span class="material-symbols-outlined text-xl flex-shrink-0 group-hover:scale-110 transition-transform">workspace_premium</span>
+              <span v-if="!isSidebarCollapsed" class="truncate flex-grow">Mi Plan</span>
+              <span
+                v-if="!isSidebarCollapsed && billing?.status === 'trialing' && billing?.trialDaysLeft !== null"
+                class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300"
+              >
+                {{ billing.trialDaysLeft }}d
+              </span>
+            </RouterLink>
+
             <!-- Superadmin SaaS Console -->
-            <RouterLink 
+            <RouterLink
+              v-if="adminAuthStore.isSuperadmin"
               to="/superadmin"
               class="group flex items-center gap-3 px-3 py-2.5 rounded-xl font-label text-xs uppercase tracking-wider transition-all relative text-amber-900 bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20"
               :class="isSidebarCollapsed ? 'justify-center' : ''"
@@ -412,6 +485,29 @@ const closeMobileDrawer = () => {
 
         <!-- MAIN EXPANDED WORKSPACE CANVAS -->
         <main class="flex-1 w-full max-w-[1720px] mx-auto p-4 sm:p-5 lg:p-6 xl:p-8 2xl:p-10 pb-28 md:pb-12 transition-all">
+          <!-- Aviso de prueba gratis / tienda pausada -->
+          <div
+            v-if="billingBanner"
+            class="mb-5 rounded-2xl border px-4 py-3 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+            :class="{
+              'bg-rose-50 border-rose-200 text-rose-900': billingBanner.tone === 'danger',
+              'bg-amber-50 border-amber-300 text-amber-950': billingBanner.tone === 'warning',
+              'bg-sky-50 border-sky-200 text-sky-950': billingBanner.tone === 'info'
+            }"
+          >
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-lg">{{ billingBanner.tone === 'danger' ? 'pause_circle' : 'schedule' }}</span>
+              <span>{{ billingBanner.text }}</span>
+            </div>
+            <RouterLink
+              v-if="isOwner"
+              to="/admin/plan"
+              class="self-start sm:self-auto px-3.5 py-1.5 rounded-full bg-primary text-on-primary font-label text-[11px] uppercase tracking-wider font-bold whitespace-nowrap"
+            >
+              Ver planes
+            </RouterLink>
+          </div>
+
           <RouterView v-slot="{ Component }">
             <Transition name="admin-fade-slide" mode="out-in">
               <component :is="Component" />
@@ -451,7 +547,7 @@ const closeMobileDrawer = () => {
                     </div>
                     <div>
                       <h3 class="font-serif font-bold text-base text-primary">
-                        {{ tenantStore.storeName || 'Gicca Perfumes' }}
+                        {{ tenantStore.storeName }}
                       </h3>
                       <p class="font-label text-[10px] uppercase tracking-wider text-secondary">
                         Panel de Administración
@@ -500,8 +596,9 @@ const closeMobileDrawer = () => {
                     <span class="text-[10px] text-secondary font-mono">{{ productStore.items.length }}</span>
                   </RouterLink>
 
-                  <RouterLink 
-                    to="/admin/finanzas" 
+                  <RouterLink
+                    v-if="isOwner"
+                    to="/admin/finanzas"
                     @click="closeMobileDrawer"
                     class="flex items-center justify-between p-3 rounded-xl font-label text-xs uppercase tracking-wider text-primary hover:bg-surface-container transition-colors"
                     active-class="bg-primary text-on-primary font-bold shadow-xs !text-amber-200"
@@ -523,14 +620,26 @@ const closeMobileDrawer = () => {
                     <span>Diseño & Vitrina</span>
                   </RouterLink>
 
-                  <RouterLink 
-                    to="/admin/tienda" 
+                  <RouterLink
+                    v-if="isOwner"
+                    to="/admin/tienda"
                     @click="closeMobileDrawer"
                     class="flex items-center gap-3 p-3 rounded-xl font-label text-xs uppercase tracking-wider text-primary hover:bg-surface-container transition-colors"
                     active-class="bg-primary text-on-primary font-bold shadow-xs !text-amber-200"
                   >
                     <span class="material-symbols-outlined text-xl">storefront</span>
                     <span>Configuración Tienda</span>
+                  </RouterLink>
+
+                  <RouterLink
+                    v-if="isOwner"
+                    to="/admin/plan"
+                    @click="closeMobileDrawer"
+                    class="flex items-center gap-3 p-3 rounded-xl font-label text-xs uppercase tracking-wider text-primary hover:bg-surface-container transition-colors"
+                    active-class="bg-primary text-on-primary font-bold shadow-xs !text-amber-200"
+                  >
+                    <span class="material-symbols-outlined text-xl">workspace_premium</span>
+                    <span>Mi Plan</span>
                   </RouterLink>
                 </div>
               </div>

@@ -122,6 +122,11 @@ router.post('/', publicOrderLimiter, async (req, res) => {
 
     // Solo un admin autenticado de esta tienda puede cargar precios, estados o descuentos manuales
     const trusted = Boolean(getAuthorizedUser(req))
+
+    // Una tienda pausada no toma pedidos web (el dueño sí puede registrar ventas manuales)
+    if (!trusted && (req.storeSuspended || req.storeNotFound)) {
+      return res.status(423).json({ error: 'La tienda está pausada temporalmente y no está tomando pedidos.', code: 'store_suspended' })
+    }
     const created = await placeOrder({ orderData, tenant: req.tenant, tenantId: req.tenantId, trusted })
 
     // Disparar notificaciones transaccionales por email (asíncronas sin bloquear respuesta)

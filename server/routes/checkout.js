@@ -3,10 +3,13 @@ import crypto from 'crypto'
 import rateLimit from 'express-rate-limit'
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago'
 import { getOrderByIdOrNumber, updateOrder } from '../db.js'
-import { requireAuth } from '../middleware/auth.js'
+import { requireOwner } from '../middleware/auth.js'
 import { placeOrder, toCustomerOrder } from '../services/orderService.js'
 import { findCoupon } from '../services/coupons.js'
 import { publicOrderLimiter } from './orders.js'
+import { requireStoreOpen } from '../middleware/tenant.js'
+import { decryptSecret } from '../services/secrets.js'
+import { getDefaultTenantId, getPlan, isBillingExempt, getStoreUrl } from '../config/platform.js'
 import { sendOrderConfirmationEmail, sendStoreOwnerNewOrderAlert } from '../services/mailer.js'
 
 const router = express.Router()
@@ -20,23 +23,25 @@ const checkoutLimiter = rateLimit({
   message: { error: 'Demasiados intentos. Esperá unos minutos e intentá nuevamente.' }
 })
 
-// Helper para obtener el token de Mercado Pago del tenant o de las variables de entorno
-const getMpAccessToken = (tenant) => {
-  return (
-    tenant?.commercial?.mpAccessToken ||
-    tenant?.commercial?.mercadoPagoAccessToken ||
-    process.env.MERCADOPAGO_ACCESS_TOKEN ||
-    ''
-  ).trim()
+// Las credenciales de Mercado Pago de las variables de entorno son solo de la tienda principal:
+// el dinero de otra perfumería nunca puede terminar en la cuenta de la principal.
+const isDefaultTenant = (tenant) => tenant?.tenantId === getDefaultTenantId()
+
+export const getMpAccessToken = (tenant) => {
+  const own = decryptSecret(tenant?.commercial?.mpAccessToken || tenant?.commercial?.mercadoPagoAccessToken || '')
+  return (own || (isDefaultTenant(tenant) ? process.env.MERCADOPAGO_ACCESS_TOKEN : '') || '').trim()
 }
 
 const getMpPublicKey = (tenant) => {
-  return (
-    tenant?.commercial?.mpPublicKey ||
-    tenant?.commercial?.mercadoPagoPublicKey ||
-    process.env.MERCADOPAGO_PUBLIC_KEY ||
-    ''
-  ).trim()
+  const own = tenant?.commercial?.mpPublicKey || tenant?.commercial?.mercadoPagoPublicKey || ''
+  return (own || (isDefaultTenant(tenant) ? process.env.MERCADOPAGO_PUBLIC_KEY : '') || '').trim()
+}
+
+// Comisión de la plataforma por venta: solo con cuentas conectadas por OAuth a la app de la plataforma
+const getMarketplaceFee = (tenant, total) => {
+  if (tenant?.commercial?.mpConnection?.method !== 'oauth' || isBillingExempt(tenant)) return 0
+  const percent = getPlan(tenant.plan).commissionPercent
+  return percent > 0 ? Math.round((Number(total) * percent) / 100 * 100) / 100 : 0
 }
 
 const getRequestOrigin = (req) => {
@@ -112,12 +117,13 @@ router.get('/config', (req, res) => {
   res.json({
     isMpConfigured: Boolean(accessToken),
     publicKey: publicKey,
-    cardFeeRate: tenant?.commercial?.cardFeeRate ?? 20
+    cardFeeRate: tenant?.commercial?.cardFeeRate ?? 20,
+    maxInstallments: tenant?.commercial?.maxInstallments ?? 6
   })
 })
 
 // POST /api/checkout/coupon - Validar un cupón de la tienda actual
-router.post('/coupon', checkoutLimiter, (req, res) => {
+router.post('/coupon', checkoutLimiter, requireStoreOpen, (req, res) => {
   const coupon = findCoupon(req.tenant, req.body?.code)
   if (!coupon) {
     return res.status(404).json({ success: false, message: 'El cupón ingresado no es válido o ha expirado.' })
@@ -126,10 +132,11 @@ router.post('/coupon', checkoutLimiter, (req, res) => {
 })
 
 // POST /api/checkout/test-credentials - Probar credenciales en vivo con la API oficial de Mercado Pago (Admin)
-router.post('/test-credentials', requireAuth, async (req, res) => {
+router.post('/test-credentials', requireOwner, async (req, res) => {
   try {
+    // Sin token en el formulario se prueba el que ya está guardado (el panel nunca lo recibe completo)
     const { accessToken } = req.body
-    const cleanToken = (accessToken || '').trim()
+    const cleanToken = (accessToken || getMpAccessToken(req.tenant) || '').trim()
 
     if (!cleanToken) {
       return res.status(400).json({ error: 'Ingresá un Access Token para probar la conexión.' })
@@ -207,7 +214,7 @@ const buildPreferenceItems = (order, storeName) => {
 }
 
 // POST /api/checkout/create-preference - Registrar pedido y crear preferencia de Mercado Pago
-router.post('/create-preference', publicOrderLimiter, async (req, res) => {
+router.post('/create-preference', publicOrderLimiter, requireStoreOpen, async (req, res) => {
   try {
     const { orderData } = req.body
     if (!orderData || !orderData.items || !Array.isArray(orderData.items) || orderData.items.length === 0) {
@@ -255,7 +262,7 @@ router.post('/create-preference', publicOrderLimiter, async (req, res) => {
     const client = new MercadoPagoConfig({ accessToken })
     const preference = new Preference(client)
 
-    const origin = getRequestOrigin(req)
+    const origin = getStoreUrl(tenant, req)
     const apiBase = (process.env.PUBLIC_API_URL || origin).replace(/\/$/, '')
     const isHttps = origin.startsWith('https://')
     const isLocalhost = origin.includes('localhost') || origin.includes('127.0.0.1')
@@ -279,7 +286,7 @@ router.post('/create-preference', publicOrderLimiter, async (req, res) => {
       items: buildPreferenceItems(order, tenant?.name),
       payer,
       payment_methods: {
-        installments: 6
+        installments: Math.min(24, Math.max(1, Number(tenant?.commercial?.maxInstallments) || 6))
       },
       back_urls: {
         success: `${origin}/checkout/success?${returnQuery}`,
@@ -292,6 +299,11 @@ router.post('/create-preference', publicOrderLimiter, async (req, res) => {
     }
 
     // Mercado Pago exige HTTPS y prohíbe localhost para habilitar auto_return
+    const marketplaceFee = getMarketplaceFee(tenant, order.total)
+    if (marketplaceFee > 0) {
+      prefPayload.marketplace_fee = marketplaceFee
+    }
+
     if (isHttps && !isLocalhost) {
       prefPayload.auto_return = 'approved'
     }

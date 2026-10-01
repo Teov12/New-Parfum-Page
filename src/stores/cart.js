@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia'
 import { useShippingStore } from './shipping'
+import { useTenantStore } from './tenant'
 
 export const useCartStore = defineStore('cart', {
   state: () => ({
     items: JSON.parse(localStorage.getItem('gicca_cart_items') || '[]'),
     coupon: JSON.parse(localStorage.getItem('gicca_cart_coupon') || 'null'),
-    isDrawerOpen: false,
-    freeShippingThreshold: 200000
+    isDrawerOpen: false
   }),
 
   getters: {
@@ -43,6 +43,15 @@ export const useCartStore = defineStore('cart', {
       return 0
     },
 
+    // Umbral de envío gratis configurado por la tienda (Infinity = no ofrece envío gratis)
+    freeShippingThreshold() {
+      return useTenantStore().freeShippingThreshold
+    },
+
+    hasFreeShippingOffer() {
+      return Number.isFinite(this.freeShippingThreshold)
+    },
+
     shippingCost() {
       if (this.subtotal === 0) return 0
       if (this.subtotal >= this.freeShippingThreshold) return 0
@@ -58,15 +67,14 @@ export const useCartStore = defineStore('cart', {
       return Math.max(0, this.transferSubtotal - this.discountAmount) + this.shippingCost
     },
 
-    amountForFreeShipping: (state) => {
-      const subtotal = state.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
-      return Math.max(0, state.freeShippingThreshold - subtotal)
+    amountForFreeShipping() {
+      if (!this.hasFreeShippingOffer) return 0
+      return Math.max(0, this.freeShippingThreshold - this.subtotal)
     },
 
-    freeShippingProgress: (state) => {
-      const subtotal = state.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
-      if (state.freeShippingThreshold <= 0) return 100
-      return Math.min(100, Math.round((subtotal / state.freeShippingThreshold) * 100))
+    freeShippingProgress() {
+      if (!this.hasFreeShippingOffer) return 0
+      return Math.min(100, Math.round((this.subtotal / this.freeShippingThreshold) * 100))
     }
   },
 

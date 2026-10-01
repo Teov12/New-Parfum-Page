@@ -4,6 +4,9 @@ import { useRoute } from 'vue-router'
 import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 import { useToastStore } from '@/stores/toast'
+import { useTenantStore } from '@/stores/tenant'
+
+const tenantStore = useTenantStore()
 
 const route = useRoute()
 const toastStore = useToastStore()
@@ -79,7 +82,7 @@ const toggleFaq = (id) => {
 const handleSubmitContact = handleSubmit(async (formValues) => {
   isSending.value = true
 
-  const text = `*CONSULTA DESDE LA WEB - GICCA PERFUMES*
+  const text = `*CONSULTA DESDE LA WEB - ${tenantStore.storeName.toUpperCase()}*
 ━━━━━━━━━━━━━━━━━━━━━
 • *Nombre:* ${formValues.name}
 • *Email:* ${formValues.email}
@@ -89,7 +92,12 @@ ${formValues.message}
 ━━━━━━━━━━━━━━━━━━━━━
 Hola! Les escribo a través del formulario de la web para hacerles una consulta.`
 
-  const whatsappUrl = `https://wa.me/5493564622055?text=${encodeURIComponent(text)}`
+  if (!tenantStore.whatsappUrl) {
+    isSending.value = false
+    toastStore.show('La tienda todavía no cargó su WhatsApp de contacto.', 'error')
+    return
+  }
+  const whatsappUrl = `${tenantStore.whatsappUrl}?text=${encodeURIComponent(text)}`
   window.open(whatsappUrl, '_blank')
 
   setTimeout(() => {
@@ -153,8 +161,8 @@ Hola! Les escribo a través del formulario de la web para hacerles una consulta.
             </div>
 
             <!-- WhatsApp Direct Action Button (Píldora) -->
-            <a 
-              href="https://wa.me/5493564622055?text=Hola%20Gicca%20Perfumes!%20Me%20gustar%C3%ADa%20recibir%20asesoramiento%20sobre%20sus%20fragancias."
+            <a v-if="tenantStore.whatsappUrl"
+              :href="`${tenantStore.whatsappUrl}?text=${encodeURIComponent(`Hola ${tenantStore.storeName}! Me gustaría recibir asesoramiento sobre sus fragancias.`)}`"
               target="_blank"
               class="w-full bg-primary-container text-on-primary font-label text-xs uppercase tracking-widest py-3.5 px-6 rounded-full border border-primary-container hover:bg-inverse-surface transition-all flex items-center justify-center gap-2 text-center block shadow-xs"
             >

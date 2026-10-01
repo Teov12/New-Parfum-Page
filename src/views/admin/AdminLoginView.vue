@@ -1,11 +1,13 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter, useRoute, RouterLink } from 'vue-router'
 import { useAdminAuthStore } from '@/stores/adminAuth'
+import { useTenantStore } from '@/stores/tenant'
 
 const router = useRouter()
 const route = useRoute()
 const adminAuthStore = useAdminAuthStore()
+const tenantStore = useTenantStore()
 
 const adminEmail = ref('')
 const adminPassword = ref('')
@@ -18,6 +20,15 @@ const handleLogin = async () => {
     router.push(route.query.redirect || fallback)
   }
 }
+
+// Al crear la tienda se llega con #acceso=<token>: se canjea por una sesión sin pedir la contraseña
+onMounted(async () => {
+  const match = window.location.hash.match(/acceso=([^&]+)/)
+  if (!match) return
+  history.replaceState(null, '', window.location.pathname)
+  const success = await adminAuthStore.loginWithHandoff(decodeURIComponent(match[1]))
+  if (success) router.push({ path: '/admin/tienda', query: { bienvenida: '1' } })
+})
 </script>
 
 <template>
@@ -31,7 +42,7 @@ const handleLogin = async () => {
         <div class="w-14 h-14 bg-surface-container rounded-2xl border border-outline-variant flex items-center justify-center mx-auto text-primary shadow-xs">
           <span class="material-symbols-outlined text-2xl text-primary">lock</span>
         </div>
-        <h1 class="font-serif text-3xl sm:text-4xl font-normal tracking-wide text-primary">GICCA</h1>
+        <h1 class="font-serif text-3xl sm:text-4xl font-normal tracking-wide text-primary uppercase">{{ tenantStore.storeName }}</h1>
         <p class="font-label text-xs uppercase tracking-[0.25em] text-secondary">Acceso al Panel Boutique</p>
       </div>
 

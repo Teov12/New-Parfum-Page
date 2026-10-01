@@ -2,8 +2,9 @@ import express from 'express'
 import crypto from 'crypto'
 import bcrypt from 'bcryptjs'
 import rateLimit from 'express-rate-limit'
-import { signAdminToken, requireAuth } from '../middleware/auth.js'
-import { getDefaultTenantId, clearTenantCache } from '../middleware/tenant.js'
+import { signAdminToken, requireAuth, verifyPurposeToken } from '../middleware/auth.js'
+import { clearTenantCache } from '../middleware/tenant.js'
+import { getDefaultTenantId } from '../config/platform.js'
 import { Tenant } from '../models/Tenant.js'
 import { isMongoConnected } from '../dbConnection.js'
 
@@ -79,6 +80,19 @@ const verifyTenantOwner = async (tenantId, email, password) => {
     : { ok: false, status: 401, error: 'Contraseña de administrador incorrecta' }
 }
 
+const issueSession = ({ role, email, tenantId, username }) => {
+  const token = signAdminToken({ role, email, tenantId, username })
+  return { success: true, token, user: { username, email, role, tenantId } }
+}
+
+const verifyStaffMember = async (tenantId, email, password) => {
+  if (!email || !isMongoConnected()) return null
+  const doc = await Tenant.findOne({ tenantId }, { staff: 1 }).lean()
+  const member = (doc?.staff || []).find(m => m.active !== false && normalizeEmail(m.email) === email)
+  if (!member?.passwordHash) return null
+  return (await bcrypt.compare(password, member.passwordHash)) ? member : null
+}
+
 router.post('/login', loginLimiter, async (req, res) => {
   try {
     const { password } = req.body
@@ -100,21 +114,38 @@ router.post('/login', loginLimiter, async (req, res) => {
 
     const tenantId = req.tenantId
     const result = await verifyTenantOwner(tenantId, email, password)
-    if (!result.ok) {
-      return res.status(result.status).json({ error: result.error })
+    if (result.ok) {
+      return res.json(issueSession({ role: 'owner', email, tenantId, username: `Admin ${req.tenant?.name || tenantId}` }))
     }
 
-    const username = `Admin ${req.tenant?.name || tenantId}`
-    const token = signAdminToken({ role: 'owner', email, tenantId, username })
+    // Usuarios del equipo de la tienda
+    const staffMember = await verifyStaffMember(tenantId, email, password)
+    if (staffMember) {
+      return res.json(issueSession({ role: 'staff', email, tenantId, username: staffMember.name || email }))
+    }
 
-    return res.json({
-      success: true,
-      token,
-      user: { username, email, role: 'owner', tenantId }
-    })
+    return res.status(result.status).json({ error: result.error })
   } catch (err) {
     console.error('Error en login:', err)
     res.status(500).json({ error: 'Error al iniciar sesión' })
+  }
+})
+
+// POST /api/auth/handoff - Canjea el token de traspaso que se genera al crear una tienda
+router.post('/handoff', loginLimiter, (req, res) => {
+  try {
+    const payload = verifyPurposeToken(req.body?.token, 'handoff')
+    if (payload.tenantId !== req.tenantId) {
+      return res.status(403).json({ error: 'El enlace de acceso no corresponde a esta tienda.' })
+    }
+    res.json(issueSession({
+      role: 'owner',
+      email: payload.email,
+      tenantId: payload.tenantId,
+      username: `Admin ${req.tenant?.name || payload.tenantId}`
+    }))
+  } catch {
+    res.status(401).json({ error: 'El enlace de acceso venció. Iniciá sesión con tu email y contraseña.' })
   }
 })
 

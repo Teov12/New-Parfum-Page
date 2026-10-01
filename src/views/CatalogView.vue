@@ -6,8 +6,9 @@ import { useWishlistStore } from '@/stores/wishlist'
 import { useProductStore } from '@/stores/products'
 import { useSiteContentStore } from '@/stores/siteContent'
 import ProductCard from '@/components/product/ProductCard.vue'
-import { 
-  normalizeGender, 
+import { useTenantStore } from '@/stores/tenant'
+import {
+  normalizeGender,
   normalizeCategory, 
   formatGenderLabel, 
   formatCategoryLabel 
@@ -18,6 +19,7 @@ const router = useRouter()
 const wishlistStore = useWishlistStore()
 const productStore = useProductStore()
 const siteContentStore = useSiteContentStore()
+const tenantStore = useTenantStore()
 
 const olfactiveFamilies = computed(() => siteContentStore.olfactiveFamilies)
 
@@ -114,42 +116,42 @@ const initFromQuery = () => {
 }
 
 const updateCatalogSeo = () => {
-  let title = 'Catálogo de Perfumes Importados y Árabes | Gicca Perfumes Argentina'
+  let title = `Catálogo de Perfumes Importados y Árabes | ${tenantStore.storeName}`
   let desc = 'Explorá nuestro catálogo de perfumes importados y árabes 100% originales en Argentina. Lattafa, Afnan, Armaf, Dior, Chanel y más. Envíos a todo el país y cuotas.'
 
   const normCat = normalizeCategory(route.query.category)
   const normGen = normalizeGender(route.query.gender)
 
   if (route.query.brand) {
-    title = `Perfumes ${route.query.brand} Originales en Argentina | Catálogo Gicca`
+    title = `Perfumes ${route.query.brand} Originales | ${tenantStore.storeName}`
     desc = `Comprá perfumes ${route.query.brand} 100% originales en cuotas sin interés. Catálogo oficial con envíos a todo el país y garantía de autenticidad.`
   } else if (normCat === 'arabe') {
-    title = 'Perfumes Árabes Originales en Argentina - Lattafa, Afnan, Armaf | Gicca'
+    title = `Perfumes Árabes Originales - Lattafa, Afnan, Armaf | ${tenantStore.storeName}`
     desc = 'Los mejores perfumes árabes originales en Argentina. Descubrí fragancias virales de larga duración como Khamrah, Asad, Yara y Club de Nuit.'
   } else if (normCat === 'disenador') {
-    title = 'Perfumes de Diseñador Originales en Argentina | Gicca Perfumes'
+    title = `Perfumes de Diseñador Originales | ${tenantStore.storeName}`
     desc = 'Colección de perfumes importados de grandes marcas de diseñador 100% originales en Argentina con cuotas sin interés.'
   } else if (normCat === 'nicho') {
-    title = 'Perfumes de Nicho Originales en Argentina | Gicca Perfumes'
+    title = `Perfumes de Nicho Originales | ${tenantStore.storeName}`
     desc = 'Perfumes de autor y alta perfumería de nicho 100% originales en Argentina con cuotas y envíos.'
   } else if (normGen === 'man') {
-    title = 'Perfumes Importados para Hombre | Fragancias Masculinas - Gicca'
+    title = `Perfumes Importados para Hombre | ${tenantStore.storeName}`
     desc = 'Perfumes importados masculinos 100% originales en Argentina. Amaderados, especiados y frescos con cuotas sin interés y envíos rápidos.'
   } else if (normGen === 'woman') {
-    title = 'Perfumes Importados para Mujer | Fragancias Femeninas - Gicca'
+    title = `Perfumes Importados para Mujer | ${tenantStore.storeName}`
     desc = 'Perfumes importados femeninos originales en Argentina. Florales, orientales y dulces de las mejores casas perfumistas del mundo.'
   } else if (normGen === 'unisex') {
-    title = 'Perfumes Unisex Importados y Árabes | Gicca Perfumes'
+    title = `Perfumes Unisex Importados y Árabes | ${tenantStore.storeName}`
     desc = 'Colección de perfumes unisex de nicho y árabes originales. Aromas sofisticados para compartir con cuotas sin interés.'
   } else if (route.query.family) {
-    title = `Perfumes Familia Olfativa ${route.query.family} | Gicca Perfumes`
+    title = `Perfumes Familia Olfativa ${route.query.family} | ${tenantStore.storeName}`
     desc = `Descubrí perfumes con notas de la familia olfativa ${route.query.family}. Fragancias seleccionadas 100% originales en Argentina.`
   } else if (route.query.note) {
-    title = `Perfumes con Nota de ${route.query.note} | Catálogo Gicca`
+    title = `Perfumes con Nota de ${route.query.note} | ${tenantStore.storeName}`
     desc = `Descubrí perfumes con notas olfativas de ${route.query.note} 100% originales en Argentina con cuotas y envíos a todo el país.`
   } else if (route.query.q) {
-    title = `Buscar "${route.query.q}" en Perfumes | Gicca Perfumes`
-    desc = `Resultados de búsqueda para ${route.query.q} en Gicca Perfumes. Encontrá tus fragancias favoritas originales con envíos a todo el país.`
+    title = `Buscar "${route.query.q}" en Perfumes | ${tenantStore.storeName}`
+    desc = `Resultados de búsqueda para ${route.query.q} en ${tenantStore.storeName}. Encontrá tus fragancias favoritas originales con envíos a todo el país.`
   }
 
   document.title = title
