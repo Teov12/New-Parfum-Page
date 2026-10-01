@@ -141,10 +141,7 @@ const handleSaveManualOrder = async () => {
   isSubmittingOrder.value = true
 
   const prod = productStore.items.find(p => p.id === manualOrderForm.value.selectedProductId)
-  const orderNumber = `GIC-${Math.floor(100000 + Math.random() * 900000)}`
-
   const payload = {
-    orderNumber,
     customer: { ...manualOrderForm.value.customer },
     items: [
       {
@@ -174,7 +171,7 @@ const handleSaveManualOrder = async () => {
   isSubmittingOrder.value = false
 
   if (res.success) {
-    toastStore.show(`¡Venta #${orderNumber} registrada con éxito! Ganancia: $${manualOrderProfit.value.toLocaleString('es-AR')}`, 'success')
+    toastStore.show(`¡Venta #${res.data.orderNumber} registrada con éxito! Ganancia: $${manualOrderProfit.value.toLocaleString('es-AR')}`, 'success')
     emit('saved')
     emit('close')
   } else {

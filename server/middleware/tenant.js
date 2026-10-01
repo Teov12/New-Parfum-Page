@@ -61,21 +61,31 @@ export const DEFAULT_TENANT_CONFIG = {
   }
 }
 
+// Estados con tienda online (una tienda suspendida no se resuelve por dominio)
+const ONLINE_STATUSES = ['active', 'trial']
+
+export const getDefaultTenantId = () => (process.env.DEFAULT_TENANT || 'gicca').toLowerCase().trim()
+
+const setRequestTenant = (req, tenant) => {
+  req.tenant = tenant
+  // Siempre el id de la tienda efectivamente resuelta: un id inexistente nunca debe
+  // operar con credenciales de otra tienda ni crear datos "huérfanos"
+  req.tenantId = tenant.tenantId
+}
+
 export const tenantMiddleware = async (req, res, next) => {
   try {
     // 1. Prioridad: Header 'x-tenant-id' (usado por el frontend o mobile app)
     const headerTenant = req.headers['x-tenant-id']
     if (headerTenant) {
-      req.tenantId = String(headerTenant).toLowerCase().trim()
-      req.tenant = await resolveTenantById(req.tenantId)
+      setRequestTenant(req, await resolveTenantById(String(headerTenant).toLowerCase().trim()))
       return next()
     }
 
     // 2. Prioridad: Query param '?tenant=...' (útil para pruebas en desarrollo)
     const queryTenant = req.query.tenant
     if (queryTenant) {
-      req.tenantId = String(queryTenant).toLowerCase().trim()
-      req.tenant = await resolveTenantById(req.tenantId)
+      setRequestTenant(req, await resolveTenantById(String(queryTenant).toLowerCase().trim()))
       return next()
     }
 
@@ -84,9 +94,7 @@ export const tenantMiddleware = async (req, res, next) => {
     const cleanHost = host.split(':')[0].toLowerCase() // Remover puerto
 
     if (tenantCache.has(cleanHost)) {
-      const cached = tenantCache.get(cleanHost)
-      req.tenantId = cached.tenantId
-      req.tenant = cached
+      setRequestTenant(req, tenantCache.get(cleanHost))
       return next()
     }
 
@@ -97,51 +105,62 @@ export const tenantMiddleware = async (req, res, next) => {
           { domain: cleanHost },
           { subdomain: cleanHost.split('.')[0] }
         ],
-        status: 'active'
+        status: { $in: ONLINE_STATUSES }
       }).lean()
 
       if (tenantDoc) {
         tenantCache.set(cleanHost, tenantDoc)
-        req.tenantId = tenantDoc.tenantId
-        req.tenant = tenantDoc
+        setRequestTenant(req, tenantDoc)
         return next()
       }
     }
 
-    // 4. Fallback por defecto: Gicca Perfumes
-    const defaultId = process.env.DEFAULT_TENANT || 'gicca'
-    req.tenantId = defaultId
-    req.tenant = await resolveTenantById(defaultId)
+    // 4. Fallback por defecto: tienda principal de la instalación
+    setRequestTenant(req, await resolveTenantById(getDefaultTenantId()))
     next()
   } catch (err) {
     console.error('[Tenant Middleware] Error resolviendo tenant:', err.message)
-    req.tenantId = 'gicca'
-    req.tenant = DEFAULT_TENANT_CONFIG
+    setRequestTenant(req, getLocalDefaultTenant())
     next()
   }
 }
 
+/**
+ * Configuración de la tienda por defecto guardada en server/data/tenant.json.
+ * Solo aplica a la tienda principal (modo local sin MongoDB o instalación previa al multi-tienda),
+ * nunca se mezcla con la configuración de otras perfumerías.
+ */
+export const getLocalDefaultTenant = () => {
+  const base = { ...DEFAULT_TENANT_CONFIG, tenantId: getDefaultTenantId() }
+  const local = getStoredLocalTenant()
+  if (!local) return base
+  return {
+    ...base,
+    ...local,
+    tenantId: base.tenantId,
+    branding: { ...DEFAULT_TENANT_CONFIG.branding, ...(local.branding || {}) },
+    commercial: { ...DEFAULT_TENANT_CONFIG.commercial, ...(local.commercial || {}) }
+  }
+}
+
 export async function resolveTenantById(id) {
+  const defaultId = getDefaultTenantId()
+
   if (isMongoConnected()) {
     try {
-      const doc = await Tenant.findOne({ tenantId: id, status: 'active' }).lean()
+      const doc = await Tenant.findOne({ tenantId: id, status: { $in: ONLINE_STATUSES } }).lean()
       if (doc) return doc
+
+      if (id !== defaultId) {
+        const defaultDoc = await Tenant.findOne({ tenantId: defaultId }).lean()
+        if (defaultDoc) return defaultDoc
+      }
     } catch {
       // Silencioso, cae en fallback
     }
   }
 
-  const local = getStoredLocalTenant()
-  if (local && (local.tenantId === id || id === 'gicca')) {
-    return {
-      ...DEFAULT_TENANT_CONFIG,
-      ...local,
-      branding: { ...DEFAULT_TENANT_CONFIG.branding, ...(local.branding || {}) },
-      commercial: { ...DEFAULT_TENANT_CONFIG.commercial, ...(local.commercial || {}) }
-    }
-  }
-
-  return DEFAULT_TENANT_CONFIG
+  return getLocalDefaultTenant()
 }
 
 export const clearTenantCache = () => {

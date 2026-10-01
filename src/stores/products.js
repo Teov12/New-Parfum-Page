@@ -208,7 +208,7 @@ export const useProductStore = defineStore('products', {
     async seedStarterCatalog() {
       this.loading = true
       try {
-        const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
+        const token = localStorage.getItem('gicca_admin_token') || ''
         const headers = { 'Authorization': `Bearer ${token}` }
         const res = await fetch('/api/products/seed-starter', {
           method: 'POST',
@@ -229,7 +229,7 @@ export const useProductStore = defineStore('products', {
     async bulkUpdatePrices(payload) {
       this.loading = true
       try {
-        const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
+        const token = localStorage.getItem('gicca_admin_token') || ''
         const headers = { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}` 

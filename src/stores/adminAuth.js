@@ -14,6 +14,7 @@ export const useAdminAuthStore = defineStore('adminAuth', () => {
   const isLoggingIn = ref(false)
 
   const isAuthenticated = computed(() => !!token.value)
+  const isSuperadmin = computed(() => adminUser.value?.role === 'superadmin')
 
   /**
    * Verify token validity against the backend
@@ -32,7 +33,7 @@ export const useAdminAuthStore = defineStore('adminAuth', () => {
 
       if (res.ok) {
         const data = await res.json()
-        adminUser.value = data.user || { username: 'Admin Gicca', role: 'superadmin' }
+        adminUser.value = data.user || null
         return true
       } else {
         logout(false)
@@ -49,7 +50,7 @@ export const useAdminAuthStore = defineStore('adminAuth', () => {
   /**
    * Attempt admin login
    */
-  const login = async (password) => {
+  const login = async (email, password) => {
     loginError.value = ''
     if (!password || !password.trim()) {
       loginError.value = 'Por favor ingresá la contraseña de administrador'
@@ -63,7 +64,7 @@ export const useAdminAuthStore = defineStore('adminAuth', () => {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
+        body: JSON.stringify({ email: (email || '').trim(), password })
       })
 
       const data = await res.json()
@@ -74,12 +75,12 @@ export const useAdminAuthStore = defineStore('adminAuth', () => {
       }
 
       token.value = data.token
-      adminUser.value = data.user || { username: 'Admin Gicca', role: 'superadmin' }
+      adminUser.value = data.user || null
       localStorage.setItem('gicca_admin_token', data.token)
       toastStore.show('¡Bienvenido al Panel de Administración!', 'success')
 
       // Pre-load data in background
-      loadDashboardData()
+      if (adminUser.value?.role !== 'superadmin') loadDashboardData()
       return true
     } catch (err) {
       loginError.value = 'Error al conectar con el servidor backend'
@@ -127,6 +128,7 @@ export const useAdminAuthStore = defineStore('adminAuth', () => {
     loginError,
     isLoggingIn,
     isAuthenticated,
+    isSuperadmin,
     verifySession,
     login,
     logout,

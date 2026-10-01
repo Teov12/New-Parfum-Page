@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import crypto from 'crypto'
 import { fileURLToPath } from 'url'
 import mongoose from 'mongoose'
 import { Product } from './models/Product.js'
@@ -67,6 +68,7 @@ const formatProduct = (p) => {
         costPrice: sCost,
         profit: Math.max(0, (sTransfer || sPrice) - sCost),
         profitMargin: (sTransfer || sPrice) > 0 ? Math.round((((sTransfer || sPrice) - sCost) / (sTransfer || sPrice)) * 100) : 0,
+        ...(typeof s === 'object' && typeof s.stock === 'number' ? { stock: Math.max(0, s.stock) } : {}),
         default: typeof s === 'object' ? Boolean(s.default) : false
       }
     })
@@ -165,6 +167,7 @@ export const createProduct = async (productData, tenantId = 'gicca') => {
       price: sPrice,
       transferPrice: sTransfer,
       costPrice: sCost,
+      ...(typeof s === 'object' && s.stock !== undefined && s.stock !== null && s.stock !== '' ? { stock: Math.max(0, Number(s.stock) || 0) } : {}),
       default: typeof s === 'object' ? Boolean(s.default) : true
     }
   })
@@ -229,7 +232,7 @@ export const createProduct = async (productData, tenantId = 'gicca') => {
 
 export const updateProduct = async (id, updateData, tenantId = 'gicca') => {
   // Strip immutable / metadata / transient fields that must not be sent to MongoDB
-  const { _id, __v, id: rawId, createdAt, profit, profitMargin, ...cleanUpdateData } = updateData
+  const { _id, __v, id: rawId, tenantId: _ignoredTenantId, createdAt, profit, profitMargin, ...cleanUpdateData } = updateData
 
   if (isMongoConnected()) {
     try {
@@ -350,95 +353,278 @@ export const saveOrders = (orders) => {
   }
 }
 
-export const createOrder = async (orderData, tenantId = 'gicca') => {
+// ==========================================
+// STOCK: se reserva al crear el pedido y se devuelve si el pedido se cancela
+// ==========================================
+
+export class OrderError extends Error {
+  constructor(message, status = 400) {
+    super(message)
+    this.status = status
+  }
+}
+
+const PAYMENT_STATUSES = ['pending', 'paid', 'cancelled', 'refunded']
+const FULFILLMENT_STATUSES = ['unfulfilled', 'packing', 'shipped', 'delivered']
+const PUBLIC_PAYMENT_METHODS = ['transfer', 'mercadopago']
+
+// Una presentación con stock numérico propio lleva su inventario; si no, se usa el del producto
+const findStockSize = (product, size) => {
+  const s = product?.sizes?.find(x => x.size === size)
+  return s && typeof s.stock === 'number' ? s : null
+}
+
+// Agrupa los ítems del pedido en líneas de inventario (producto o producto+presentación)
+const buildStockLines = (items, products) => {
+  const lines = new Map()
+  for (const item of items) {
+    const product = products.find(p => p.id === item.id)
+    if (!product) continue
+    const size = findStockSize(product, item.size) ? item.size : null
+    const key = `${product.id}::${size || ''}`
+    const line = lines.get(key) || { productId: product.id, name: product.name, size, quantity: 0 }
+    line.quantity += Number(item.quantity) || 0
+    lines.set(key, line)
+  }
+  return [...lines.values()].filter(l => l.quantity > 0)
+}
+
+const availableStock = (product, line) => {
+  if (!product) return 0
+  if (line.size) return findStockSize(product, line.size)?.stock ?? 0
+  return product.stock !== undefined ? Math.max(0, Number(product.stock)) : 10
+}
+
+const shortageError = (line, products) => {
+  const product = products.find(p => p.id === line.productId)
+  const left = availableStock(product, line)
+  const label = `${line.name}${line.size ? ` (${line.size})` : ''}`
+  return new OrderError(
+    left > 0
+      ? `No hay stock suficiente de ${label}: quedan ${left} unidad${left === 1 ? '' : 'es'}.`
+      : `${label} se quedó sin stock.`,
+    409
+  )
+}
+
+// Descuenta inventario de forma atómica. allowShortage=true (ventas manuales del admin) nunca rechaza:
+// si no alcanza, deja el stock en 0.
+const decrementLineMongo = async (tenantId, line, allowShortage) => {
+  const base = { tenantId, id: line.productId }
+  if (line.size) {
+    const res = await Product.updateOne(
+      { ...base, sizes: { $elemMatch: { size: line.size, stock: { $gte: line.quantity } } } },
+      { $inc: { 'sizes.$.stock': -line.quantity } }
+    )
+    if (res.modifiedCount === 1) return true
+    if (!allowShortage) return false
+    await Product.updateOne({ ...base, 'sizes.size': line.size }, { $set: { 'sizes.$.stock': 0 } })
+    return true
+  }
+
+  const res = await Product.updateOne({ ...base, stock: { $gte: line.quantity } }, { $inc: { stock: -line.quantity } })
+  if (res.modifiedCount === 1) return true
+  if (!allowShortage) return false
+  await Product.updateOne(base, { $set: { stock: 0 } })
+  return true
+}
+
+const incrementLineMongo = async (tenantId, line) => {
+  if (line.size) {
+    await Product.updateOne(
+      { tenantId, id: line.productId, 'sizes.size': line.size },
+      { $inc: { 'sizes.$.stock': line.quantity } }
+    )
+  } else {
+    await Product.updateOne({ tenantId, id: line.productId }, { $inc: { stock: line.quantity } })
+  }
+}
+
+const applyLineToLocalProduct = (product, line, delta) => {
+  const target = line.size ? findStockSize(product, line.size) : product
+  if (!target) return
+  const current = target === product ? availableStock(product, line) : Number(target.stock) || 0
+  target.stock = Math.max(0, current + delta)
+}
+
+/**
+ * Reserva stock para todas las líneas o ninguna (si una falla, se revierten las anteriores).
+ */
+const reserveStock = async (tenantId, lines, products, { allowShortage = false } = {}) => {
+  if (isMongoConnected()) {
+    const reserved = []
+    for (const line of lines) {
+      const ok = await decrementLineMongo(tenantId, line, allowShortage)
+      if (!ok) {
+        await Promise.allSettled(reserved.map(l => incrementLineMongo(tenantId, l)))
+        throw shortageError(line, products)
+      }
+      reserved.push(line)
+    }
+    return
+  }
+
+  if (!allowShortage) {
+    const missing = lines.find(line => availableStock(products.find(p => p.id === line.productId), line) < line.quantity)
+    if (missing) throw shortageError(missing, products)
+  }
+  for (const line of lines) {
+    const product = products.find(p => p.id === line.productId)
+    if (product) applyLineToLocalProduct(product, line, -line.quantity)
+  }
+  saveProducts(products)
+}
+
+const releaseStock = async (tenantId, lines) => {
+  if (isMongoConnected()) {
+    await Promise.allSettled(lines.map(l => incrementLineMongo(tenantId, l)))
+    return
+  }
+  const products = await getProducts(tenantId)
+  for (const line of lines) {
+    const product = products.find(p => p.id === line.productId)
+    if (product) applyLineToLocalProduct(product, line, line.quantity)
+  }
+  saveProducts(products)
+}
+
+const orderNumberExists = async (tenantId, orderNumber) => {
+  if (isMongoConnected()) {
+    return Boolean(await Order.exists({ tenantId, orderNumber }))
+  }
+  const orders = await getOrders(tenantId)
+  return orders.some(o => o.orderNumber === orderNumber)
+}
+
+const generateOrderNumber = async (tenantId) => {
+  const prefix = (String(tenantId).replace(/[^a-z0-9]/gi, '').slice(0, 3) || 'ORD').toUpperCase()
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const candidate = `${prefix}-${crypto.randomInt(100000, 1000000)}`
+    if (!(await orderNumberExists(tenantId, candidate))) return candidate
+  }
+  return `${prefix}-${Date.now().toString().slice(-9)}`
+}
+
+const cleanText = (value, max = 200) => String(value ?? '').trim().slice(0, max)
+
+/**
+ * Crea un pedido calculando precios, descuentos y totales del lado del servidor.
+ *
+ * - Pedido público (web): precios del catálogo, cupón validado por código, envío recotizado
+ *   con resolveShipping(subtotal) y estados siempre "pendiente".
+ * - Pedido de confianza (venta manual de un admin autenticado): respeta precios, descuento,
+ *   envío y estados cargados a mano.
+ */
+export const createOrder = async (orderData, tenantId = 'gicca', options = {}) => {
+  const { trusted = false, findCoupon = () => null, calculateCouponDiscount = () => 0, resolveShipping = null } = options
   const currentTenant = tenantId || 'gicca'
   const products = await getProducts(currentTenant)
   const incomingItems = Array.isArray(orderData.items) ? orderData.items : []
-  
-  let calculatedSubtotal = 0
-  let calculatedTotalCost = 0
+
+  if (incomingItems.length === 0) {
+    throw new OrderError('El pedido debe incluir al menos un producto')
+  }
+
+  let subtotal = 0
+  let totalCost = 0
+  let transferSavings = 0
   const validatedItems = []
 
   for (const item of incomingItems) {
-    const qty = Math.max(1, Number(item.quantity) || 1)
-    
-    // Buscar precio oficial en catálogo para evitar manipulación desde cliente
+    const quantity = Math.min(999, Math.max(1, Math.floor(Number(item.quantity) || 1)))
     const dbProduct = products.find(p => p.id === item.id || p.slug === item.id)
-    let officialPrice = Number(item.price) || 0
-    let officialCost = Number(item.costPrice) || Math.round(officialPrice * 0.45)
 
-    if (dbProduct) {
-      const dbSize = dbProduct.sizes?.find(s => s.size === item.size || s.size == item.size)
-      if (dbSize && dbSize.price) {
-        officialPrice = Number(dbSize.price)
-        officialCost = Number(dbSize.costPrice) || Math.round(officialPrice * 0.45)
-      } else if (dbProduct.price) {
-        officialPrice = Number(dbProduct.price)
-        officialCost = Number(dbProduct.costPrice) || Math.round(officialPrice * 0.45)
-      }
-
-      // Descontar inventario automáticamente
-      if (isMongoConnected()) {
-        try {
-          await Product.findOneAndUpdate(
-            { tenantId: currentTenant, $or: [{ id: item.id }, { slug: item.id }] },
-            { $inc: { stock: -qty } }
-          )
-        } catch (e) {}
-      } else {
-        const currentStock = dbProduct.stock !== undefined ? Math.max(0, Number(dbProduct.stock)) : 10
-        dbProduct.stock = Math.max(0, currentStock - qty)
-      }
+    if (!dbProduct && !trusted) {
+      throw new OrderError(`El producto "${cleanText(item.name || item.id, 80)}" ya no está disponible.`, 409)
     }
 
-    calculatedSubtotal += officialPrice * qty
-    calculatedTotalCost += officialCost * qty
+    const dbSize = dbProduct?.sizes?.find(s => s.size === item.size) || null
+    if (dbProduct && !dbSize && dbProduct.sizes?.length > 0 && !trusted) {
+      throw new OrderError(`La presentación "${cleanText(item.size, 40)}" de ${dbProduct.name} ya no está disponible.`, 409)
+    }
+
+    const ref = dbSize || dbProduct || {}
+    let price = Number(ref.price) || Number(dbProduct?.price) || 0
+    let costPrice = Number(ref.costPrice) || Math.round(price * 0.45)
+    const transferPrice = Number(ref.transferPrice) || price
+
+    // En una venta manual el admin puede pactar otro precio
+    if (trusted) {
+      if (item.price !== undefined && Number.isFinite(Number(item.price))) price = Math.max(0, Number(item.price))
+      if (item.costPrice !== undefined && Number.isFinite(Number(item.costPrice))) costPrice = Math.max(0, Number(item.costPrice))
+    }
+
+    subtotal += price * quantity
+    totalCost += costPrice * quantity
+    transferSavings += Math.max(0, price - transferPrice) * quantity
 
     validatedItems.push({
-      id: item.id,
-      name: dbProduct?.name || item.name || 'Perfume',
-      brand: dbProduct?.brand || item.brand || 'Gicca',
-      size: item.size || '100 ml',
-      quantity: qty,
-      price: officialPrice,
-      costPrice: officialCost
+      id: dbProduct?.id || cleanText(item.id || 'custom', 80),
+      name: dbProduct?.name || cleanText(item.name || 'Perfume', 120),
+      brand: dbProduct?.brand || cleanText(item.brand, 80),
+      size: dbSize?.size || cleanText(item.size || '100 ml', 40),
+      quantity,
+      price,
+      costPrice
     })
   }
 
-  if (!isMongoConnected()) {
-    saveProducts(products)
+  const paymentMethod = trusted
+    ? cleanText(orderData.paymentMethod || 'transfer', 40)
+    : (PUBLIC_PAYMENT_METHODS.includes(orderData.paymentMethod) ? orderData.paymentMethod : 'transfer')
+
+  let couponDiscount = 0
+  let transferDiscount = 0
+  let discountAmount = 0
+  let couponCode = ''
+  let shippingCost = 0
+  let shippingMethod = cleanText(orderData.shippingMethod || 'Andreani Estándar a Domicilio', 120)
+
+  if (trusted) {
+    discountAmount = Math.min(subtotal, Math.max(0, Number(orderData.discountAmount) || 0))
+    shippingCost = Math.max(0, Number(orderData.shippingCost) || 0)
+  } else {
+    const coupon = findCoupon(orderData.couponCode)
+    if (coupon) {
+      couponCode = coupon.code
+      couponDiscount = calculateCouponDiscount(coupon, subtotal)
+    }
+    transferDiscount = paymentMethod === 'transfer' ? transferSavings : 0
+    discountAmount = Math.min(subtotal, couponDiscount + transferDiscount)
+
+    if (resolveShipping) {
+      const shipping = await resolveShipping(subtotal)
+      shippingCost = Math.max(0, Math.round(Number(shipping.cost) || 0))
+      if (shipping.name) shippingMethod = shipping.name
+    }
   }
 
-  const isTransfer = (orderData.paymentMethod || 'transfer') === 'transfer'
-  const transferDiscount = isTransfer ? Math.round(calculatedSubtotal * 0.20) : 0
-  const couponDiscount = Number(orderData.couponDiscount) || 0
-  const discountAmount = transferDiscount + couponDiscount
+  const total = Math.max(0, subtotal - discountAmount) + shippingCost
+  const netRevenue = Math.max(0, subtotal - discountAmount)
+  const profit = Math.max(0, netRevenue - totalCost)
+  const profitMargin = netRevenue > 0 ? Math.round((profit / netRevenue) * 100) : 0
 
-  const shippingCost = Number(orderData.shippingCost) || 0
-  const subtotal = calculatedSubtotal
-  const total = Math.max(0, subtotal - discountAmount + shippingCost)
-  const totalCost = calculatedTotalCost
-  const profit = Math.max(0, (subtotal - discountAmount) - totalCost)
-  const profitMargin = (subtotal - discountAmount) > 0 
-    ? Math.round((profit / (subtotal - discountAmount)) * 100) 
-    : 0
+  const paymentStatus = trusted && PAYMENT_STATUSES.includes(orderData.paymentStatus) ? orderData.paymentStatus : 'pending'
+  const fulfillmentStatus = trusted && FULFILLMENT_STATUSES.includes(orderData.fulfillmentStatus) ? orderData.fulfillmentStatus : 'unfulfilled'
+  const customer = orderData.customer || {}
+  const now = new Date().toISOString()
 
   const newOrder = {
-    id: `ord_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+    id: `ord_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
     tenantId: currentTenant,
-    orderNumber: orderData.orderNumber || `GIC-${Math.floor(100000 + Math.random() * 900000)}`,
-    date: new Date().toISOString(),
+    orderNumber: await generateOrderNumber(currentTenant),
+    date: now,
     customer: {
-      firstName: orderData.customer?.firstName || 'Cliente',
-      lastName: orderData.customer?.lastName || '',
-      phone: orderData.customer?.phone || '',
-      email: orderData.customer?.email || '',
-      dni: orderData.customer?.dni || '',
-      address: orderData.customer?.address || '',
-      apartment: orderData.customer?.apartment || '',
-      city: orderData.customer?.city || 'Córdoba',
-      province: orderData.customer?.province || 'Córdoba',
-      postalCode: orderData.customer?.postalCode || ''
+      firstName: cleanText(customer.firstName, 80) || 'Cliente',
+      lastName: cleanText(customer.lastName, 80),
+      phone: cleanText(customer.phone, 40),
+      email: cleanText(customer.email, 120),
+      dni: cleanText(customer.dni, 20),
+      address: cleanText(customer.address, 200),
+      apartment: cleanText(customer.apartment, 80),
+      city: cleanText(customer.city, 80),
+      province: cleanText(customer.province, 80),
+      postalCode: cleanText(customer.postalCode, 12)
     },
     items: validatedItems,
     subtotal,
@@ -446,20 +632,28 @@ export const createOrder = async (orderData, tenantId = 'gicca') => {
     discountAmount,
     transferDiscount,
     couponDiscount,
+    couponCode,
     total,
     totalCost,
     profit,
     profitMargin,
-    shippingMethod: orderData.shippingMethod || 'Andreani Estándar a Domicilio',
-    pickupBranch: orderData.pickupBranch || null,
-    paymentMethod: orderData.paymentMethod || 'transfer',
-    paymentStatus: orderData.paymentStatus || 'pending',
-    fulfillmentStatus: orderData.fulfillmentStatus || 'unfulfilled',
-    trackingCode: orderData.trackingCode || '',
-    notes: '',
-    source: orderData.source || 'web',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    shippingMethod,
+    pickupBranch: orderData.pickupBranch && typeof orderData.pickupBranch === 'object' ? orderData.pickupBranch : null,
+    paymentMethod,
+    paymentStatus,
+    fulfillmentStatus,
+    trackingCode: trusted ? cleanText(orderData.trackingCode, 60) : '',
+    notes: trusted ? cleanText(orderData.notes, 1000) : '',
+    source: trusted ? cleanText(orderData.source || 'manual_admin', 40) : 'web',
+    accessToken: crypto.randomBytes(16).toString('hex'),
+    stockReleased: paymentStatus === 'cancelled',
+    createdAt: now,
+    updatedAt: now
+  }
+
+  const stockLines = buildStockLines(validatedItems, products)
+  if (!newOrder.stockReleased) {
+    await reserveStock(currentTenant, stockLines, products, { allowShortage: trusted })
   }
 
   if (isMongoConnected()) {
@@ -468,6 +662,8 @@ export const createOrder = async (orderData, tenantId = 'gicca') => {
       return created.toObject()
     } catch (err) {
       console.error('[DB] Error creando pedido en MongoDB:', err.message)
+      if (!newOrder.stockReleased) await releaseStock(currentTenant, stockLines)
+      throw new OrderError('No se pudo registrar el pedido. Intentá nuevamente.', 500)
     }
   }
 
@@ -477,35 +673,81 @@ export const createOrder = async (orderData, tenantId = 'gicca') => {
   return newOrder
 }
 
-export const updateOrder = async (id, updateData, tenantId = 'gicca') => {
+export const getOrderByIdOrNumber = async (id, tenantId = 'gicca') => {
   if (isMongoConnected()) {
-    try {
-      const conditions = [{ id }, { orderNumber: id }]
-      const query = tenantId ? { tenantId, $or: conditions } : { $or: conditions }
-      const updated = await Order.findOneAndUpdate(
-        query,
-        { ...updateData, updatedAt: new Date().toISOString() },
-        { new: true }
-      ).lean()
-      if (updated) return updated
-    } catch (err) {
-      console.error('[DB] Error actualizando pedido en MongoDB:', err.message)
-    }
+    return Order.findOne({ tenantId, $or: [{ id }, { orderNumber: id }] }).lean()
+  }
+  const orders = await getOrders(tenantId)
+  return orders.find(o => o.id === id || o.orderNumber === id) || null
+}
+
+/**
+ * Mantiene el inventario sincronizado con el estado de pago:
+ * - pasar a "cancelado" devuelve el stock reservado (una sola vez)
+ * - reactivar un pedido cancelado lo vuelve a reservar
+ * Devuelve los campos a guardar en el pedido.
+ */
+const syncStockWithPaymentStatus = async (existing, nextStatus, tenantId) => {
+  if (!nextStatus || nextStatus === existing.paymentStatus) return {}
+
+  const releasing = nextStatus === 'cancelled' && !existing.stockReleased
+  const restoring = nextStatus !== 'cancelled' && Boolean(existing.stockReleased)
+  if (!releasing && !restoring) return {}
+
+  // Bandera atómica: evita devolver dos veces el stock si llegan dos actualizaciones a la vez
+  if (isMongoConnected()) {
+    const flipped = await Order.findOneAndUpdate(
+      { _id: existing._id, stockReleased: restoring ? true : { $ne: true } },
+      { $set: { stockReleased: releasing } }
+    )
+    if (!flipped) return {}
+  }
+
+  const products = await getProducts(tenantId)
+  const lines = buildStockLines(existing.items || [], products)
+  if (releasing) {
+    await releaseStock(tenantId, lines)
+  } else {
+    await reserveStock(tenantId, lines, products, { allowShortage: true })
+  }
+  return { stockReleased: releasing }
+}
+
+// Campos que nunca se modifican desde una actualización
+const IMMUTABLE_ORDER_FIELDS = ['_id', '__v', 'id', 'tenantId', 'orderNumber', 'accessToken', 'stockReleased', 'createdAt']
+
+export const updateOrder = async (id, updateData, tenantId = 'gicca') => {
+  const existing = await getOrderByIdOrNumber(id, tenantId)
+  if (!existing) return null
+
+  const changes = { ...updateData }
+  IMMUTABLE_ORDER_FIELDS.forEach(field => delete changes[field])
+  if (changes.paymentStatus && !PAYMENT_STATUSES.includes(changes.paymentStatus)) delete changes.paymentStatus
+  if (changes.fulfillmentStatus && !FULFILLMENT_STATUSES.includes(changes.fulfillmentStatus)) delete changes.fulfillmentStatus
+
+  const stockChanges = await syncStockWithPaymentStatus(existing, changes.paymentStatus, tenantId)
+
+  if (isMongoConnected()) {
+    return Order.findOneAndUpdate(
+      { _id: existing._id },
+      { ...changes, ...stockChanges, updatedAt: new Date().toISOString() },
+      { returnDocument: 'after' }
+    ).lean()
   }
 
   const orders = await getOrders(tenantId)
-  const index = orders.findIndex(o => o.id === id || o.orderNumber === id)
+  const index = orders.findIndex(o => o.id === existing.id)
   if (index === -1) return null
 
-  const existing = orders[index]
   const updated = {
     ...existing,
-    ...updateData,
+    ...changes,
+    ...stockChanges,
     id: existing.id,
     orderNumber: existing.orderNumber,
     customer: {
       ...existing.customer,
-      ...(updateData.customer || {})
+      ...(changes.customer || {})
     },
     updatedAt: new Date().toISOString()
   }
@@ -516,24 +758,62 @@ export const updateOrder = async (id, updateData, tenantId = 'gicca') => {
 }
 
 export const deleteOrder = async (id, tenantId = 'gicca') => {
+  const existing = await getOrderByIdOrNumber(id, tenantId)
+  if (!existing) return false
+
+  // Un pedido nunca pagado que se borra devuelve su reserva de stock
+  if (existing.paymentStatus === 'pending' && !existing.stockReleased) {
+    await syncStockWithPaymentStatus(existing, 'cancelled', tenantId)
+  }
+
   if (isMongoConnected()) {
-    try {
-      const conditions = [{ id }, { orderNumber: id }]
-      const query = tenantId ? { tenantId, $or: conditions } : { $or: conditions }
-      const res = await Order.findOneAndDelete(query)
-      if (res) return true
-    } catch (err) {
-      console.error('[DB] Error eliminando pedido en MongoDB:', err.message)
-    }
+    const res = await Order.deleteOne({ _id: existing._id })
+    return res.deletedCount === 1
   }
 
   const orders = await getOrders(tenantId)
-  const index = orders.findIndex(o => o.id === id || o.orderNumber === id)
+  const index = orders.findIndex(o => o.id === existing.id)
   if (index === -1) return false
 
   orders.splice(index, 1)
   saveOrders(orders)
   return true
+}
+
+/**
+ * Cancela pedidos de Mercado Pago que nunca se pagaron y libera su stock.
+ * Los pagos en efectivo (Rapipago / Pago Fácil) pueden tardar hasta 3 días en acreditarse.
+ */
+export const cancelStaleMercadoPagoOrders = async (maxAgeHours = 72) => {
+  const cutoff = new Date(Date.now() - maxAgeHours * 60 * 60 * 1000)
+  let stale = []
+
+  if (isMongoConnected()) {
+    stale = await Order.find({
+      paymentMethod: 'mercadopago',
+      paymentStatus: 'pending',
+      createdAt: { $lt: cutoff }
+    }).lean()
+  } else {
+    const orders = await getOrders()
+    stale = orders.filter(o =>
+      o.paymentMethod === 'mercadopago' &&
+      o.paymentStatus === 'pending' &&
+      new Date(o.createdAt || o.date) < cutoff
+    )
+  }
+
+  for (const order of stale) {
+    try {
+      await updateOrder(order.id, {
+        paymentStatus: 'cancelled',
+        notes: [order.notes, `Cancelado automáticamente: pago de Mercado Pago no acreditado en ${maxAgeHours} hs.`].filter(Boolean).join(' | ')
+      }, order.tenantId || 'gicca')
+    } catch (err) {
+      console.error(`[Orders] Error cancelando pedido vencido ${order.orderNumber}:`, err.message)
+    }
+  }
+  return stale.length
 }
 
 // ==========================================
@@ -600,7 +880,7 @@ export const saveSiteContent = async (content, tenantId = 'gicca') => {
       const updated = await SiteContent.findOneAndUpdate(
         { key: 'global_content', tenantId: currentTenant },
         { ...merged, key: 'global_content', tenantId: currentTenant },
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: 'after' }
       ).lean()
       return updated
     } catch (err) {

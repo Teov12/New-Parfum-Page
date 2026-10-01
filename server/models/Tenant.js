@@ -66,13 +66,28 @@ const tenantSchema = new mongoose.Schema({
     mercadoPagoPublicKey: { type: String, default: '' },
     mpAccessToken: { type: String, default: '' },
     mpPublicKey: { type: String, default: '' },
+    // Clave secreta para validar la firma de los webhooks de Mercado Pago (opcional)
+    mpWebhookSecret: { type: String, default: '' },
     cardFeeRate: { type: Number, default: 28 }, // 28% de recargo para 6 cuotas sin interes
     andreaniContractNumber: { type: String, default: '' },
     freeShippingThreshold: { type: Number, default: 250000 }
   },
 
+  // Cupones de descuento propios de la tienda (validados siempre del lado del servidor)
+  coupons: {
+    type: [{
+      code: { type: String, uppercase: true, trim: true },
+      type: { type: String, enum: ['percentage', 'fixed'], default: 'percentage' },
+      value: { type: Number, default: 0 },
+      label: { type: String, default: '' },
+      active: { type: Boolean, default: true }
+    }],
+    default: undefined
+  },
+
+  // Credenciales del dueño de la tienda para el panel de administración
   adminUser: {
-    email: { type: String, default: 'admin@gicca.com' },
+    email: { type: String, default: '', lowercase: true, trim: true },
     passwordHash: { type: String, default: '' }
   }
 }, {

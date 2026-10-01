@@ -7,14 +7,15 @@ const router = useRouter()
 const route = useRoute()
 const adminAuthStore = useAdminAuthStore()
 
+const adminEmail = ref('')
 const adminPassword = ref('')
 const showPassword = ref(false)
 
 const handleLogin = async () => {
-  const success = await adminAuthStore.login(adminPassword.value)
+  const success = await adminAuthStore.login(adminEmail.value, adminPassword.value)
   if (success) {
-    const redirect = route.query.redirect || '/admin/ventas'
-    router.push(redirect)
+    const fallback = adminAuthStore.isSuperadmin ? '/superadmin' : '/admin/ventas'
+    router.push(route.query.redirect || fallback)
   }
 }
 </script>
@@ -37,6 +38,20 @@ const handleLogin = async () => {
       <form @submit.prevent="handleLogin" class="space-y-4">
         <div>
           <label class="block font-label text-xs uppercase tracking-widest text-primary mb-2 font-semibold">
+            Email
+          </label>
+          <input 
+            v-model="adminEmail"
+            type="email" 
+            autocomplete="username"
+            autofocus
+            placeholder="tu@email.com"
+            class="w-full bg-surface-container/70 border border-outline-variant rounded-xl px-4 py-3 text-sm font-sans text-primary placeholder:text-secondary focus:border-primary focus:bg-surface focus:outline-none transition-all shadow-2xs"
+          />
+        </div>
+
+        <div>
+          <label class="block font-label text-xs uppercase tracking-widest text-primary mb-2 font-semibold">
             Contraseña de Administrador
           </label>
           <div class="relative">
@@ -44,7 +59,7 @@ const handleLogin = async () => {
               v-model="adminPassword"
               :type="showPassword ? 'text' : 'password'" 
               required
-              autofocus
+              autocomplete="current-password"
               placeholder="••••••••••••"
               class="w-full bg-surface-container/70 border border-outline-variant rounded-xl px-4 py-3 pr-10 text-sm font-sans text-primary placeholder:text-secondary focus:border-primary focus:bg-surface focus:outline-none transition-all shadow-2xs"
             />

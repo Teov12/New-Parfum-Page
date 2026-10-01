@@ -11,9 +11,9 @@ const router = useRouter()
 const couponInput = ref('')
 const couponMessage = ref(null)
 
-const handleApplyCoupon = () => {
+const handleApplyCoupon = async () => {
   if (!couponInput.value.trim()) return
-  const result = cartStore.applyCoupon(couponInput.value)
+  const result = await cartStore.applyCoupon(couponInput.value)
   couponMessage.value = result
   if (result.success) {
     toastStore.show(result.message, 'success')

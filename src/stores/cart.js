@@ -127,22 +127,31 @@ export const useCartStore = defineStore('cart', {
       }
     },
 
-    applyCoupon(code) {
-      const clean = code.trim().toUpperCase()
-      if (clean === 'GICCA10' || clean === 'PERFUME10') {
-        this.coupon = { code: clean, type: 'percentage', value: 10, label: '10% OFF en tu orden' }
+    // Los cupones se validan en el servidor de la tienda (el monto final también se recalcula allí)
+    async applyCoupon(code) {
+      const clean = (code || '').trim().toUpperCase()
+      if (!clean) return { success: false, message: 'Ingresá un código de cupón.' }
+
+      try {
+        const res = await fetch('/api/checkout/coupon', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: clean })
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok || !data.coupon) {
+          return { success: false, message: data.message || data.error || 'El cupón ingresado no es válido o ha expirado.' }
+        }
+
+        const { coupon } = data
+        this.coupon = coupon
         this.persist()
-        return { success: true, message: 'Cupón del 10% OFF aplicado con éxito' }
-      } else if (clean === 'PROMO15' || clean === 'LUJO15') {
-        this.coupon = { code: clean, type: 'percentage', value: 15, label: '15% OFF Especial' }
-        this.persist()
-        return { success: true, message: 'Cupón del 15% OFF aplicado con éxito' }
-      } else if (clean === 'BIENVENIDO') {
-        this.coupon = { code: clean, type: 'fixed', value: 10000, label: '$10.000 OFF de Bienvenida' }
-        this.persist()
-        return { success: true, message: 'Cupón de bienvenida de $10.000 aplicado' }
-      } else {
-        return { success: false, message: 'El cupón ingresado no es válido o ha expirado.' }
+        const label = coupon.type === 'percentage'
+          ? `${coupon.value}% OFF`
+          : `$${Number(coupon.value).toLocaleString('es-AR')} OFF`
+        return { success: true, message: `Cupón ${coupon.code} aplicado: ${coupon.label || label}` }
+      } catch (err) {
+        return { success: false, message: 'No pudimos validar el cupón. Revisá tu conexión e intentá de nuevo.' }
       }
     },
 

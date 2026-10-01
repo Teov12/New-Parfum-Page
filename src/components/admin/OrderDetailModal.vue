@@ -25,7 +25,7 @@ const handleResendEmail = async () => {
   if (!props.order) return
   isResendingEmail.value = true
   try {
-    const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
+    const token = localStorage.getItem('gicca_admin_token') || ''
     const headers = { 'Content-Type': 'application/json' }
     if (token) headers['Authorization'] = `Bearer ${token}`
 

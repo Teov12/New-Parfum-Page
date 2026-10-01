@@ -1,19 +1,30 @@
 import express from 'express'
+import rateLimit from 'express-rate-limit'
 import {
   getOrders,
-  createOrder,
+  getOrderByIdOrNumber,
   updateOrder,
   deleteOrder
 } from '../db.js'
-import { requireAuth } from '../middleware/auth.js'
+import { requireAuth, getAuthorizedUser } from '../middleware/auth.js'
+import { placeOrder, toCustomerOrder } from '../services/orderService.js'
 import { sendOrderConfirmationEmail, sendStoreOwnerNewOrderAlert } from '../services/mailer.js'
 
 const router = express.Router()
 
+// Freno a la creación masiva de pedidos falsos desde una misma IP
+export const publicOrderLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiados pedidos desde esta conexión. Intentá nuevamente en unos minutos.' }
+})
+
 // GET /api/orders - List all orders with filters (Admin only)
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const tenantId = req.tenantId || 'gicca'
+    const tenantId = req.tenantId
     let orders = await getOrders(tenantId)
     const { paymentStatus, fulfillmentStatus, source, q } = req.query
 
@@ -28,7 +39,7 @@ router.get('/', requireAuth, async (req, res) => {
     }
     if (q) {
       const search = q.toLowerCase().trim()
-      orders = orders.filter(o => 
+      orders = orders.filter(o =>
         o.orderNumber?.toLowerCase().includes(search) ||
         o.customer?.firstName?.toLowerCase().includes(search) ||
         o.customer?.lastName?.toLowerCase().includes(search) ||
@@ -50,7 +61,7 @@ router.get('/', requireAuth, async (req, res) => {
 // GET /api/orders/stats - Comprehensive financial and sales stats (Admin only)
 router.get('/stats', requireAuth, async (req, res) => {
   try {
-    const tenantId = req.tenantId || 'gicca'
+    const tenantId = req.tenantId
     const orders = await getOrders(tenantId)
     const paidOrders = orders.filter(o => o.paymentStatus === 'paid')
 
@@ -82,31 +93,36 @@ router.get('/stats', requireAuth, async (req, res) => {
   }
 })
 
-// GET /api/orders/:id - Get single order (Tracking / Receipt / Admin)
+// GET /api/orders/:id - Comprobante del pedido.
+// Admin de la tienda: pedido completo. Comprador: requiere ?token= (enviado en el link de su compra).
 router.get('/:id', async (req, res) => {
   try {
-    const tenantId = req.tenantId || 'gicca'
-    const orders = await getOrders(tenantId)
-    const order = orders.find(o => o.id === req.params.id || o.orderNumber === req.params.id)
-    if (!order) {
+    const order = await getOrderByIdOrNumber(req.params.id, req.tenantId)
+    const isAdmin = Boolean(getAuthorizedUser(req))
+    const token = String(req.query.token || '')
+    const hasValidToken = Boolean(order?.accessToken) && token.length > 0 && token === order.accessToken
+
+    // Mismo 404 si no existe o si falta el token, para no confirmar números de pedido ajenos
+    if (!order || (!isAdmin && !hasValidToken)) {
       return res.status(404).json({ error: 'Pedido no encontrado' })
     }
-    res.json(order)
+    res.json(isAdmin ? order : toCustomerOrder(order))
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener el pedido' })
   }
 })
 
-// POST /api/orders - Create new order (manual sale from admin or web)
-router.post('/', async (req, res) => {
+// POST /api/orders - Pedido web (transferencia) o venta manual desde el admin
+router.post('/', publicOrderLimiter, async (req, res) => {
   try {
-    const tenantId = req.tenantId || 'gicca'
     const orderData = req.body
     if (!orderData.items || !Array.isArray(orderData.items) || orderData.items.length === 0) {
       return res.status(400).json({ error: 'El pedido debe incluir al menos un producto' })
     }
 
-    const created = await createOrder(orderData, tenantId)
+    // Solo un admin autenticado de esta tienda puede cargar precios, estados o descuentos manuales
+    const trusted = Boolean(getAuthorizedUser(req))
+    const created = await placeOrder({ orderData, tenant: req.tenant, tenantId: req.tenantId, trusted })
 
     // Disparar notificaciones transaccionales por email (asíncronas sin bloquear respuesta)
     sendOrderConfirmationEmail({ order: created, tenant: req.tenant }).catch(e => {
@@ -116,19 +132,20 @@ router.post('/', async (req, res) => {
       console.warn('[Mailer] Error en alerta a dueño de tienda:', e.message)
     })
 
-    res.status(201).json(created)
+    res.status(201).json(trusted ? created : toCustomerOrder(created))
   } catch (err) {
+    if (err.status && err.status < 500) {
+      return res.status(err.status).json({ error: err.message })
+    }
     console.error('Error creating order:', err)
-    res.status(400).json({ error: err.message || 'Error al registrar el pedido' })
+    res.status(500).json({ error: 'Error al registrar el pedido' })
   }
 })
 
 // POST /api/orders/:id/resend-email - Reenviar email de confirmación manualmente (Admin only)
 router.post('/:id/resend-email', requireAuth, async (req, res) => {
   try {
-    const tenantId = req.tenantId || 'gicca'
-    const orders = await getOrders(tenantId)
-    const order = orders.find(o => o.id === req.params.id || o.orderNumber === req.params.id)
+    const order = await getOrderByIdOrNumber(req.params.id, req.tenantId)
     if (!order) {
       return res.status(404).json({ error: 'Pedido no encontrado' })
     }
@@ -144,8 +161,7 @@ router.post('/:id/resend-email', requireAuth, async (req, res) => {
 // PUT /api/orders/:id - Update order status, tracking, fulfillment, etc. (Admin only)
 router.put('/:id', requireAuth, async (req, res) => {
   try {
-    const tenantId = req.tenantId || 'gicca'
-    const updated = await updateOrder(req.params.id, req.body, tenantId)
+    const updated = await updateOrder(req.params.id, req.body, req.tenantId)
     if (!updated) {
       return res.status(404).json({ error: 'Pedido no encontrado' })
     }
@@ -159,8 +175,7 @@ router.put('/:id', requireAuth, async (req, res) => {
 // DELETE /api/orders/:id - Delete order (Admin only)
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
-    const tenantId = req.tenantId || 'gicca'
-    const deleted = await deleteOrder(req.params.id, tenantId)
+    const deleted = await deleteOrder(req.params.id, req.tenantId)
     if (!deleted) {
       return res.status(404).json({ error: 'Pedido no encontrado' })
     }

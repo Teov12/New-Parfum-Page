@@ -142,28 +142,35 @@ onMounted(async () => {
   const returnOrderNumber = urlParams.get('orderNumber') || urlParams.get('external_reference')
   const collectionStatus = urlParams.get('collection_status') || urlParams.get('status')
 
-  if (returnOrderNumber && (collectionStatus === 'approved' || route.path.includes('/checkout/success'))) {
-    try {
-      const paymentId = urlParams.get('payment_id') || urlParams.get('collection_id')
-      await fetch('/api/checkout/confirm-return', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-tenant-id': tenantStore.tenantId || 'gicca'
-        },
-        body: JSON.stringify({
-          orderNumber: returnOrderNumber,
-          paymentId,
-          status: 'approved'
-        })
-      }).catch(() => {})
+  const returnToken = urlParams.get('token') || ''
 
-      const res = await fetch(`/api/orders/${encodeURIComponent(returnOrderNumber)}`)
+  if (returnOrderNumber && returnToken && (collectionStatus === 'approved' || route.path.includes('/checkout/success'))) {
+    try {
+      // El servidor verifica el pago directamente con la API de Mercado Pago
+      const paymentId = urlParams.get('payment_id') || urlParams.get('collection_id')
+      if (paymentId) {
+        await fetch('/api/checkout/confirm-return', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-tenant-id': tenantStore.tenantId
+          },
+          body: JSON.stringify({
+            orderNumber: returnOrderNumber,
+            paymentId
+          })
+        }).catch(() => {})
+      }
+
+      const res = await fetch(`/api/orders/${encodeURIComponent(returnOrderNumber)}?token=${encodeURIComponent(returnToken)}`)
       if (res.ok) {
         const ord = await res.json()
-        const waNumber = (tenantStore.whatsappNumber || '5493564622055').replace(/\D/g, '')
-        const msg = `¡Hola! Acabo de abonar mi pedido #${ord.orderNumber} con Mercado Pago por $${(ord.total || 0).toLocaleString('es-AR')}. ¿Cuándo se despacha?`
-        
+        const isPaid = ord.paymentStatus === 'paid'
+        const waNumber = (tenantStore.whatsappNumber || '').replace(/\D/g, '')
+        const msg = isPaid
+          ? `¡Hola! Acabo de abonar mi pedido #${ord.orderNumber} con Mercado Pago por $${(ord.total || 0).toLocaleString('es-AR')}. ¿Cuándo se despacha?`
+          : `¡Hola! Hice el pago de mi pedido #${ord.orderNumber} con Mercado Pago y figura en proceso. ¿Me avisan cuando se acredite?`
+
         orderResult.value = {
           orderNumber: ord.orderNumber,
           date: new Date(ord.createdAt || Date.now()).toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' }),
@@ -173,11 +180,14 @@ onMounted(async () => {
           total: ord.total,
           paymentMethod: 'mercadopago',
           customer: ord.customer || {},
-          whatsappUrl: `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`
+          whatsappUrl: waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}` : ''
         }
         currentStep.value = 3
         cartStore.clearCart()
-        toastStore.show('¡Pago aprobado por Mercado Pago!', 'success')
+        toastStore.show(
+          isPaid ? '¡Pago aprobado por Mercado Pago!' : 'Recibimos tu pedido. Te avisaremos cuando Mercado Pago acredite el pago.',
+          isPaid ? 'success' : 'info'
+        )
         return
       }
     } catch (e) {
@@ -198,7 +208,7 @@ const shippingCost = computed(() => {
 })
 
 const transferDiscount = computed(() => {
-  return paymentMethod.value === 'transfer' ? (cartStore.transferDiscount || Math.round(cartStore.subtotal * 0.28)) : 0
+  return paymentMethod.value === 'transfer' ? cartStore.transferDiscount : 0
 })
 
 const finalTotal = computed(() => {
@@ -224,7 +234,8 @@ const handleStep1Submit = handleSubmit(async (formValues) => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 })
 
-const buildWhatsAppMessage = (orderNumber) => {
+// serverOrder: pedido devuelto por el servidor, con los montos oficiales
+const buildWhatsAppMessage = (orderNumber, serverOrder) => {
   const customerName = `${firstName.value} ${lastName.value}`.trim()
   const shippingOpt = shippingStore.selectedOption
   const shippingText = shippingOpt 
@@ -269,15 +280,15 @@ const buildWhatsAppMessage = (orderNumber) => {
 
   msg += `*RESUMEN DE PAGO:*\n`
   msg += `• *Subtotal Lista:* $${cartStore.subtotal.toLocaleString('es-AR')}\n`
-  if (cartStore.discountAmount > 0) {
-    msg += `• *Descuento Cupón:* -$${cartStore.discountAmount.toLocaleString('es-AR')}\n`
+  if (serverOrder.couponDiscount > 0) {
+    msg += `• *Descuento Cupón:* -$${serverOrder.couponDiscount.toLocaleString('es-AR')}\n`
   }
-  if (transferDiscount.value > 0) {
-    msg += `• *Descuento Transferencia (20% OFF):* -$${transferDiscount.value.toLocaleString('es-AR')}\n`
+  if (serverOrder.transferDiscount > 0) {
+    msg += `• *Descuento Transferencia:* -$${serverOrder.transferDiscount.toLocaleString('es-AR')}\n`
   }
-  msg += `• *Envío (Andreani - Precio aprox.):* ${shippingCost.value === 0 ? '¡GRATIS!' : `$${shippingCost.value.toLocaleString('es-AR')}`}\n`
-  msg += `• *TOTAL FINAL A ABONAR:* *$${finalTotal.value.toLocaleString('es-AR')}*\n`
-  if (shippingCost.value > 0) {
+  msg += `• *Envío (Andreani - Precio aprox.):* ${serverOrder.shippingCost === 0 ? '¡GRATIS!' : `$${serverOrder.shippingCost.toLocaleString('es-AR')}`}\n`
+  msg += `• *TOTAL FINAL A ABONAR:* *$${serverOrder.total.toLocaleString('es-AR')}*\n`
+  if (serverOrder.shippingCost > 0) {
     msg += `  _(El valor del envío es aproximado y se confirmará antes del despacho)_\n`
   }
   msg += `• *Forma de Pago:* ${paymentMethodLabel}\n\n`
@@ -288,81 +299,75 @@ const buildWhatsAppMessage = (orderNumber) => {
   return msg
 }
 
+// Datos que necesita el servidor: precios, cupón y envío se recalculan allí
+const buildOrderRequest = (paymentMethodId) => ({
+  customer: {
+    firstName: firstName.value,
+    lastName: lastName.value,
+    phone: phone.value,
+    email: email.value,
+    dni: dni.value,
+    address: address.value,
+    apartment: apartment.value,
+    city: city.value,
+    province: province.value,
+    postalCode: postalCode.value
+  },
+  items: cartStore.items.map(i => ({
+    id: i.id,
+    name: i.name,
+    brand: i.brand,
+    size: i.size,
+    quantity: i.quantity
+  })),
+  couponCode: cartStore.coupon?.code || '',
+  shippingOptionId: shippingStore.selectedOption?.id || '',
+  shippingMethod: shippingStore.selectedOption?.name || 'Andreani Estándar a Domicilio',
+  pickupBranch: shippingStore.isBranchPickup ? shippingStore.selectedBranch : null,
+  paymentMethod: paymentMethodId
+})
+
 const handleFinalOrder = async () => {
   isSubmitting.value = true
 
-  const orderNumber = `GIC-${Math.floor(100000 + Math.random() * 900000)}`
-  const messageText = buildWhatsAppMessage(orderNumber)
-  const encodedText = encodeURIComponent(messageText)
-  const waNumber = (tenantStore.whatsappNumber || '5493564622055').replace(/\D/g, '')
-  const whatsappUrl = `https://wa.me/${waNumber}?text=${encodedText}`
-
-  // Build order payload for backend database
-  const orderData = {
-    orderNumber,
-    customer: {
-      firstName: firstName.value,
-      lastName: lastName.value,
-      phone: phone.value,
-      email: email.value,
-      dni: dni.value,
-      address: address.value,
-      apartment: apartment.value,
-      city: city.value,
-      province: province.value,
-      postalCode: postalCode.value
-    },
-    items: cartStore.items.map(i => ({
-      id: i.id,
-      name: i.name,
-      brand: i.brand,
-      size: i.size,
-      quantity: i.quantity,
-      price: i.price,
-      costPrice: Math.round(i.price * 0.45)
-    })),
-    subtotal: cartStore.subtotal,
-    shippingCost: shippingCost.value,
-    discountAmount: (cartStore.discountAmount || 0) + transferDiscount.value,
-    total: finalTotal.value,
-    totalCost: cartStore.items.reduce((acc, i) => acc + (Math.round(i.price * 0.45) * i.quantity), 0),
-    shippingMethod: shippingStore.selectedOption?.name || 'Andreani Estándar a Domicilio',
-    pickupBranch: shippingStore.isBranchPickup ? shippingStore.selectedBranch : null,
-    paymentMethod: 'transfer',
-    paymentStatus: 'pending',
-    fulfillmentStatus: 'unfulfilled',
-    notes: 'Pago a confirmar vía Transferencia Bancaria (Comprobante WhatsApp)',
-    source: 'web'
-  }
-
-  // Register in backend database
+  // Primero se registra el pedido: el número y el total oficiales los define el servidor
+  let created
   try {
-    await fetch('/api/orders', {
+    const res = await fetch('/api/orders', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-tenant-id': tenantStore.tenantId || 'gicca'
+        'x-tenant-id': tenantStore.tenantId
       },
-      body: JSON.stringify(orderData)
+      body: JSON.stringify(buildOrderRequest('transfer'))
     })
+    created = await res.json().catch(() => ({}))
+    if (!res.ok) throw new Error(created.error || 'No pudimos registrar tu pedido')
   } catch (err) {
-    console.warn('Could not persist order to backend:', err)
+    isSubmitting.value = false
+    toastStore.show(err.message || 'No pudimos registrar tu pedido. Intentá nuevamente.', 'error')
+    return
   }
+
+  const orderNumber = created.orderNumber
+  const messageText = buildWhatsAppMessage(orderNumber, created)
+  const waNumber = (tenantStore.whatsappNumber || '').replace(/\D/g, '')
+  const whatsappUrl = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(messageText)}` : ''
 
   orderResult.value = {
     orderNumber,
     date: new Date().toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' }),
     items: [...cartStore.items],
-    shippingService: shippingStore.selectedOption?.name || 'Andreani Estándar a Domicilio',
+    shippingService: created.shippingMethod || shippingStore.selectedOption?.name || 'Andreani Estándar a Domicilio',
     shippingEstimatedDays: shippingStore.selectedOption?.estimatedDays || '24 a 48 hs',
-    total: finalTotal.value,
+    total: created.total,
     paymentMethod: 'transfer',
     customer: { ...values },
     whatsappUrl
   }
 
   // Open WhatsApp in new tab
-  window.open(whatsappUrl, '_blank')
+  if (whatsappUrl) window.open(whatsappUrl, '_blank')
 
   setTimeout(() => {
     isSubmitting.value = false
@@ -376,50 +381,14 @@ const handleFinalOrder = async () => {
 const handleMercadoPagoPayment = async () => {
   isProcessingPayment.value = true
 
-  const orderNumber = `GIC-${Math.floor(100000 + Math.random() * 900000)}`
-  const orderData = {
-    orderNumber,
-    customer: {
-      firstName: firstName.value,
-      lastName: lastName.value,
-      phone: phone.value,
-      email: email.value || 'cliente@giccaparfum.com',
-      dni: dni.value,
-      address: address.value,
-      apartment: apartment.value,
-      city: city.value,
-      province: province.value,
-      postalCode: postalCode.value
-    },
-    items: cartStore.items.map(i => ({
-      id: i.id,
-      name: i.name,
-      brand: i.brand,
-      size: i.size,
-      quantity: i.quantity,
-      price: i.price,
-      costPrice: Math.round(i.price * 0.45)
-    })),
-    subtotal: cartStore.subtotal,
-    shippingCost: shippingCost.value,
-    discountAmount: cartStore.discountAmount || 0,
-    couponDiscount: cartStore.discountAmount || 0,
-    total: finalTotal.value,
-    shippingMethod: shippingStore.selectedOption?.name || 'Andreani Estándar a Domicilio',
-    pickupBranch: shippingStore.isBranchPickup ? shippingStore.selectedBranch : null,
-    paymentMethod: 'mercadopago',
-    paymentStatus: 'pending',
-    fulfillmentStatus: 'unfulfilled',
-    notes: 'Pago iniciado con Mercado Pago',
-    source: 'web'
-  }
+  const orderData = buildOrderRequest('mercadopago')
 
   try {
     const res = await fetch('/api/checkout/create-preference', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-tenant-id': tenantStore.tenantId || 'gicca'
+        'x-tenant-id': tenantStore.tenantId
       },
       body: JSON.stringify({ orderData })
     })
@@ -438,12 +407,12 @@ const handleMercadoPagoPayment = async () => {
     } else if (data.isSimulation) {
       toastStore.show(data.message || 'Pedido guardado en modo simulación', 'info')
       orderResult.value = {
-        orderNumber: data.order?.orderNumber || orderNumber,
+        orderNumber: data.order?.orderNumber,
         date: new Date().toLocaleDateString('es-AR'),
         items: [...cartStore.items],
         shippingService: shippingStore.selectedOption?.name || 'Andreani Estándar',
         shippingEstimatedDays: '24 a 48 hs',
-        total: finalTotal.value,
+        total: data.order?.total ?? finalTotal.value,
         paymentMethod: 'mercadopago',
         customer: { ...values },
         whatsappUrl: data.whatsappFallbackUrl

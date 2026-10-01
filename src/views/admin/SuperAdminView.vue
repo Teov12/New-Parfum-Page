@@ -13,7 +13,7 @@ const statusFilter = ref('all')
 const isCreateModalOpen = ref(false)
 const isSubmitting = ref(false)
 
-const newTenantForm = ref({
+const emptyTenantForm = () => ({
   name: '',
   tenantId: '',
   domain: '',
@@ -21,16 +21,25 @@ const newTenantForm = ref({
   plan: 'pro',
   whatsappNumber: '',
   alias: '',
+  adminEmail: '',
+  adminPassword: '',
   seedStarter: true
 })
+
+const newTenantForm = ref(emptyTenantForm())
+const accessDenied = ref(false)
 
 const fetchTenants = async () => {
   isLoading.value = true
   try {
-    const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
+    const token = localStorage.getItem('gicca_admin_token') || ''
     const res = await fetch('/api/tenant/all', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
+    if (res.status === 401 || res.status === 403) {
+      accessDenied.value = true
+      throw new Error('Esta consola requiere una cuenta de superadmin de la plataforma.')
+    }
     if (!res.ok) throw new Error('Error al obtener lista de perfumerías')
     const data = await res.json()
     tenants.value = Array.isArray(data) ? data : [data]
@@ -95,7 +104,7 @@ const handleCreateTenant = async () => {
 
   isSubmitting.value = true
   try {
-    const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
+    const token = localStorage.getItem('gicca_admin_token') || ''
     const res = await fetch('/api/tenant/create', {
       method: 'POST',
       headers: {
@@ -123,18 +132,9 @@ const handleCreateTenant = async () => {
       }
     }
 
-    toastStore.show(`¡Perfumería "${newTenantForm.value.name}" creada con éxito!`, 'success')
+    toastStore.show(`¡Perfumería "${newTenantForm.value.name}" creada con éxito! Acceso: ${newTenantForm.value.adminEmail}`, 'success')
     isCreateModalOpen.value = false
-    newTenantForm.value = {
-      name: '',
-      tenantId: '',
-      domain: '',
-      subdomain: '',
-      plan: 'pro',
-      whatsappNumber: '',
-      alias: '',
-      seedStarter: true
-    }
+    newTenantForm.value = emptyTenantForm()
     await fetchTenants()
   } catch (err) {
     toastStore.show(err.message, 'error')
@@ -153,7 +153,7 @@ const toggleTenantStatus = async (tenant) => {
   if (!confirm(confirmMsg)) return
 
   try {
-    const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
+    const token = localStorage.getItem('gicca_admin_token') || ''
     const res = await fetch(`/api/tenant/${tenant.tenantId}/status`, {
       method: 'PUT',
       headers: {
@@ -171,6 +171,33 @@ const toggleTenantStatus = async (tenant) => {
   }
 }
 
+// Restablece el email y la contraseña del dueño de una tienda (ej: si la olvidó)
+const resetTenantAccess = async (tenant) => {
+  const email = prompt(`Email de acceso para "${tenant.name}":`, tenant.adminEmail || '')
+  if (!email) return
+  const password = prompt('Nueva contraseña (mínimo 8 caracteres). Compartila por un canal seguro:')
+  if (!password) return
+
+  try {
+    const token = localStorage.getItem('gicca_admin_token') || ''
+    const res = await fetch(`/api/tenant/${tenant.tenantId}/credentials`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ email, password })
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'Error al actualizar el acceso')
+    tenant.adminEmail = email
+    tenant.hasAdminUser = true
+    toastStore.show(data.message || 'Acceso actualizado', 'success')
+  } catch (err) {
+    toastStore.show(err.message, 'error')
+  }
+}
+
 const deleteTenant = async (tenant) => {
   if (tenant.tenantId === 'gicca') {
     toastStore.show('No es posible dar de baja la perfumería principal', 'warning')
@@ -181,7 +208,7 @@ const deleteTenant = async (tenant) => {
   }
 
   try {
-    const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
+    const token = localStorage.getItem('gicca_admin_token') || ''
     const res = await fetch(`/api/tenant/${tenant.tenantId}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
@@ -239,7 +266,15 @@ const deleteTenant = async (tenant) => {
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      
+
+      <div v-if="accessDenied" class="bg-rose-500/10 border border-rose-500/30 rounded-2xl p-5 text-sm text-rose-200 flex items-start gap-3">
+        <span class="material-symbols-outlined text-rose-300">lock</span>
+        <div>
+          <p class="font-bold">Esta consola es solo para el superadmin de la plataforma.</p>
+          <p class="text-xs text-rose-200/80 mt-1">Cerrá sesión e ingresá con el email y la contraseña definidos en SUPERADMIN_EMAIL / SUPERADMIN_PASSWORD.</p>
+        </div>
+      </div>
+
       <!-- KPI Stats Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         
@@ -417,6 +452,15 @@ const deleteTenant = async (tenant) => {
                   </button>
 
                   <button
+                    @click="resetTenantAccess(t)"
+                    class="px-2.5 py-1.5 rounded-lg border border-white/10 text-xs font-label uppercase tracking-wider transition-colors inline-flex items-center gap-1 text-sky-300 hover:bg-sky-500/10"
+                    :title="t.hasAdminUser ? `Acceso actual: ${t.adminEmail}` : 'Sin usuario administrador'"
+                  >
+                    <span class="material-symbols-outlined text-sm">key</span>
+                    <span>Acceso</span>
+                  </button>
+
+                  <button
                     v-if="t.tenantId !== 'gicca'"
                     @click="deleteTenant(t)"
                     class="p-1.5 text-white/40 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
@@ -521,8 +565,38 @@ const deleteTenant = async (tenant) => {
             />
           </div>
 
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-label text-[11px] uppercase tracking-wider text-white/70 font-bold mb-1">
+                Email del Dueño *
+              </label>
+              <input
+                v-model="newTenantForm.adminEmail"
+                type="email"
+                required
+                autocomplete="off"
+                placeholder="duenio@perfumeria.com"
+                class="w-full bg-[#11100F] border border-white/10 rounded-xl p-3 text-white placeholder:text-white/30 focus:border-amber-500 focus:outline-none text-xs"
+              />
+            </div>
+            <div>
+              <label class="block font-label text-[11px] uppercase tracking-wider text-white/70 font-bold mb-1">
+                Contraseña Inicial *
+              </label>
+              <input
+                v-model="newTenantForm.adminPassword"
+                type="text"
+                required
+                minlength="8"
+                autocomplete="new-password"
+                placeholder="Mínimo 8 caracteres"
+                class="w-full bg-[#11100F] border border-white/10 rounded-xl p-3 text-white placeholder:text-white/30 focus:border-amber-500 focus:outline-none text-xs font-mono"
+              />
+            </div>
+          </div>
+
           <div class="bg-white/5 border border-white/10 rounded-xl p-3.5 flex items-center gap-3">
-            <input 
+            <input
               v-model="newTenantForm.seedStarter"
               type="checkbox" 
               id="seedStarterCheck"

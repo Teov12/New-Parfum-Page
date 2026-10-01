@@ -63,7 +63,7 @@ const verifyDomainDns = async () => {
   isCheckingDns.value = true
   dnsCheckResult.value = null
   try {
-    const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
+    const token = localStorage.getItem('gicca_admin_token') || ''
     const res = await fetch('/api/tenant/verify-domain', {
       method: 'POST',
       headers: {
@@ -90,7 +90,7 @@ const verifyDomainDns = async () => {
 
 onMounted(async () => {
   try {
-    const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
+    const token = localStorage.getItem('gicca_admin_token') || ''
     const res = await fetch('/api/tenant/settings', {
       headers: {
         'Authorization': `Bearer ${token}`
@@ -99,6 +99,7 @@ onMounted(async () => {
     if (res.ok) {
       const data = await res.json()
       if (data?.tenant) {
+        credentialsForm.value.email = data.tenant.adminEmail || ''
         form.value.name = data.tenant.name || 'Gicca Perfumes'
         form.value.domain = data.tenant.domain || ''
         form.value.subdomain = data.tenant.subdomain || ''
@@ -159,6 +160,43 @@ onMounted(async () => {
   }
 })
 
+// Acceso al panel: email y contraseña propios del dueño de la tienda
+const credentialsForm = ref({ email: '', currentPassword: '', newPassword: '', confirmPassword: '' })
+const isSavingCredentials = ref(false)
+
+const handleSaveCredentials = async () => {
+  const { email, currentPassword, newPassword, confirmPassword } = credentialsForm.value
+  if (newPassword.length < 8) {
+    toastStore.show('La nueva contraseña debe tener al menos 8 caracteres', 'warning')
+    return
+  }
+  if (newPassword !== confirmPassword) {
+    toastStore.show('Las contraseñas nuevas no coinciden', 'warning')
+    return
+  }
+
+  isSavingCredentials.value = true
+  try {
+    const token = localStorage.getItem('gicca_admin_token') || ''
+    const res = await fetch('/api/auth/credentials', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ email, currentPassword, newPassword })
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'No se pudieron actualizar las credenciales')
+    credentialsForm.value = { email, currentPassword: '', newPassword: '', confirmPassword: '' }
+    toastStore.show(data.message || 'Credenciales actualizadas', 'success')
+  } catch (err) {
+    toastStore.show(err.message, 'error')
+  } finally {
+    isSavingCredentials.value = false
+  }
+}
+
 const handleTestMercadoPago = async () => {
   if (!form.value.commercial.mpAccessToken) {
     toastStore.show('Ingresá primero el Access Token de Mercado Pago', 'error')
@@ -167,7 +205,7 @@ const handleTestMercadoPago = async () => {
   isTestingMp.value = true
   mpTestResult.value = null
   try {
-    const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
+    const token = localStorage.getItem('gicca_admin_token') || ''
     const res = await fetch('/api/checkout/test-credentials', {
       method: 'POST',
       headers: {
@@ -698,6 +736,43 @@ const handleSave = async () => {
             </div>
           </div>
         </div>
+
+        <!-- Acceso al panel -->
+        <form @submit.prevent="handleSaveCredentials" class="bg-surface border border-outline-variant rounded-2xl p-6 sm:p-8 space-y-4 shadow-xs">
+          <div class="flex items-center gap-3 border-b border-outline-variant pb-3">
+            <span class="material-symbols-outlined text-xl text-primary">admin_panel_settings</span>
+            <h2 class="font-sans text-base font-bold text-primary">Acceso al Panel</h2>
+          </div>
+          <p class="text-xs text-secondary leading-relaxed">
+            Email y contraseña con los que ingresás a este panel. Solo vos tenés acceso: guardalos en un lugar seguro.
+          </p>
+          <div>
+            <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">Email de acceso</label>
+            <input v-model="credentialsForm.email" type="email" required autocomplete="username" class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-xs focus:border-primary focus:outline-none" />
+          </div>
+          <div>
+            <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">Contraseña actual</label>
+            <input v-model="credentialsForm.currentPassword" type="password" required autocomplete="current-password" class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-xs focus:border-primary focus:outline-none" />
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">Nueva contraseña</label>
+              <input v-model="credentialsForm.newPassword" type="password" required minlength="8" autocomplete="new-password" class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-xs focus:border-primary focus:outline-none" />
+            </div>
+            <div>
+              <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">Repetir contraseña</label>
+              <input v-model="credentialsForm.confirmPassword" type="password" required minlength="8" autocomplete="new-password" class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-xs focus:border-primary focus:outline-none" />
+            </div>
+          </div>
+          <button
+            type="submit"
+            :disabled="isSavingCredentials"
+            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-outline-variant bg-surface-container hover:bg-surface-container-high text-primary font-label text-xs uppercase tracking-wider font-bold transition-all disabled:opacity-50 cursor-pointer"
+          >
+            <span class="material-symbols-outlined text-sm">lock_reset</span>
+            <span>{{ isSavingCredentials ? 'Guardando...' : 'Actualizar acceso' }}</span>
+          </button>
+        </form>
 
         <!-- 2. Pasarela Mercado Pago -->
         <div class="bg-surface border border-outline-variant rounded-2xl p-6 sm:p-8 space-y-5 shadow-xs">

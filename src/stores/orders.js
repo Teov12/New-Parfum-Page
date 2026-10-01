@@ -69,9 +69,14 @@ export const useOrdersStore = defineStore('orders', {
     async createOrder(orderData) {
       this.isLoading = true
       try {
+        // Con el token de admin el servidor acepta precios, descuentos y estados cargados a mano
+        const token = localStorage.getItem('gicca_admin_token')
+        const headers = { 'Content-Type': 'application/json' }
+        if (token) headers['Authorization'] = `Bearer ${token}`
+
         const res = await fetch('/api/orders', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify(orderData)
         })
         const data = await res.json()

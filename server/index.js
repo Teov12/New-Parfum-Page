@@ -14,7 +14,7 @@ import tenantRoutes from './routes/tenants.js'
 import checkoutRoutes from './routes/checkout.js'
 import { tenantMiddleware } from './middleware/tenant.js'
 import { connectDatabase } from './dbConnection.js'
-import { getProducts } from './db.js'
+import { getProducts, cancelStaleMercadoPagoOrders } from './db.js'
 import swaggerUi from 'swagger-ui-express'
 import { swaggerDocument } from './swagger.js'
 
@@ -26,6 +26,9 @@ connectDatabase()
 
 const app = express()
 const PORT = process.env.PORT || 3001
+
+// Detrás del proxy del hosting (Render, Railway, Nginx) para que los límites por IP usen la IP real
+app.set('trust proxy', Number(process.env.TRUST_PROXY ?? 1))
 
 // Middleware
 const allowedOrigins = process.env.CORS_ORIGIN 
@@ -211,6 +214,14 @@ if (fs.existsSync(distPath)) {
     next()
   })
 }
+
+// Pedidos de Mercado Pago nunca pagados: se cancelan y liberan su stock reservado
+const STALE_ORDER_HOURS = Number(process.env.MP_PENDING_ORDER_TTL_HOURS) || 72
+setInterval(() => {
+  cancelStaleMercadoPagoOrders(STALE_ORDER_HOURS)
+    .then(count => { if (count > 0) console.log(`[Orders] ${count} pedido(s) de Mercado Pago vencidos fueron cancelados.`) })
+    .catch(err => console.error('[Orders] Error cancelando pedidos vencidos:', err.message))
+}, 30 * 60 * 1000).unref()
 
 app.listen(PORT, () => {
   console.log(`Servidor Backend Gicca Perfumes ejecutandose en http://localhost:${PORT}`)

@@ -113,7 +113,7 @@ export const useTenantStore = defineStore('tenant', {
     async uploadIcon(file) {
       const formData = new FormData()
       formData.append('images', file)
-      const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
+      const token = localStorage.getItem('gicca_admin_token') || ''
 
       const res = await fetch('/api/upload', {
         method: 'POST',
@@ -128,7 +128,7 @@ export const useTenantStore = defineStore('tenant', {
     },
 
     async updateSettings(settingsData) {
-      const token = localStorage.getItem('gicca_admin_token') || localStorage.getItem('gicca_token') || 'gicca_admin_token_secure_2026'
+      const token = localStorage.getItem('gicca_admin_token') || ''
       const res = await fetch('/api/tenant/settings', {
         method: 'PUT',
         headers: {

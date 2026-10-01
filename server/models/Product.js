@@ -27,6 +27,8 @@ const productSchema = new mongoose.Schema({
     price: Number,
     transferPrice: Number,
     costPrice: Number,
+    // Stock propio de la presentación. Si no está definido, se usa el stock general del producto.
+    stock: Number,
     default: Boolean
   }],
   olfactoryPyramid: {

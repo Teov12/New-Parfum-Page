@@ -44,9 +44,9 @@ const onPostalCodeInput = () => {
   }
 }
 
-const handleApplyCoupon = () => {
+const handleApplyCoupon = async () => {
   if (!couponInput.value.trim()) return
-  const result = cartStore.applyCoupon(couponInput.value)
+  const result = await cartStore.applyCoupon(couponInput.value)
   couponMessage.value = result
   if (result.success) {
     toastStore.show(result.message, 'success')

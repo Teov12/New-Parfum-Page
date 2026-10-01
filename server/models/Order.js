@@ -31,6 +31,7 @@ const orderSchema = new mongoose.Schema({
   discountAmount: { type: Number, default: 0 },
   transferDiscount: { type: Number, default: 0 },
   couponDiscount: { type: Number, default: 0 },
+  couponCode: { type: String, default: '' },
   total: { type: Number, default: 0 },
   totalCost: { type: Number, default: 0 },
   profit: { type: Number, default: 0 },
@@ -42,7 +43,11 @@ const orderSchema = new mongoose.Schema({
   fulfillmentStatus: { type: String, default: 'unfulfilled', enum: ['unfulfilled', 'packing', 'shipped', 'delivered'] },
   trackingCode: { type: String, default: '' },
   notes: { type: String, default: '' },
-  source: { type: String, default: 'web' }
+  source: { type: String, default: 'web' },
+  // Token secreto para que el comprador vea su comprobante sin exponer pedidos ajenos
+  accessToken: { type: String, default: '' },
+  // true cuando el stock reservado por el pedido ya fue devuelto (pedido cancelado)
+  stockReleased: { type: Boolean, default: false }
 }, {
   timestamps: true,
   toJSON: { virtuals: true },

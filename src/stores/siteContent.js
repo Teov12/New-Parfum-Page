@@ -131,7 +131,7 @@ const DEFAULT_EDITORIAL = {
 }
 
 function getAuthHeaders() {
-  const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
+  const token = localStorage.getItem('gicca_admin_token') || ''
   return {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`
@@ -345,7 +345,7 @@ export const useSiteContentStore = defineStore('siteContent', {
     async uploadImage(file) {
       const formData = new FormData()
       formData.append('images', file)
-      const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
+      const token = localStorage.getItem('gicca_admin_token') || ''
 
       const res = await fetch('/api/upload', {
         method: 'POST',
