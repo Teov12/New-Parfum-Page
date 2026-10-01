@@ -166,9 +166,17 @@ const router = createRouter({
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition
-    } else {
-      return { top: 0, behavior: 'smooth' }
     }
+    if (to.hash) {
+      return { el: to.hash, behavior: 'smooth' }
+    }
+    // Return a Promise synchronized with the page-fade leave transition (180ms)
+    // so the new page renders cleanly from the top without layout thrashing from bottom scrolls
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ top: 0, left: 0 })
+      }, 190)
+    })
   }
 })
 
