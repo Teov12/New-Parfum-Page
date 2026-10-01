@@ -156,6 +156,10 @@ export const useSiteContentStore = defineStore('siteContent', {
   },
 
   actions: {
+    async fetchContent() {
+      return this.fetchSiteContent()
+    },
+
     async fetchSiteContent() {
       this.loading = true
       this.error = null
@@ -173,9 +177,12 @@ export const useSiteContentStore = defineStore('siteContent', {
           if (Array.isArray(data.olfactiveFamilies) && data.olfactiveFamilies.length > 0) {
             this.olfactiveFamilies = data.olfactiveFamilies
           }
-          if (data.editorial) {
+          if (data.editorial && typeof data.editorial === 'object') {
             this.editorial = { ...this.editorial, ...data.editorial }
           }
+        }
+        if (!this.editorial) {
+          this.editorial = { ...DEFAULT_EDITORIAL }
         }
         this.isLoaded = true
         return data

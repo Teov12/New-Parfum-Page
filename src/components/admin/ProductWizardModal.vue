@@ -162,7 +162,7 @@ const cardFeeRate = ref(28) // Recargo / Comisión bancaria / Mercado Pago (28% 
 watch(() => props.isOpen, (open) => {
   if (open) {
     if (!siteContentStore.olfactiveFamilies || siteContentStore.olfactiveFamilies.length === 0) {
-      siteContentStore.fetchContent()
+      siteContentStore.fetchSiteContent()
     }
     currentFormStep.value = 1
     targetTransferPrice.value = null

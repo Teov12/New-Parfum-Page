@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import { useSiteContentStore } from '@/stores/siteContent'
 import { useToastStore } from '@/stores/toast'
 import { useTenantStore } from '@/stores/tenant'
+import { useProductStore } from '@/stores/products'
 import { THEME_PRESETS } from '@/utils/themePresets.js'
 import CategoryModal from '@/components/admin/CategoryModal.vue'
 import FamilyModal from '@/components/admin/FamilyModal.vue'
@@ -13,6 +14,7 @@ import DeleteConfirmModal from '@/components/admin/DeleteConfirmModal.vue'
 const siteContentStore = useSiteContentStore()
 const toastStore = useToastStore()
 const tenantStore = useTenantStore()
+const productStore = useProductStore()
 
 const activeDesignSubtab = ref('categorias') // 'categorias', 'familias', 'banners', 'editorial', 'icono', 'paleta'
 
@@ -85,8 +87,10 @@ const syncStoreIconForm = () => {
   customPrimaryColor.value = tenantStore.branding?.primaryColor || '#2e1911'
 }
 
-onMounted(() => {
+onMounted(async () => {
   syncStoreIconForm()
+  siteContentStore.fetchSiteContent()
+  productStore.fetchProducts()
 })
 
 watch(() => tenantStore.branding, () => {
@@ -870,7 +874,7 @@ const handleSaveEditorial = async () => {
       </div>
 
       <!-- SUBTAB 6: PALETA DE COLORES DE LA BOUTIQUE (DYNAMIC THEMING) -->
-      <div v-if="activeDesignSubtab === 'paleta'" key="paleta" class="space-y-6">
+      <div v-else-if="activeDesignSubtab === 'paleta'" key="paleta" class="space-y-6">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
             <h3 class="font-serif text-xl sm:text-2xl font-normal text-primary">Paleta de Colores de la Boutique</h3>
@@ -1004,7 +1008,7 @@ const handleSaveEditorial = async () => {
 
     <DeleteConfirmModal 
       :is-open="isDeleteModalOpen"
-      :title="`¿Eliminar '${contentToDelete?.title}'?`"
+      :title="`¿Eliminar '${contentToDelete?.title || 'este elemento'}'?`"
       message="Este elemento dejará de mostrarse en la web inmediatamente."
       :is-deleting="isDeleting"
       @close="isDeleteModalOpen = false"

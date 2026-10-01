@@ -146,6 +146,7 @@ const routes = [
       },
       {
         path: 'diseno',
+        alias: 'diseño',
         name: 'admin-design',
         component: () => import('../views/admin/AdminDesignView.vue'),
         meta: { title: 'Diseño & Contenido | Admin Gicca', requiresAuth: true }
