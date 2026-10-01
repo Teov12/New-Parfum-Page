@@ -23,6 +23,7 @@ const olfactiveFamilies = computed(() => siteContentStore.olfactiveFamilies)
 
 // State filters
 const searchQuery = ref('')
+const selectedNote = ref('')
 const selectedGenders = ref([])
 const selectedCategories = ref([])
 const selectedBrands = ref([])
@@ -103,6 +104,12 @@ const initFromQuery = () => {
     searchQuery.value = route.query.q
   }
 
+  if (route.query.note) {
+    selectedNote.value = String(route.query.note).trim()
+  } else {
+    selectedNote.value = ''
+  }
+
   updateCatalogSeo()
 }
 
@@ -137,6 +144,9 @@ const updateCatalogSeo = () => {
   } else if (route.query.family) {
     title = `Perfumes Familia Olfativa ${route.query.family} | Gicca Perfumes`
     desc = `Descubrí perfumes con notas de la familia olfativa ${route.query.family}. Fragancias seleccionadas 100% originales en Argentina.`
+  } else if (route.query.note) {
+    title = `Perfumes con Nota de ${route.query.note} | Catálogo Gicca`
+    desc = `Descubrí perfumes con notas olfativas de ${route.query.note} 100% originales en Argentina con cuotas y envíos a todo el país.`
   } else if (route.query.q) {
     title = `Buscar "${route.query.q}" en Perfumes | Gicca Perfumes`
     desc = `Resultados de búsqueda para ${route.query.q} en Gicca Perfumes. Encontrá tus fragancias favoritas originales con envíos a todo el país.`
@@ -232,6 +242,18 @@ const filteredProducts = computed(() => {
       return false
     }
 
+    // Note olfativa directa (desde pirámide o URL)
+    if (selectedNote.value) {
+      const nLower = selectedNote.value.toLowerCase().trim()
+      const matchesNote = 
+        p.olfactoryPyramid?.topNotes?.some(n => n.toLowerCase().includes(nLower)) ||
+        p.olfactoryPyramid?.heartNotes?.some(n => n.toLowerCase().includes(nLower)) ||
+        p.olfactoryPyramid?.baseNotes?.some(n => n.toLowerCase().includes(nLower)) ||
+        p.name?.toLowerCase().includes(nLower) ||
+        p.description?.toLowerCase().includes(nLower)
+      if (!matchesNote) return false
+    }
+
     // Wishlist
     if (onlyWishlist.value && !wishlistStore.isInWishlist(p.id)) {
       return false
@@ -259,6 +281,7 @@ const filteredProducts = computed(() => {
 
 const clearAllFilters = () => {
   searchQuery.value = ''
+  selectedNote.value = ''
   selectedGenders.value = []
   selectedCategories.value = []
   selectedBrands.value = []
@@ -271,9 +294,17 @@ const clearAllFilters = () => {
   router.push({ query: {} })
 }
 
+const clearNoteFilter = () => {
+  selectedNote.value = ''
+  const q = { ...route.query }
+  delete q.note
+  router.push({ query: q })
+}
+
 const activeFiltersCount = computed(() => {
   let count = 0
   if (searchQuery.value) count++
+  if (selectedNote.value) count++
   if (selectedGenders.value.length) count += selectedGenders.value.length
   if (selectedCategories.value.length) count += selectedCategories.value.length
   if (selectedBrands.value.length) count += selectedBrands.value.length
@@ -630,6 +661,16 @@ const activeFiltersCount = computed(() => {
             >
               {{ b }}
               <button @click="selectedBrands = selectedBrands.filter(x => x !== b)" class="hover:text-rose-600 flex items-center cursor-pointer" aria-label="Quitar filtro">
+                <span class="material-symbols-outlined text-xs">close</span>
+              </button>
+            </span>
+
+            <span 
+              v-if="selectedNote" 
+              class="inline-flex items-center gap-1.5 bg-amber-100 text-amber-950 text-xs font-sans font-bold px-3 py-1 rounded-full border border-amber-300 shadow-2xs"
+            >
+              <span>Nota: {{ selectedNote }}</span>
+              <button @click="clearNoteFilter" class="hover:text-rose-600 flex items-center cursor-pointer" aria-label="Quitar filtro de nota">
                 <span class="material-symbols-outlined text-xs">close</span>
               </button>
             </span>

@@ -191,6 +191,112 @@ router.post('/seed-starter', requireAuth, async (req, res) => {
   }
 })
 
+// POST /api/products/bulk-price-update - Actualización masiva de precios en lote (protegido con requireAuth)
+router.post('/bulk-price-update', requireAuth, async (req, res) => {
+  try {
+    const tenantId = req.tenantId || 'gicca'
+    const { 
+      brand = 'all', 
+      category = 'all', 
+      adjustmentType = 'percentage', // 'percentage' | 'fixed'
+      value = 0, 
+      roundTo = 'hundred', // 'none' | 'hundred' | 'thousand'
+      updateSizes = true 
+    } = req.body
+
+    const numValue = Number(value)
+    if (isNaN(numValue) || numValue === 0) {
+      return res.status(400).json({ error: 'El valor de ajuste debe ser distinto de 0' })
+    }
+
+    const allProducts = await getProducts(tenantId)
+    let targets = allProducts
+
+    if (brand && brand !== 'all') {
+      const bLower = brand.toLowerCase().trim()
+      targets = targets.filter(p => p.brand && p.brand.toLowerCase().trim() === bLower)
+    }
+
+    if (category && category !== 'all') {
+      const cNorm = normalizeCategory(category)
+      targets = targets.filter(p => normalizeCategory(p.category) === cNorm)
+    }
+
+    if (targets.length === 0) {
+      return res.json({ 
+        success: true, 
+        count: 0, 
+        message: 'No se encontraron perfumes que coincidan con los filtros seleccionados' 
+      })
+    }
+
+    const applyAdjustment = (oldVal) => {
+      if (oldVal === undefined || oldVal === null || isNaN(oldVal) || oldVal <= 0) return oldVal
+      let newVal = Number(oldVal)
+      if (adjustmentType === 'percentage') {
+        newVal = newVal * (1 + (numValue / 100))
+      } else if (adjustmentType === 'fixed') {
+        newVal = newVal + numValue
+      }
+      newVal = Math.max(0, newVal)
+      if (roundTo === 'hundred') {
+        newVal = Math.round(newVal / 100) * 100
+      } else if (roundTo === 'thousand') {
+        newVal = Math.round(newVal / 1000) * 1000
+      } else {
+        newVal = Math.round(newVal)
+      }
+      return newVal
+    }
+
+    let updatedCount = 0
+    const updatedProducts = []
+
+    for (const prod of targets) {
+      const newPrice = applyAdjustment(prod.price)
+      const newTransfer = prod.transferPrice !== undefined && prod.transferPrice !== null
+        ? applyAdjustment(prod.transferPrice)
+        : Math.round(newPrice * 0.8)
+
+      let newSizes = prod.sizes
+      if (updateSizes && Array.isArray(prod.sizes) && prod.sizes.length > 0) {
+        newSizes = prod.sizes.map(s => {
+          const sPrice = applyAdjustment(s.price)
+          const sTransfer = s.transferPrice !== undefined && s.transferPrice !== null
+            ? applyAdjustment(s.transferPrice)
+            : Math.round(sPrice * 0.8)
+          return {
+            ...s,
+            price: sPrice,
+            transferPrice: sTransfer
+          }
+        })
+      }
+
+      const updated = await updateProduct(prod.id, {
+        price: newPrice,
+        transferPrice: newTransfer,
+        sizes: newSizes
+      }, tenantId)
+
+      if (updated) {
+        updatedCount++
+        updatedProducts.push(updated)
+      }
+    }
+
+    res.json({
+      success: true,
+      count: updatedCount,
+      message: `Se actualizaron los precios de ${updatedCount} perfumes con éxito`,
+      products: updatedProducts
+    })
+  } catch (err) {
+    console.error('Error in bulk price update:', err)
+    res.status(500).json({ error: err.message || 'Error al procesar el ajuste masivo de precios' })
+  }
+})
+
 // POST /api/products - Create new product (protegido con requireAuth)
 router.post('/', requireAuth, async (req, res) => {
   try {

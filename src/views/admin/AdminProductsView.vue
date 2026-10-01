@@ -6,11 +6,14 @@ import { useSiteContentStore } from "@/stores/siteContent";
 import ProductWizardModal from "@/components/admin/ProductWizardModal.vue";
 import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal.vue";
 import CsvImportModal from "@/components/admin/CsvImportModal.vue";
+import BulkPriceModal from "@/components/admin/BulkPriceModal.vue";
 import { normalizeGender, normalizeCategory } from "@/utils/normalize";
 
 const productStore = useProductStore();
 const toastStore = useToastStore();
 const siteContentStore = useSiteContentStore();
+
+const isBulkPriceModalOpen = ref(false);
 
 // Filter State
 const searchQuery = ref("");
@@ -360,6 +363,15 @@ const handleDeleteProduct = async () => {
             >upload_file</span
           >
           <span>Importar CSV</span>
+        </button>
+
+        <button
+          @click="isBulkPriceModalOpen = true"
+          class="flex-1 sm:flex-initial bg-surface hover:bg-surface-container text-primary font-label text-xs uppercase tracking-wider px-3.5 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-2xs border border-outline-variant hover:border-primary active:scale-95 cursor-pointer font-bold"
+          title="Modificar precios en lote por marca o porcentaje"
+        >
+          <span class="material-symbols-outlined text-base text-primary">price_change</span>
+          <span>Ajuste de Precios</span>
         </button>
 
         <button
@@ -714,6 +726,15 @@ const handleDeleteProduct = async () => {
       :is-open="isCsvModalOpen"
       @close="isCsvModalOpen = false"
       @imported="handleCsvImported"
+    />
+
+    <!-- Bulk Price Adjustment Modal -->
+    <BulkPriceModal
+      :is-open="isBulkPriceModalOpen"
+      :brands="productStore.brandsList"
+      :products="productStore.items"
+      @close="isBulkPriceModalOpen = false"
+      @updated="productStore.fetchProducts()"
     />
   </div>
 </template>

@@ -28,13 +28,15 @@ defineProps({
           </div>
           <p class="font-sans text-xs text-secondary mb-2.5">La primera impresión chispeante e inmediata al vaporizar.</p>
           <div class="flex flex-wrap gap-1.5">
-            <span 
+            <RouterLink 
               v-for="note in pyramid.topNotes" 
               :key="note"
-              class="font-label text-xs uppercase bg-surface-container px-3 py-1 rounded-full border border-outline-variant text-primary"
+              :to="{ path: '/catalogo', query: { note } }"
+              class="font-label text-xs uppercase bg-surface-container hover:bg-primary hover:text-on-primary hover:border-primary px-3 py-1 rounded-full border border-outline-variant text-primary transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+              :title="`Explorar perfumes con nota de ${note}`"
             >
               {{ note }}
-            </span>
+            </RouterLink>
           </div>
         </div>
       </div>
@@ -51,13 +53,15 @@ defineProps({
           </div>
           <p class="font-sans text-xs text-secondary mb-2.5">El alma y personalidad central que define el carácter de la fragancia.</p>
           <div class="flex flex-wrap gap-1.5">
-            <span 
+            <RouterLink 
               v-for="note in pyramid.heartNotes" 
               :key="note"
-              class="font-label text-xs uppercase bg-secondary-container px-3 py-1 rounded-full border border-outline-variant text-primary font-medium"
+              :to="{ path: '/catalogo', query: { note } }"
+              class="font-label text-xs uppercase bg-secondary-container hover:bg-primary hover:text-on-primary hover:border-primary px-3 py-1 rounded-full border border-outline-variant text-primary font-medium transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+              :title="`Explorar perfumes con nota de ${note}`"
             >
               {{ note }}
-            </span>
+            </RouterLink>
           </div>
         </div>
       </div>
@@ -74,13 +78,15 @@ defineProps({
           </div>
           <p class="font-sans text-xs text-secondary mb-2.5">La estela profunda, sensual y duradera que permanece en la memoria y las prendas.</p>
           <div class="flex flex-wrap gap-1.5">
-            <span 
+            <RouterLink 
               v-for="note in pyramid.baseNotes" 
               :key="note"
-              class="font-label text-xs uppercase bg-surface-container-high px-3 py-1 rounded-full border border-outline-variant text-primary font-semibold"
+              :to="{ path: '/catalogo', query: { note } }"
+              class="font-label text-xs uppercase bg-surface-container-high hover:bg-primary hover:text-on-primary hover:border-primary px-3 py-1 rounded-full border border-outline-variant text-primary font-semibold transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+              :title="`Explorar perfumes con nota de ${note}`"
             >
               {{ note }}
-            </span>
+            </RouterLink>
           </div>
         </div>
       </div>

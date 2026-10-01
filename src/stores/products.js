@@ -224,6 +224,31 @@ export const useProductStore = defineStore('products', {
       } finally {
         this.loading = false
       }
+    },
+
+    async bulkUpdatePrices(payload) {
+      this.loading = true
+      try {
+        const token = localStorage.getItem('gicca_admin_token') || 'gicca_admin_token_secure_2026'
+        const headers = { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        }
+        const res = await fetch('/api/products/bulk-price-update', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload)
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Error al actualizar precios')
+        await this.fetchProducts()
+        await this.fetchStats()
+        return { success: true, count: data.count, message: data.message }
+      } catch (err) {
+        return { success: false, error: err.message }
+      } finally {
+        this.loading = false
+      }
     }
   }
 })
