@@ -8,7 +8,7 @@ import {
 } from '../services/andreani.js'
 import { quoteShippingOptions } from '../services/shippingQuote.js'
 import { getOrderByIdOrNumber, updateOrder } from '../db.js'
-import { requireAuth } from '../middleware/auth.js'
+import { requireAuth, getAuthorizedUser } from '../middleware/auth.js'
 
 const router = express.Router()
 
@@ -19,7 +19,9 @@ const router = express.Router()
 router.get('/status', async (req, res) => {
   try {
     const status = await checkAndreaniConnection(getAndreaniConfig(req.tenant))
-    res.json(status)
+    // Código de cliente y contratos solo para el panel de la tienda
+    if (getAuthorizedUser(req)) return res.json(status)
+    res.json({ configured: status.configured, connected: status.connected, sandbox: status.sandbox })
   } catch (err) {
     res.status(500).json({ error: 'Error al verificar conexión con Andreani', message: err.message })
   }

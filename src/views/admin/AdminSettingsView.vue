@@ -18,6 +18,8 @@ const authHeaders = () => ({
 
 const platformInfo = ref({ name: '', domain: '', dnsTarget: '', mpOAuthEnabled: false })
 const storeUrl = ref('')
+// Dominio propio pendiente de verificación por registro TXT
+const domainState = ref({ pendingDomain: '', domainVerification: null })
 const limits = ref({ customDomain: true })
 
 const isSaving = ref(false)
@@ -116,6 +118,15 @@ const verifyDomainDns = async () => {
     const data = await res.json()
     if (!res.ok) throw new Error(data.error || 'Error al verificar dominio')
     dnsCheckResult.value = data
+    if (data.verified) {
+      toastStore.show(data.verificationMessage, 'success')
+      await loadSettings()
+      return
+    }
+    if (data.verificationMessage) {
+      toastStore.show(data.verificationMessage, 'info')
+      return
+    }
     if (data.hasRecords) {
       toastStore.show('¡Registros DNS detectados correctamente!', 'success')
     } else {
@@ -132,9 +143,10 @@ const verifyDomainDns = async () => {
 const applySettings = (tenant) => {
   credentialsForm.value.email = tenant.adminEmail || credentialsForm.value.email
   storeUrl.value = tenant.storeUrl || ''
+  domainState.value = { pendingDomain: tenant.pendingDomain || '', domainVerification: tenant.domainVerification || null }
   limits.value = tenant.limits || limits.value
   form.value.name = tenant.name || ''
-  form.value.domain = tenant.domain || ''
+  form.value.domain = tenant.pendingDomain || tenant.domain || ''
   form.value.subdomain = tenant.subdomain || ''
   form.value.branding = {
     ...form.value.branding,
@@ -770,6 +782,20 @@ const handleSave = async () => {
               <p class="text-[11px] text-secondary mt-1">Escribe tu dominio sin https:// ni barras (ej: miperfumeria.com.ar).</p>
               <p v-if="storeUrl" class="text-[11px] text-secondary mt-1">Dirección actual de tu tienda: <a :href="storeUrl" target="_blank" class="underline font-mono">{{ storeUrl }}</a></p>
               <p v-if="!limits.customDomain" class="text-[11px] text-amber-800 mt-1">El dominio propio está disponible desde el plan Profesional.</p>
+            </div>
+
+            <!-- Verificación del dominio propio -->
+            <div v-if="domainState.domainVerification" class="p-4 rounded-xl border border-amber-300 bg-amber-50/80 text-xs text-amber-950 space-y-2">
+              <p class="font-bold flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">pending</span>
+                {{ domainState.pendingDomain }} está pendiente de verificación
+              </p>
+              <p>Para confirmar que el dominio es tuyo, agregá este registro en tu proveedor de dominio y después tocá "Verificar DNS":</p>
+              <div class="bg-surface p-3 rounded-lg border border-outline-variant font-mono text-[11px] space-y-1 break-all">
+                <div>Tipo: <strong>{{ domainState.domainVerification.type }}</strong></div>
+                <div>Nombre: <strong>{{ domainState.domainVerification.name }}</strong></div>
+                <div>Valor: <strong>{{ domainState.domainVerification.value }}</strong></div>
+              </div>
             </div>
 
             <!-- Alerta Diagnóstico DNS -->

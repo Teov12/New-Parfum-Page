@@ -1,11 +1,12 @@
 import fs from 'fs'
+import crypto from 'crypto'
 import path from 'path'
 import bcrypt from 'bcryptjs'
 import { fileURLToPath } from 'url'
 import { Tenant } from '../models/Tenant.js'
 import { Product } from '../models/Product.js'
 import { isMongoConnected } from '../dbConnection.js'
-import { DEFAULT_TENANT_CONFIG, clearTenantCache } from '../middleware/tenant.js'
+import { DEFAULT_TENANT_CONFIG, clearTenantCache, getLocalDefaultTenant } from '../middleware/tenant.js'
 import { PLATFORM, PLAN_IDS, getPlan, getStoreUrl, getTenantLimits, isBillingExempt, getDefaultTenantId } from '../config/platform.js'
 import { createProduct } from '../db.js'
 import { encryptSecret, secretHint } from './secrets.js'
@@ -42,6 +43,28 @@ export const slugifyStoreName = (name) => String(name || '')
   .replace(/^-+|-+$/g, '')
   .slice(0, 40)
 
+// Nombre del registro TXT con el que una tienda demuestra que el dominio es suyo
+export const domainVerificationRecord = (domain) => `_verificacion-tienda.${domain}`
+
+/**
+ * Identificadores y dominios de la tienda principal: aunque todavía viva en tenant.json
+ * (sin registro en MongoDB), ninguna otra tienda puede tomarlos.
+ */
+const getDefaultStoreReservations = () => {
+  const local = getLocalDefaultTenant()
+  const ids = new Set([getDefaultTenantId(), local.subdomain].filter(Boolean).map(v => String(v).toLowerCase()))
+  const domains = [local.domain, DEFAULT_TENANT_CONFIG.domain, ...(process.env.RESERVED_DOMAINS || '').split(',')]
+  if (process.env.SITE_URL) {
+    try { domains.push(new URL(process.env.SITE_URL).hostname) } catch { /* URL inválida */ }
+  }
+  return {
+    ids,
+    domains: new Set(domains.map(normalizeDomain).filter(Boolean).map(d => d.replace(/^www\./, '')))
+  }
+}
+
+export const isReservedStoreId = (value) => getDefaultStoreReservations().ids.has(String(value || '').toLowerCase())
+
 /**
  * Valida que el dominio y subdominio no estén tomados por otra tienda
  * (si no, el ruteo por dominio podría mostrar una tienda ajena).
@@ -53,6 +76,17 @@ export const validateRouting = async ({ tenantId, domain, subdomain }) => {
     }
     if (RESERVED_SUBDOMAINS.includes(subdomain)) {
       throw new TenantError(`El subdominio "${subdomain}" está reservado por la plataforma.`, 409)
+    }
+  }
+
+  // Lo de la tienda principal solo lo puede usar la tienda principal
+  if (tenantId !== getDefaultTenantId()) {
+    const reserved = getDefaultStoreReservations()
+    if (subdomain && reserved.ids.has(subdomain)) {
+      throw new TenantError(`El subdominio "${subdomain}" no está disponible.`, 409)
+    }
+    if (domain && reserved.domains.has(domain.replace(/^www\./, ''))) {
+      throw new TenantError(`El dominio "${domain}" no está disponible.`, 409)
     }
   }
   if (domain) {
@@ -171,6 +205,10 @@ export const toOwnerSettings = (tenant) => {
     tenantId: tenant.tenantId,
     name: tenant.name || '',
     domain: tenant.domain || '',
+    pendingDomain: tenant.pendingDomain || '',
+    domainVerification: tenant.pendingDomain
+      ? { type: 'TXT', name: domainVerificationRecord(tenant.pendingDomain), value: tenant.domainVerificationToken || '' }
+      : null,
     subdomain: tenant.subdomain || '',
     status: tenant.status || 'active',
     plan: tenant.plan || 'pro',
@@ -269,7 +307,8 @@ export const mergeOwnerSettings = (current, body) => {
   const next = {}
 
   if (body.name !== undefined) next.name = String(body.name).trim().slice(0, 80) || current.name
-  if (body.domain !== undefined) next.domain = normalizeDomain(body.domain)
+  // El dominio pedido no se activa directo: lo decide la ruta (verificación por DNS)
+  if (body.domain !== undefined) next.requestedDomain = normalizeDomain(body.domain)
   if (body.subdomain !== undefined) next.subdomain = String(body.subdomain).trim().toLowerCase()
 
   if (body.branding) next.branding = { ...(current.branding || {}), ...pickFields(body.branding, BRANDING_FIELDS) }
@@ -330,6 +369,23 @@ export const mergeOwnerSettings = (current, body) => {
   }
 
   return next
+}
+
+/**
+ * Resuelve el cambio de dominio pedido desde el panel:
+ * - vacío: se quita el dominio propio
+ * - tienda principal o superadmin: se activa directo
+ * - resto: queda pendiente hasta verificar el registro TXT (evita que una tienda tome un dominio ajeno)
+ */
+export const resolveDomainChange = ({ current, requestedDomain, trusted }) => {
+  if (requestedDomain === undefined) return {}
+  if (!requestedDomain) return { domain: '', pendingDomain: '', domainVerificationToken: '' }
+  if (requestedDomain === (current.domain || '')) return { pendingDomain: '', domainVerificationToken: '' }
+  if (trusted) return { domain: requestedDomain, pendingDomain: '', domainVerificationToken: '' }
+  const token = current.pendingDomain === requestedDomain && current.domainVerificationToken
+    ? current.domainVerificationToken
+    : `verificacion-${crypto.randomBytes(12).toString('hex')}`
+  return { pendingDomain: requestedDomain, domainVerificationToken: token }
 }
 
 const readStarterCatalog = () => {
@@ -401,7 +457,7 @@ export const createTenant = async ({
     throw new TenantError('Plan inválido.')
   }
 
-  if (await Tenant.exists({ $or: [{ tenantId: cleanId }, { slug: cleanId }] })) {
+  if (isReservedStoreId(cleanId) || await Tenant.exists({ $or: [{ tenantId: cleanId }, { slug: cleanId }] })) {
     throw new TenantError(`Ya existe una perfumería con el identificador "${cleanId}".`, 409)
   }
 

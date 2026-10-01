@@ -28,6 +28,9 @@ const tenantSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  // Dominio propio pendiente de verificar con un registro TXT (recién verificado pasa a "domain")
+  pendingDomain: { type: String, default: '' },
+  domainVerificationToken: { type: String, default: '' },
   // Estado de la tienda online (suspended = pausada: no vende y muestra aviso)
   status: {
     type: String,

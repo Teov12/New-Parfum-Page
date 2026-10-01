@@ -11,6 +11,7 @@
  * 7. Descarga y visualización de rótulo / etiqueta de envío (GET /v2/ordenes-de-envio/{numeroDeEnvio}/etiquetas).
  */
 
+import crypto from 'crypto'
 import { decryptSecret } from './secrets.js'
 
 // Caché de tokens de Andreani por cuenta (cada tienda puede tener sus propias credenciales)
@@ -111,7 +112,8 @@ export const getZoneInfoByPostalCode = (cpNumber) => {
  * Guarda en caché el token con vencimiento.
  */
 export const getAndreaniToken = async (config = getAndreaniConfig()) => {
-  const cacheKey = `${config.baseUrl}|${config.username}`
+  // La clave incluye la contraseña: credenciales distintas nunca comparten un token en caché
+  const cacheKey = `${config.baseUrl}|${config.username}|${crypto.createHash('sha256').update(String(config.password)).digest('hex')}`
   const cached = tokenCache.get(cacheKey)
 
   if (!config.username || !config.password) {

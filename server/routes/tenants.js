@@ -8,6 +8,9 @@ import { Tenant } from '../models/Tenant.js'
 import { Product } from '../models/Product.js'
 import { Order } from '../models/Order.js'
 import { SiteContent } from '../models/SiteContent.js'
+import { Customer } from '../models/Customer.js'
+import { WithdrawalRequest } from '../models/WithdrawalRequest.js'
+import { AbandonedCart } from '../models/AbandonedCart.js'
 import { DEFAULT_TENANT_CONFIG, clearTenantCache, getLocalDefaultTenant } from '../middleware/tenant.js'
 import { isMongoConnected } from '../dbConnection.js'
 import { requireOwner, requireSuperadmin } from '../middleware/auth.js'
@@ -22,6 +25,8 @@ import {
   toSafeTenant,
   toOwnerSettings,
   toPublicTenant,
+  resolveDomainChange,
+  domainVerificationRecord,
   mergeOwnerSettings,
   createTenant,
   getPlanSummary
@@ -112,6 +117,33 @@ router.post('/verify-domain', requireOwner, async (req, res) => {
       // Sin registros CNAME
     }
 
+    // Dominio pendiente: se activa cuando el TXT de verificación coincide
+    let verified = false
+    let verificationMessage = ''
+    if (isMongoConnected()) {
+      const doc = await Tenant.findOne({ tenantId: req.tenantId })
+      if (doc?.pendingDomain && doc.pendingDomain === cleanDomain) {
+        let txt = []
+        try {
+          txt = (await dns.promises.resolveTxt(domainVerificationRecord(cleanDomain))).map(parts => parts.join(''))
+        } catch {
+          // Sin registro TXT todavía
+        }
+        if (txt.includes(doc.domainVerificationToken)) {
+          await validateRouting({ tenantId: req.tenantId, domain: cleanDomain })
+          doc.domain = cleanDomain
+          doc.pendingDomain = ''
+          doc.domainVerificationToken = ''
+          await doc.save()
+          clearTenantCache()
+          verified = true
+          verificationMessage = `¡Listo! ${cleanDomain} quedó verificado y asociado a tu tienda.`
+        } else {
+          verificationMessage = `Todavía no encontramos el registro TXT ${domainVerificationRecord(cleanDomain)} con el valor indicado. La propagación puede tardar unas horas.`
+        }
+      }
+    }
+
     const hasRecords = aRecords.length > 0 || cnameRecords.length > 0
     const target = PLATFORM.dnsTarget
     const pointsToPlatform = !target || aRecords.includes(target) || cnameRecords.some(c => c.replace(/\.$/, '') === target)
@@ -120,6 +152,8 @@ router.post('/verify-domain', requireOwner, async (req, res) => {
       success: true,
       domain: cleanDomain,
       hasRecords,
+      verified,
+      verificationMessage,
       pointsToPlatform,
       dnsTarget: target,
       aRecords,
@@ -143,8 +177,9 @@ router.put('/settings', requireOwner, async (req, res) => {
     // Modo local (sin MongoDB): una sola tienda persistida en server/data/tenant.json
     if (!isMongoConnected()) {
       const existing = getStoredLocalTenant() || { ...DEFAULT_TENANT_CONFIG }
-      const changes = mergeOwnerSettings(existing, req.body)
-      await validateRouting({ tenantId, domain: changes.domain, subdomain: changes.subdomain })
+      const { requestedDomain, ...changes } = mergeOwnerSettings(existing, req.body)
+      await validateRouting({ tenantId, domain: requestedDomain, subdomain: changes.subdomain })
+      Object.assign(changes, resolveDomainChange({ current: existing, requestedDomain, trusted: true }))
       const updatedLocal = { ...existing, ...changes, tenantId }
       persistLocalTenant(updatedLocal)
       return res.json({
@@ -157,13 +192,17 @@ router.put('/settings', requireOwner, async (req, res) => {
     let tenantDoc = await Tenant.findOne({ tenantId })
     // Primera vez que la tienda principal se guarda en MongoDB: partir de su configuración actual
     const current = tenantDoc ? tenantDoc.toObject() : { ...(req.tenant || DEFAULT_TENANT_CONFIG), tenantId }
-    const changes = mergeOwnerSettings(current, req.body)
+    const { requestedDomain, ...changes } = mergeOwnerSettings(current, req.body)
 
-    await validateRouting({ tenantId, domain: changes.domain, subdomain: changes.subdomain })
+    await validateRouting({ tenantId, domain: requestedDomain, subdomain: changes.subdomain })
 
-    if (changes.domain && changes.domain !== current.domain && !getTenantLimits(current).customDomain) {
+    if (requestedDomain && requestedDomain !== current.domain && !getTenantLimits(current).customDomain) {
       return res.status(403).json({ error: 'El dominio propio está disponible desde el plan Profesional. Cambiá de plan en Admin > Mi Plan.' })
     }
+
+    // La tienda principal (dueño de la plataforma) y el superadmin no necesitan verificar el dominio
+    const trustedDomain = tenantId === getDefaultTenantId() || req.user?.role === 'superadmin'
+    Object.assign(changes, resolveDomainChange({ current, requestedDomain, trusted: trustedDomain }))
 
     if (changes.invoicing?.enabled && !current.invoicing?.enabled && !getTenantLimits(current).invoicing) {
       return res.status(403).json({ error: 'La facturación electrónica está disponible desde el plan Profesional.' })
@@ -366,12 +405,15 @@ router.delete('/:id', requireSuperadmin, async (req, res) => {
       return res.status(400).json({ error: 'Gestionar perfumerías requiere MongoDB configurado (MONGODB_URI).' })
     }
 
-    // Se borran también catálogo, pedidos y contenido: un alta futura con el mismo id no hereda datos ajenos
+    // Se borran también catálogo, pedidos, clientes y contenido: un alta futura con el mismo id no hereda datos ajenos
     await Promise.all([
       Tenant.deleteOne({ tenantId: targetId }),
       Product.deleteMany({ tenantId: targetId }),
       Order.deleteMany({ tenantId: targetId }),
-      SiteContent.deleteMany({ tenantId: targetId })
+      SiteContent.deleteMany({ tenantId: targetId }),
+      Customer.deleteMany({ tenantId: targetId }),
+      WithdrawalRequest.deleteMany({ tenantId: targetId }),
+      AbandonedCart.deleteMany({ tenantId: targetId })
     ])
     clearTenantCache()
     res.json({ success: true, message: 'Perfumería y sus datos dados de baja con éxito' })

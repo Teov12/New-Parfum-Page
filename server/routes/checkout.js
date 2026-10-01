@@ -2,7 +2,7 @@ import express from 'express'
 import crypto from 'crypto'
 import rateLimit from 'express-rate-limit'
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago'
-import { getOrderByIdOrNumber, updateOrder } from '../db.js'
+import { getOrderByIdOrNumber, updateOrder, markOrderPaid } from '../db.js'
 import { requireOwner } from '../middleware/auth.js'
 import { placeOrder, toCustomerOrder } from '../services/orderService.js'
 import { checkCoupon } from '../services/coupons.js'
@@ -82,10 +82,13 @@ const applyMercadoPagoPayment = async ({ paymentInfo, tenantId, tenant }) => {
     return { status: 'amount_mismatch', order }
   }
 
-  const updated = await updateOrder(order.id, {
-    paymentStatus: 'paid',
-    notes: appendNote(order, `Pago aprobado por Mercado Pago (Operación #${paymentInfo.id}, Método: ${paymentInfo.payment_method_id || 'tarjeta'})`)
-  }, tenantId)
+  // Transición atómica: si el webhook y el retorno llegan juntos, solo uno dispara emails y factura
+  const { won, order: updated } = await markOrderPaid(
+    order.id,
+    tenantId,
+    `Pago aprobado por Mercado Pago (Operación #${paymentInfo.id}, Método: ${paymentInfo.payment_method_id || 'tarjeta'})`
+  )
+  if (!won) return { status: 'already_paid', order: updated }
 
   afterOrderPaid({ order: updated, tenant }).catch(e => {
     console.warn('[Checkout] Error en tareas de pago aprobado:', e.message)
@@ -380,7 +383,11 @@ router.post('/webhook', async (req, res) => {
       return res.status(200).send('OK')
     }
 
-    const secret = (tenant?.commercial?.mpWebhookSecret || process.env.MP_WEBHOOK_SECRET || '').trim()
+    // Clave propia de la tienda (guardada cifrada) o, para la tienda principal y las conectadas a la
+    // aplicación de la plataforma por OAuth, la de las variables de entorno
+    const ownSecret = decryptSecret(tenant?.commercial?.mpWebhookSecret || '')
+    const usesPlatformApp = isDefaultTenant(tenant) || tenant?.commercial?.mpConnection?.method === 'oauth'
+    const secret = (ownSecret || (usesPlatformApp ? process.env.MP_WEBHOOK_SECRET : '') || '').trim()
     if (secret && !isValidMercadoPagoSignature(req, paymentId, secret)) {
       console.warn(`[MP Webhook] Firma inválida para el pago ${paymentId} (tienda ${tenantId})`)
       return res.status(401).send('Invalid signature')

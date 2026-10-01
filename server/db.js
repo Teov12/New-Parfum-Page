@@ -7,6 +7,7 @@ import { Product } from './models/Product.js'
 import { Order } from './models/Order.js'
 import { SiteContent } from './models/SiteContent.js'
 import { isMongoConnected } from './dbConnection.js'
+import { stripOperators } from './middleware/sanitize.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -87,6 +88,7 @@ export const getProducts = async (tenantId = 'gicca') => {
       return list.map(formatProduct)
     } catch (err) {
       console.error('[DB] Error leyendo productos desde MongoDB:', err.message)
+      throw err
     }
   }
 
@@ -122,6 +124,7 @@ export const getProductByIdOrSlug = async (idOrSlug, tenantId = 'gicca') => {
       return p ? formatProduct(p) : null
     } catch (err) {
       console.error('[DB] Error buscando producto en MongoDB:', err.message)
+      throw err
     }
   }
 
@@ -222,6 +225,7 @@ export const createProduct = async (productData, tenantId = 'gicca') => {
       return formatProduct(created.toObject())
     } catch (err) {
       console.error('[DB] Error creando producto en MongoDB:', err.message)
+      throw err
     }
   }
 
@@ -244,7 +248,7 @@ export const updateProduct = async (id, updateData, tenantId = 'gicca') => {
       const query = tenantId ? { tenantId, $or: conditions } : { $or: conditions }
       const updated = await Product.findOneAndUpdate(
         query,
-        { ...cleanUpdateData, updatedAt: new Date().toISOString() },
+        { $set: { ...stripOperators({ ...cleanUpdateData }), updatedAt: new Date().toISOString() } },
         { returnDocument: 'after' }
       ).lean()
 
@@ -331,6 +335,7 @@ export const getOrders = async (tenantId = 'gicca') => {
       return await Order.find(query).sort({ createdAt: -1 }).lean()
     } catch (err) {
       console.error('[DB] Error leyendo pedidos desde MongoDB:', err.message)
+      throw err
     }
   }
 
@@ -723,7 +728,7 @@ export const updateOrder = async (id, updateData, tenantId = 'gicca', { internal
   const existing = await getOrderByIdOrNumber(id, tenantId)
   if (!existing) return null
 
-  const changes = { ...updateData }
+  const changes = stripOperators({ ...updateData })
   IMMUTABLE_ORDER_FIELDS.forEach(field => delete changes[field])
   if (!internal) SERVER_ONLY_ORDER_FIELDS.forEach(field => delete changes[field])
   if (changes.paymentStatus && !PAYMENT_STATUSES.includes(changes.paymentStatus)) delete changes.paymentStatus
@@ -734,7 +739,7 @@ export const updateOrder = async (id, updateData, tenantId = 'gicca', { internal
   if (isMongoConnected()) {
     return Order.findOneAndUpdate(
       { _id: existing._id },
-      { ...changes, ...stockChanges, updatedAt: new Date().toISOString() },
+      { $set: { ...changes, ...stockChanges, updatedAt: new Date().toISOString() } },
       { returnDocument: 'after' }
     ).lean()
   }
@@ -759,6 +764,33 @@ export const updateOrder = async (id, updateData, tenantId = 'gicca', { internal
   orders[index] = updated
   saveOrders(orders)
   return updated
+}
+
+/**
+ * Marca un pedido como pagado una sola vez aunque el webhook y el retorno del comprador lleguen juntos.
+ * Devuelve { won, order }: won=true solo para quien hizo la transición (y debe disparar emails/factura).
+ */
+export const markOrderPaid = async (id, tenantId, note) => {
+  const existing = await getOrderByIdOrNumber(id, tenantId)
+  if (!existing) return { won: false, order: null }
+  if (existing.paymentStatus === 'paid') return { won: false, order: existing }
+
+  const notes = [existing.notes, note].filter(Boolean).join(' | ')
+
+  if (isMongoConnected()) {
+    const before = await Order.findOneAndUpdate(
+      { _id: existing._id, paymentStatus: { $ne: 'paid' } },
+      { $set: { paymentStatus: 'paid', notes, updatedAt: new Date().toISOString() } },
+      { returnDocument: 'before' }
+    ).lean()
+    if (!before) return { won: false, order: await getOrderByIdOrNumber(id, tenantId) }
+    // Un pedido cancelado que finalmente se pagó vuelve a reservar su stock
+    await syncStockWithPaymentStatus(before, 'paid', tenantId)
+    return { won: true, order: await getOrderByIdOrNumber(id, tenantId) }
+  }
+
+  const updated = await updateOrder(existing.id, { paymentStatus: 'paid', notes }, tenantId)
+  return { won: true, order: updated }
 }
 
 export const deleteOrder = async (id, tenantId = 'gicca') => {
@@ -881,12 +913,13 @@ export const saveSiteContent = async (content, tenantId = 'gicca') => {
     try {
       const updated = await SiteContent.findOneAndUpdate(
         { key: 'global_content', tenantId: currentTenant },
-        { ...merged, key: 'global_content', tenantId: currentTenant },
+        { $set: { ...stripOperators({ ...merged }), key: 'global_content', tenantId: currentTenant } },
         { upsert: true, returnDocument: 'after' }
       ).lean()
       return updated
     } catch (err) {
       console.error('[DB] Error guardando contenido en MongoDB:', err.message)
+      throw err
     }
   }
 

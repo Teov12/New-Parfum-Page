@@ -22,6 +22,7 @@ import customerRoutes from './routes/customers.js'
 import cartRoutes from './routes/carts.js'
 import feedRoutes from './routes/feeds.js'
 import { tenantMiddleware } from './middleware/tenant.js'
+import { sanitizeBody } from './middleware/sanitize.js'
 import { connectDatabase } from './dbConnection.js'
 import { getProducts, cancelStaleMercadoPagoOrders } from './db.js'
 import { enforceBilling } from './services/billing.js'
@@ -61,6 +62,8 @@ app.use(cors({
 }))
 app.use(express.json({ limit: '5mb' }))
 app.use(express.urlencoded({ extended: true, limit: '5mb' }))
+// Nunca dejar pasar operadores de MongoDB desde el cliente
+app.use(sanitizeBody)
 
 // Cabeceras de seguridad básicas
 app.use((req, res, next) => {
