@@ -16,7 +16,10 @@ const currentSlide = ref(0)
 const slideDirection = ref('next') // 'next' (right-to-left) | 'prev' (left-to-right)
 const isAnimating = ref(false)
 const isAutoplayPaused = ref(false)
-let autoplayInterval = null
+const AUTOPLAY_TIME = 6000
+let autoplayTimeout = null
+let slideStartTime = Date.now()
+let remainingAutoplayTime = AUTOPLAY_TIME
 
 const currentSlideData = computed(() => {
   if (!heroSlides.value || !heroSlides.value.length) return null
@@ -82,7 +85,7 @@ const onTouchStart = (e) => {
   if (e.touches && e.touches.length > 0) {
     touchStartX = e.touches[0].clientX
   }
-  stopAutoplay()
+  pauseAutoplay()
 }
 
 const onTouchEnd = (e) => {
@@ -92,43 +95,69 @@ const onTouchEnd = (e) => {
     if (Math.abs(diff) > 40) {
       if (diff < 0) {
         nextSlide()
-        resetAutoplay()
       } else {
         prevSlide()
-        resetAutoplay()
       }
     }
   }
-  startAutoplay()
+  resumeAutoplay()
 }
 
-const startAutoplay = () => {
-  isAutoplayPaused.value = false
-  if (autoplayInterval) clearInterval(autoplayInterval)
-  if (slidesCount.value <= 1) return
-  autoplayInterval = setInterval(() => {
-    nextSlide()
-  }, 6000)
-}
-
-const stopAutoplay = () => {
-  isAutoplayPaused.value = true
-  if (autoplayInterval) {
-    clearInterval(autoplayInterval)
-    autoplayInterval = null
+const startSlideTimer = () => {
+  if (autoplayTimeout) {
+    clearTimeout(autoplayTimeout)
+    autoplayTimeout = null
   }
+  if (slidesCount.value <= 1) return
+
+  slideStartTime = Date.now()
+  autoplayTimeout = setTimeout(() => {
+    nextSlide()
+  }, remainingAutoplayTime)
+}
+
+const pauseAutoplay = () => {
+  if (isAutoplayPaused.value) return
+  isAutoplayPaused.value = true
+  if (autoplayTimeout) {
+    clearTimeout(autoplayTimeout)
+    autoplayTimeout = null
+  }
+  const elapsed = Date.now() - slideStartTime
+  remainingAutoplayTime = Math.max(250, remainingAutoplayTime - elapsed)
+}
+
+const resumeAutoplay = () => {
+  if (!isAutoplayPaused.value) return
+  isAutoplayPaused.value = false
+  if (slidesCount.value <= 1) return
+  startSlideTimer()
 }
 
 const resetAutoplay = () => {
-  stopAutoplay()
-  startAutoplay()
+  if (autoplayTimeout) {
+    clearTimeout(autoplayTimeout)
+    autoplayTimeout = null
+  }
+  remainingAutoplayTime = AUTOPLAY_TIME
+  if (!isAutoplayPaused.value) {
+    startSlideTimer()
+  }
 }
+
+// Watch currentSlide so any slide change resets the timer to a full 6 seconds
+watch(currentSlide, () => {
+  remainingAutoplayTime = AUTOPLAY_TIME
+  if (!isAutoplayPaused.value) {
+    startSlideTimer()
+  }
+})
 
 const handleVisibilityChange = () => {
   if (document.hidden) {
-    stopAutoplay()
+    pauseAutoplay()
   } else {
-    startAutoplay()
+    resumeAutoplay()
   }
 }
 
@@ -149,13 +178,16 @@ const preloadSlideAssets = () => {
 }
 
 onMounted(() => {
-  startAutoplay()
+  startSlideTimer()
   preloadSlideAssets()
   document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 
 onUnmounted(() => {
-  stopAutoplay()
+  if (autoplayTimeout) {
+    clearTimeout(autoplayTimeout)
+    autoplayTimeout = null
+  }
   document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
 
@@ -217,8 +249,8 @@ const homeFaqs = [
     <!-- HERO SECTION: INTERACTIVE IMAGE CAROUSEL (EDITORIAL SPLIT - BYREDO / LE LABO AESTHETIC) -->
     <header 
       class="relative w-full min-h-[78vh] lg:min-h-[74vh] xl:min-h-[84vh] flex items-center bg-surface border-b border-outline-variant overflow-hidden group/hero select-none"
-      @mouseenter="stopAutoplay"
-      @mouseleave="startAutoplay"
+      @mouseenter="pauseAutoplay"
+      @mouseleave="resumeAutoplay"
       @touchstart.passive="onTouchStart"
       @touchend.passive="onTouchEnd"
     >
@@ -384,12 +416,13 @@ const homeFaqs = [
       </div>
 
       <!-- Subtle Editorial Autoplay Progress Line -->
-      <div class="absolute bottom-0 left-0 right-0 h-[2px] bg-outline-variant/30 z-20">
+      <div class="absolute bottom-0 left-0 right-0 h-[2px] bg-outline-variant/30 z-20 pointer-events-none">
         <div 
           :key="`progress-${currentSlide}`"
-          class="h-full bg-primary-container/80 transition-all duration-300"
+          class="h-full bg-primary-container/80"
           :style="{ 
-            animation: isAutoplayPaused ? 'none' : 'autoplayProgress 6s linear forwards' 
+            animation: 'autoplayProgress 6s linear forwards',
+            animationPlayState: isAutoplayPaused ? 'paused' : 'running'
           }"
         ></div>
       </div>
