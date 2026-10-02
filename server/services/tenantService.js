@@ -7,7 +7,7 @@ import { Tenant } from '../models/Tenant.js'
 import { Product } from '../models/Product.js'
 import { isMongoConnected } from '../dbConnection.js'
 import { DEFAULT_TENANT_CONFIG, clearTenantCache, getLocalDefaultTenant } from '../middleware/tenant.js'
-import { PLATFORM, PLAN_IDS, getPlan, getStoreUrl, getTenantLimits, isBillingExempt, getDefaultTenantId } from '../config/platform.js'
+import { PLATFORM, PLAN_IDS, getPlan, getStoreUrl, getStoreEntryUrl, getTenantLimits, isBillingExempt, getDefaultTenantId, isDemoStore } from '../config/platform.js'
 import { createProduct } from '../db.js'
 import { encryptSecret, secretHint } from './secrets.js'
 
@@ -119,7 +119,7 @@ export const isSubdomainAvailable = async (subdomain) => {
 }
 
 // Nunca exponer hashes de contraseña ni credenciales en listados
-export const toSafeTenant = (tenant) => {
+export const toSafeTenant = (tenant, req = null) => {
   if (!tenant) return tenant
   const plain = typeof tenant.toObject === 'function' ? tenant.toObject() : tenant
   const { adminUser, staff, invoicing, ...rest } = plain
@@ -140,7 +140,7 @@ export const toSafeTenant = (tenant) => {
     adminEmail: adminUser?.email || '',
     hasAdminUser: Boolean(adminUser?.passwordHash),
     staffCount: (staff || []).length,
-    storeUrl: getStoreUrl(plain),
+    storeUrl: getStoreEntryUrl(plain, req, '/'),
     isDefaultStore: plain.tenantId === getDefaultTenantId()
   }
 }
@@ -160,7 +160,8 @@ export const toPublicTenant = (tenant, req = null) => {
     subdomain: tenant.subdomain,
     status: req?.storeNotFound ? 'not_found' : (tenant.status || 'active'),
     isPlatformHost: Boolean(req?.isPlatformHost),
-    platform: { name: PLATFORM.name, domain: PLATFORM.domain },
+    isDemo: isDemoStore(tenant),
+    platform: { name: PLATFORM.name, domain: PLATFORM.domain, demoMode: PLATFORM.demoMode },
     branding: tenant.branding || DEFAULT_TENANT_CONFIG.branding,
     commercial: {
       alias: commercial.alias || '',
@@ -271,9 +272,9 @@ const mergeSecret = (current, incoming, clear) => {
   return encryptSecret(String(incoming).trim())
 }
 
-const BRANDING_FIELDS = ['logoUrl', 'iconUrl', 'storeIcon', 'faviconUrl', 'tagline', 'paletteId', 'primaryColor', 'primaryContainer', 'surface', 'accentColor', 'instagramUrl', 'instagram', 'whatsappNumber', 'onboardingCompleted']
+const BRANDING_FIELDS = ['logoUrl', 'iconUrl', 'storeIcon', 'faviconUrl', 'tagline', 'paletteId', 'primaryColor', 'primaryContainer', 'surface', 'accentColor', 'instagramUrl', 'instagram', 'whatsappNumber', 'contactEmail', 'onboardingCompleted']
 const COMMERCIAL_FIELDS = ['cbu', 'alias', 'bankName', 'accountHolder', 'cuit', 'notificationEmail', 'mpPublicKey', 'maxInstallments', 'cardFeeRate', 'andreaniContractNumber', 'freeShippingThreshold']
-const ANDREANI_FIELDS = ['username', 'clientCode', 'contractDomicilio', 'contractSucursal', 'contractUrgente', 'originZip', 'sandbox', 'disabled']
+const ANDREANI_FIELDS = ['username', 'clientCode', 'contractDomicilio', 'contractSucursal', 'contractUrgente', 'originZip', 'originStreet', 'originNumber', 'originCity', 'originProvince', 'sandbox', 'disabled']
 const SEO_FIELDS = ['title', 'description', 'keywords', 'ogImage']
 const LEGAL_FIELDS = ['legalName', 'address', 'termsText', 'privacyText', 'returnsText', 'fiscalDataUrl', 'fiscalDataImageUrl']
 const MARKETING_FIELDS = ['metaPixelId', 'ga4Id', 'gtmId', 'googleSiteVerification']

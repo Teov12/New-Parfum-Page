@@ -49,9 +49,9 @@ const handleSubscribe = () => {
             {{ tenantStore.branding?.tagline || 'Tu tienda de confianza en perfumes 100% originales. Las mejores marcas importadas de diseñador y perfumería árabe con envíos seguros a todo el país.' }}
           </p>
           <div class="space-y-1.5 text-xs font-label uppercase tracking-widest text-secondary">
-            <p>Buenos Aires, Argentina</p>
-            <p>contacto@giccaperfumes.com</p>
-            <p>Atención por WhatsApp: {{ tenantStore.branding?.whatsappNumber ? '+' + tenantStore.branding.whatsappNumber : '+54 9 3564 62-2055' }}</p>
+            <p v-if="tenantStore.legal?.address">{{ tenantStore.legal.address }}</p>
+            <p v-if="tenantStore.branding?.contactEmail" class="normal-case">{{ tenantStore.branding.contactEmail }}</p>
+            <p v-if="tenantStore.branding?.whatsappNumber">Atención por WhatsApp: +{{ tenantStore.branding.whatsappNumber.replace(/^\+/, '') }}</p>
           </div>
         </div>
 

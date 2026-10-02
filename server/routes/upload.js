@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url'
 import { v2 as cloudinary } from 'cloudinary'
 import { CloudinaryStorage } from 'multer-storage-cloudinary'
 import { requireAuth } from '../middleware/auth.js'
+import { blockInDemoStore } from '../middleware/demo.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -77,7 +78,7 @@ const upload = multer({
 
 const router = express.Router()
 
-router.post('/', requireAuth, (req, res) => {
+router.post('/', requireAuth, blockInDemoStore, (req, res) => {
   upload.any()(req, res, (err) => {
     if (err) {
       console.error('[Upload Error]', err)

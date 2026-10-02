@@ -5,6 +5,7 @@ import { isMongoConnected } from '../dbConnection.js'
 import { requireOwner } from '../middleware/auth.js'
 import { clearTenantCache } from '../middleware/tenant.js'
 import { getTenantLimits } from '../config/platform.js'
+import { blockInDemoStore } from '../middleware/demo.js'
 import { MIN_PASSWORD_LENGTH, normalizeEmail, isValidEmail } from '../services/tenantService.js'
 
 const router = express.Router()
@@ -34,7 +35,7 @@ router.get('/', requireOwner, requireMongo, async (req, res) => {
 })
 
 // POST /api/staff - Sumar un usuario (acceso a pedidos y catálogo, sin configuración ni cobros)
-router.post('/', requireOwner, requireMongo, async (req, res) => {
+router.post('/', requireOwner, requireMongo, blockInDemoStore, async (req, res) => {
   try {
     const email = normalizeEmail(req.body.email)
     const name = String(req.body.name || '').trim().slice(0, 80)
@@ -72,7 +73,7 @@ router.post('/', requireOwner, requireMongo, async (req, res) => {
 })
 
 // DELETE /api/staff/:memberId - Quitar acceso
-router.delete('/:memberId', requireOwner, requireMongo, async (req, res) => {
+router.delete('/:memberId', requireOwner, requireMongo, blockInDemoStore, async (req, res) => {
   const result = await Tenant.updateOne(
     { tenantId: req.tenantId },
     { $pull: { staff: { _id: req.params.memberId } } }

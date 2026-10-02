@@ -145,7 +145,7 @@ Hola! Les escribo a través del formulario de la web para hacerles una consulta.
                 <span class="material-symbols-outlined text-primary text-xl mt-0.5">mail</span>
                 <div>
                   <h4 class="font-label text-xs uppercase tracking-widest text-primary font-bold">Correo Electrónico</h4>
-                  <p class="mt-0.5">contacto@giccaperfumes.com</p>
+                  <p class="mt-0.5">{{ tenantStore.branding?.contactEmail || 'Escribinos por WhatsApp' }}</p>
                   <p class="text-xs text-outline">Te respondemos en el día.</p>
                 </div>
               </div>

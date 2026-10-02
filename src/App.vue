@@ -8,6 +8,7 @@ import Navbar from '@/components/layout/Navbar.vue'
 import Footer from '@/components/layout/Footer.vue'
 import CartDrawer from '@/components/cart/CartDrawer.vue'
 import ToastContainer from '@/components/ui/ToastContainer.vue'
+import DemoBanner from '@/components/layout/DemoBanner.vue'
 import { initTracking, trackEvent } from '@/utils/tracking'
 
 const PlatformLandingView = defineAsyncComponent(() => import('@/views/platform/PlatformLandingView.vue'))
@@ -60,6 +61,8 @@ onMounted(() => {
     <StoreUnavailable v-else-if="showStoreUnavailable" />
 
     <template v-else>
+      <DemoBanner v-if="showStoreChrome" context="store" />
+
       <!-- Sticky Main Navigation (Only for public store) -->
       <Navbar v-if="showStoreChrome" />
 

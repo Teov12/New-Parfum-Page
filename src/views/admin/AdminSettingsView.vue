@@ -637,6 +637,18 @@ const handleSave = async () => {
                   class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
                 />
               </div>
+
+              <div class="sm:col-span-2">
+                <label class="block font-label text-xs uppercase tracking-widest text-primary font-bold mb-1.5">
+                  Email de contacto (visible en la tienda)
+                </label>
+                <input
+                  v-model="form.branding.contactEmail"
+                  type="email"
+                  placeholder="hola@tuperfumeria.com"
+                  class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-sm font-sans focus:border-primary focus:outline-none"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -940,6 +952,14 @@ const handleSave = async () => {
             <input v-model="form.commercial.andreani.contractDomicilio" type="text" placeholder="Contrato a domicilio" class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-xs focus:border-primary focus:outline-none" />
             <input v-model="form.commercial.andreani.contractSucursal" type="text" placeholder="Contrato a sucursal" class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-xs focus:border-primary focus:outline-none" />
           </div>
+          <p class="text-[11px] text-secondary font-bold uppercase tracking-wider pt-1">Dirección de despacho (remitente)</p>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <input v-model="form.commercial.andreani.originStreet" type="text" placeholder="Calle" class="col-span-2 w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-xs focus:border-primary focus:outline-none" />
+            <input v-model="form.commercial.andreani.originNumber" type="text" placeholder="Número" class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-xs focus:border-primary focus:outline-none" />
+            <input v-model="form.commercial.andreani.originCity" type="text" placeholder="Localidad" class="w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-xs focus:border-primary focus:outline-none" />
+            <input v-model="form.commercial.andreani.originProvince" type="text" placeholder="Provincia" class="col-span-2 sm:col-span-4 w-full bg-surface-container border border-outline-variant rounded-xl p-3 text-xs focus:border-primary focus:outline-none" />
+          </div>
+          <p class="text-[10px] text-secondary">El remitente usa la razón social y el CUIT cargados en Legales.</p>
           <label class="flex items-center gap-2 text-xs text-secondary cursor-pointer">
             <input v-model="form.commercial.andreani.sandbox" type="checkbox" class="rounded border-outline-variant" />
             Modo prueba (sandbox de Andreani)

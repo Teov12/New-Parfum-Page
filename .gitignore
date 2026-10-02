@@ -32,3 +32,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Entorno de pruebas local (npm run dev:test)
+.env.test

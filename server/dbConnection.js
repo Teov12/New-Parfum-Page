@@ -25,7 +25,10 @@ export const connectDatabase = async () => {
     console.log('[Database] Conexión establecida con éxito a MongoDB Atlas.')
 
     // Auto-migración si las colecciones están vacías
-    await autoMigrateFromJson()
+    // En el entorno demo no se importan los datos reales de la tienda principal (server/data/*.json)
+    if (process.env.DEMO_MODE !== 'true') {
+      await autoMigrateFromJson()
+    }
 
     return true
   } catch (err) {

@@ -38,6 +38,8 @@ const tenantSchema = new mongoose.Schema({
     default: 'active'
   },
   suspendedReason: { type: String, default: '' },
+  // Tienda de ejemplo del entorno demo (se reinicia sola y bloquea acciones sensibles)
+  isDemo: { type: Boolean, default: false },
   plan: {
     type: String,
     enum: ['basic', 'pro', 'enterprise'],
@@ -75,6 +77,8 @@ const tenantSchema = new mongoose.Schema({
     instagramUrl: { type: String, default: '' },
     instagram: { type: String, default: '' },
     whatsappNumber: { type: String, default: '' },
+    // Email de contacto que se muestra en la tienda (contacto y pie de página)
+    contactEmail: { type: String, default: '' },
     // false = la tienda recién creada todavía no completó el asistente inicial del panel
     onboardingCompleted: { type: Boolean, default: true }
   },
@@ -123,6 +127,11 @@ const tenantSchema = new mongoose.Schema({
       contractSucursal: { type: String, default: '' },
       contractUrgente: { type: String, default: '' },
       originZip: { type: String, default: '' },
+      // Dirección desde donde se despachan los pedidos
+      originStreet: { type: String, default: '' },
+      originNumber: { type: String, default: '' },
+      originCity: { type: String, default: '' },
+      originProvince: { type: String, default: '' },
       sandbox: { type: Boolean, default: true },
       // La tienda no ofrece Andreani (solo sus métodos propios)
       disabled: { type: Boolean, default: false }

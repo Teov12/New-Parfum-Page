@@ -106,7 +106,11 @@ const resolveByHost = async (host) => {
     if (host.endsWith(`.${platformDomain}`)) {
       const subdomain = host.slice(0, -(platformDomain.length + 1))
       const doc = await Tenant.findOne({ subdomain }).lean()
-      return doc ? { tenant: doc } : { tenant: await getDefaultTenant(), notFound: true }
+      if (doc) return { tenant: doc }
+      // La tienda principal responde en su subdominio aunque todavía viva en tenant.json
+      const defaultTenant = await getDefaultTenant()
+      if (subdomain === defaultTenant.tenantId || subdomain === defaultTenant.subdomain) return { tenant: defaultTenant }
+      return { tenant: defaultTenant, notFound: true }
     }
   }
 
@@ -114,10 +118,10 @@ const resolveByHost = async (host) => {
   const byDomain = await Tenant.findOne({ domain: { $in: [host, bareHost] } }).lean()
   if (byDomain) return { tenant: byDomain }
 
-  // Instalación sin dominio de plataforma: se mantiene la detección por primer segmento del host
-  if (!platformDomain) {
-    const bySubdomain = await Tenant.findOne({ subdomain: host.split('.')[0] }).lean()
-    if (bySubdomain) return { tenant: bySubdomain }
+  // Entorno demo sin dominio de plataforma: la dirección principal muestra la landing
+  // (las tiendas de ejemplo se abren con ?tenant=<id>)
+  if (PLATFORM.demoMode && !platformDomain) {
+    return { tenant: await getDefaultTenant(), platformHost: true }
   }
 
   return { tenant: await getDefaultTenant() }
@@ -168,6 +172,20 @@ export const tenantMiddleware = async (req, res, next) => {
  * nunca se mezcla con la configuración de otras perfumerías.
  */
 export const getLocalDefaultTenant = () => {
+  // En el entorno demo nunca se usan los datos reales de la tienda principal (tenant.json)
+  if (PLATFORM.demoMode) {
+    return {
+      ...DEFAULT_TENANT_CONFIG,
+      tenantId: getDefaultTenantId(),
+      slug: getDefaultTenantId(),
+      name: PLATFORM.name,
+      domain: '',
+      subdomain: '',
+      branding: { ...DEFAULT_TENANT_CONFIG.branding, tagline: '', instagramUrl: '', whatsappNumber: '' },
+      commercial: { ...DEFAULT_TENANT_CONFIG.commercial, alias: '', cbu: '', bankName: '', accountHolder: '', cuit: '', mercadoPagoAccessToken: '', mpAccessToken: '' },
+      seo: { title: PLATFORM.name, description: '', keywords: '', ogImage: '' }
+    }
+  }
   const base = { ...DEFAULT_TENANT_CONFIG, tenantId: getDefaultTenantId() }
   const local = getStoredLocalTenant()
   if (!local) return base

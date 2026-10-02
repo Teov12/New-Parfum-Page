@@ -14,6 +14,7 @@ import { AbandonedCart } from '../models/AbandonedCart.js'
 import { DEFAULT_TENANT_CONFIG, clearTenantCache, getLocalDefaultTenant } from '../middleware/tenant.js'
 import { isMongoConnected } from '../dbConnection.js'
 import { requireOwner, requireSuperadmin } from '../middleware/auth.js'
+import { stripDemoSensitiveSettings } from '../middleware/demo.js'
 import { PLATFORM, PLAN_IDS, getDefaultTenantId, getTenantLimits, getPublicPlans } from '../config/platform.js'
 import {
   TenantError,
@@ -170,7 +171,7 @@ router.post('/verify-domain', requireOwner, async (req, res) => {
 })
 
 // PUT /api/tenant/settings - Actualizar configuración de la tienda (solo el dueño)
-router.put('/settings', requireOwner, async (req, res) => {
+router.put('/settings', requireOwner, stripDemoSensitiveSettings, async (req, res) => {
   try {
     const tenantId = req.tenantId
 
@@ -242,7 +243,7 @@ router.get('/all', requireSuperadmin, async (req, res) => {
 
     res.json({
       tenants: tenants.map(t => ({
-        ...toSafeTenant(t),
+        ...toSafeTenant(t, req),
         billingSummary: getPlanSummary(t),
         productCount: countByTenant[t.tenantId] || 0
       })),

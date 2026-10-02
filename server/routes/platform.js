@@ -3,7 +3,7 @@ import rateLimit from 'express-rate-limit'
 import { Tenant } from '../models/Tenant.js'
 import { isMongoConnected } from '../dbConnection.js'
 import { signPurposeToken } from '../middleware/auth.js'
-import { PLATFORM, PLAN_IDS, getPublicPlans, getStoreUrl } from '../config/platform.js'
+import { PLATFORM, PLAN_IDS, getPublicPlans, getStoreEntryUrl, isDemoStore } from '../config/platform.js'
 import { isBillingConfigured } from '../services/billing.js'
 import { isOAuthConfigured } from '../services/mercadopagoOAuth.js'
 import {
@@ -25,9 +25,50 @@ const signupLimiter = rateLimit({
   message: { error: 'Demasiados registros desde esta conexión. Intentá nuevamente más tarde.' }
 })
 
+// Tiendas de ejemplo visibles en la landing del entorno demo
+const listDemoStores = async (req) => {
+  if (!PLATFORM.demoMode || !isMongoConnected()) return []
+  const stores = await Tenant.find({ isDemo: true }, { tenantId: 1, name: 1, branding: 1, isDemo: 1, domain: 1, subdomain: 1 }).lean()
+  return stores.map(t => ({
+    tenantId: t.tenantId,
+    name: t.name,
+    tagline: t.branding?.tagline || '',
+    storeIcon: t.branding?.storeIcon || 'spa',
+    paletteId: t.branding?.paletteId || 'amber',
+    primaryColor: t.branding?.primaryColor || '#2E1911',
+    storeUrl: getStoreEntryUrl(t, req, '/')
+  }))
+}
+
+const demoLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiados accesos a la demo. Esperá unos minutos.' }
+})
+
+/**
+ * POST /api/platform/demo-access - Entrar al panel de una tienda demo sin contraseña (solo DEMO_MODE).
+ * Devuelve un link de un solo uso; en la tienda demo las acciones sensibles están bloqueadas.
+ */
+router.post('/demo-access', demoLimiter, async (req, res) => {
+  if (!PLATFORM.demoMode || !isMongoConnected()) return res.status(404).json({ error: 'No disponible' })
+  const tenant = await Tenant.findOne({ tenantId: String(req.body?.tenantId || '').toLowerCase(), isDemo: true }).lean()
+  if (!tenant || !isDemoStore(tenant)) return res.status(404).json({ error: 'Tienda demo no encontrada' })
+
+  const handoff = signPurposeToken({ tenantId: tenant.tenantId, email: tenant.adminUser?.email || '' }, 'handoff', '10m')
+  const loginUrl = getStoreEntryUrl(tenant, req, '/admin/login')
+  // Si la tienda no tiene dirección propia, el link usa la misma dirección de la landing
+  const absolute = /^https?:\/\//.test(loginUrl) ? loginUrl : `${req.protocol}://${req.get('host')}${loginUrl}`
+  res.json({ adminUrl: `${absolute}#acceso=${handoff}` })
+})
+
 // GET /api/platform/info - Datos públicos de la plataforma para la landing
-router.get('/info', (req, res) => {
+router.get('/info', async (req, res) => {
   res.json({
+    demoMode: PLATFORM.demoMode,
+    demoStores: await listDemoStores(req).catch(() => []),
     name: PLATFORM.name,
     domain: PLATFORM.domain,
     trialDays: PLATFORM.trialDays,
@@ -78,13 +119,17 @@ router.post('/signup', signupLimiter, async (req, res) => {
 
     // Token de un solo uso para entrar al panel de la tienda nueva sin volver a loguearse
     const handoff = signPurposeToken({ tenantId: tenant.tenantId, email: tenant.adminUser.email }, 'handoff', '10m')
-    const storeUrl = getStoreUrl(tenant, req)
+    // Sin subdominios de plataforma (ej. entorno demo) se entra con ?tenant=<id> en la misma dirección
+    const storeUrl = getStoreEntryUrl(tenant, req, '/')
+    const loginUrl = getStoreEntryUrl(tenant, req, '/admin/login')
+    const origin = `${req.protocol}://${req.get('host')}`
+    const absolute = (url) => (/^https?:\/\//.test(url) ? url : `${origin}${url}`)
 
     res.status(201).json({
       success: true,
       tenantId: tenant.tenantId,
-      storeUrl,
-      adminUrl: `${storeUrl}/admin/login#acceso=${handoff}`,
+      storeUrl: absolute(storeUrl),
+      adminUrl: `${absolute(loginUrl)}#acceso=${handoff}`,
       trialEndsAt
     })
   } catch (err) {

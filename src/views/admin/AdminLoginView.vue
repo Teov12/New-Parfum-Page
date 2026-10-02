@@ -27,7 +27,10 @@ onMounted(async () => {
   if (!match) return
   history.replaceState(null, '', window.location.pathname)
   const success = await adminAuthStore.loginWithHandoff(decodeURIComponent(match[1]))
-  if (success) router.push({ path: '/admin/tienda', query: { bienvenida: '1' } })
+  if (!success) return
+  // En la demo se entra directo a las ventas de ejemplo; en una tienda nueva, a completar sus datos
+  await tenantStore.fetchCurrentTenant(true)
+  router.push(tenantStore.isDemo ? { path: '/admin/ventas' } : { path: '/admin/tienda', query: { bienvenida: '1' } })
 })
 </script>
 

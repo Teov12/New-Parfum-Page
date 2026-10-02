@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit'
 import { signAdminToken, requireAuth, verifyPurposeToken } from '../middleware/auth.js'
 import { clearTenantCache } from '../middleware/tenant.js'
 import { getDefaultTenantId } from '../config/platform.js'
+import { blockInDemoStore } from '../middleware/demo.js'
 import { Tenant } from '../models/Tenant.js'
 import { isMongoConnected } from '../dbConnection.js'
 
@@ -157,7 +158,7 @@ router.get('/verify', requireAuth, (req, res) => {
 })
 
 // PUT /api/auth/credentials - El dueño de la tienda define o cambia su email y contraseña
-router.put('/credentials', loginLimiter, requireAuth, async (req, res) => {
+router.put('/credentials', loginLimiter, requireAuth, blockInDemoStore, async (req, res) => {
   try {
     if (req.user.role !== 'owner') {
       return res.status(403).json({ error: 'El superadmin gestiona credenciales desde la consola de plataforma.' })

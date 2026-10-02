@@ -15,11 +15,13 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'http://localhost:3001',
-        changeOrigin: true
+        // Conserva el host original (ej. aromas.localhost) para que el servidor sepa qué tienda es
+        changeOrigin: false
       },
       '/uploads': {
         target: 'http://localhost:3001',
-        changeOrigin: true
+        // Conserva el host original (ej. aromas.localhost) para que el servidor sepa qué tienda es
+        changeOrigin: false
       }
     }
   }

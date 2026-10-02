@@ -6,6 +6,7 @@ import { useOrdersStore } from '@/stores/orders'
 import { useProductStore } from '@/stores/products'
 import { useTenantStore } from '@/stores/tenant'
 import OnboardingModal from '@/components/admin/OnboardingModal.vue'
+import DemoBanner from '@/components/layout/DemoBanner.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -460,15 +461,16 @@ const closeMobileDrawer = () => {
             <div class="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
               
               <!-- Live Domain Badge -->
-              <a 
-                href="https://giccaperfumes.com.ar" 
-                target="_blank" 
+              <a
+                v-if="tenantStore.domain"
+                :href="`https://${tenantStore.domain}`"
+                target="_blank"
                 rel="noopener noreferrer"
                 class="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50/80 border border-emerald-200 text-[11px] font-label font-bold text-emerald-900 hover:bg-emerald-100 transition-colors shadow-2xs"
                 title="Dominio certificado en producción"
               >
                 <span class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
-                <span>giccaperfumes.com.ar</span>
+                <span>{{ tenantStore.domain }}</span>
                 <span class="material-symbols-outlined text-xs">verified</span>
               </a>
 
@@ -513,6 +515,8 @@ const closeMobileDrawer = () => {
 
         <!-- MAIN EXPANDED WORKSPACE CANVAS -->
         <main class="flex-1 w-full max-w-[1720px] mx-auto p-4 sm:p-5 lg:p-6 xl:p-8 2xl:p-10 pb-28 md:pb-12 transition-all">
+          <DemoBanner context="admin" class="mb-5 rounded-2xl" />
+
           <!-- Aviso de prueba gratis / tienda pausada -->
           <div
             v-if="billingBanner"

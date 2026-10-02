@@ -2,11 +2,12 @@ import express from 'express'
 import { requireOwner, signPurposeToken, verifyPurposeToken } from '../middleware/auth.js'
 import { getStoreUrl } from '../config/platform.js'
 import { isOAuthConfigured, buildAuthorizationUrl, completeAuthorization } from '../services/mercadopagoOAuth.js'
+import { blockInDemoStore } from '../middleware/demo.js'
 
 const router = express.Router()
 
 // GET /api/mercadopago/oauth/start - Link para que el dueño autorice su cuenta de Mercado Pago
-router.get('/start', requireOwner, (req, res) => {
+router.get('/start', requireOwner, blockInDemoStore, (req, res) => {
   if (!isOAuthConfigured()) {
     return res.status(503).json({ error: 'La conexión automática con Mercado Pago no está habilitada. Cargá tus credenciales manualmente.' })
   }

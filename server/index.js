@@ -1,4 +1,4 @@
-import 'dotenv/config'
+import './loadEnv.js'
 import express from 'express'
 import cors from 'cors'
 import path from 'path'
@@ -28,6 +28,7 @@ import { getProducts, cancelStaleMercadoPagoOrders } from './db.js'
 import { enforceBilling } from './services/billing.js'
 import { refreshExpiringConnections } from './services/mercadopagoOAuth.js'
 import { sendAbandonedCartReminders, purgeOldCarts } from './services/abandonedCarts.js'
+import { seedDemoStores } from './services/demoSeed.js'
 import { renderStoreHtml, renderRobots, escapeXml } from './services/seo.js'
 import { getStoreUrl, PLATFORM } from './config/platform.js'
 import swaggerUi from 'swagger-ui-express'
@@ -38,7 +39,7 @@ const __dirname = path.dirname(__filename)
 const isProduction = process.env.NODE_ENV === 'production'
 
 // Conectar a base de datos (MongoDB si está configurado, o fallback JSON)
-connectDatabase()
+const dbReady = connectDatabase()
 
 if (isProduction && !process.env.MONGODB_URI) {
   console.warn('[Plataforma] Sin MONGODB_URI el servidor funciona como una sola tienda (modo archivos JSON): el registro de nuevas perfumerías queda deshabilitado.')
@@ -269,6 +270,14 @@ setInterval(() => runJob('tiendas pausadas por suscripción', enforceBilling), 6
 // Recordatorio único de carritos abandonados y limpieza de carritos viejos
 setInterval(() => runJob('recordatorios de carrito enviados', sendAbandonedCartReminders), 15 * 60 * 1000).unref()
 setInterval(() => runJob('carritos viejos eliminados', purgeOldCarts), 24 * 60 * 60 * 1000).unref()
+// Entorno demo: crea las tiendas de ejemplo que falten y las reinicia periódicamente
+if (PLATFORM.demoMode) {
+  console.log('[Demo] Entorno de DEMOSTRACIÓN activo (DEMO_MODE=true). Usá una base de datos propia para este entorno.')
+  dbReady.then(() => runJob('tiendas demo creadas', async () => (await seedDemoStores()).length))
+  const resetHours = Number(process.env.DEMO_RESET_HOURS) || 6
+  setInterval(() => runJob('tiendas demo reiniciadas', async () => (await seedDemoStores({ reset: true })).length), resetHours * 60 * 60 * 1000).unref()
+}
+
 // Tokens de Mercado Pago (OAuth) próximos a vencer: se renuevan
 setInterval(() => runJob('conexiones de Mercado Pago renovadas', refreshExpiringConnections), 12 * 60 * 60 * 1000).unref()
 

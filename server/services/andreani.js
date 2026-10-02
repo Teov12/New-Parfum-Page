@@ -41,7 +41,23 @@ export const getAndreaniConfig = (tenant = null) => {
     : (useEnv ? process.env.ANDREANI_SANDBOX !== 'false' : true)
 
   const threshold = Number(tenant?.commercial?.freeShippingThreshold)
+  const digits = (value) => String(value || '').replace(/\D/g, '')
+
+  // Remitente y dirección de despacho de la tienda. Los datos fijos son solo de la tienda principal.
+  const sender = {
+    name: tenant?.legal?.legalName || tenant?.name || (useEnv ? 'Gicca Perfumes Boutique' : ''),
+    email: tenant?.commercial?.notificationEmail || tenant?.adminUser?.email || (useEnv ? 'contacto@giccaperfumes.com.ar' : ''),
+    // El CUIT de ejemplo de la configuración por defecto no es válido para despachar
+    cuit: (digits(tenant?.commercial?.cuit) !== '20123456789' && digits(tenant?.commercial?.cuit)) || (useEnv ? '30718293849' : ''),
+    phone: digits(tenant?.branding?.whatsappNumber).slice(-10) || (useEnv ? '3564622055' : ''),
+    street: pick(own.originStreet, process.env.ANDREANI_ORIGIN_STREET, useEnv ? 'Av. Juan B. Justo' : ''),
+    number: pick(own.originNumber, process.env.ANDREANI_ORIGIN_NUMBER, useEnv ? '150' : ''),
+    city: pick(own.originCity, process.env.ANDREANI_ORIGIN_CITY, useEnv ? 'San Francisco' : ''),
+    province: pick(own.originProvince, process.env.ANDREANI_ORIGIN_PROVINCE, useEnv ? 'Córdoba' : '')
+  }
+
   return {
+    sender,
     sandbox: sandboxSetting,
     baseUrl: sandboxSetting ? 'https://api.qa.andreani.com' : 'https://api.andreani.com',
     username: hasOwnCredentials ? String(own.username).trim() : (useEnv ? process.env.ANDREANI_USERNAME?.trim() || '' : ''),
@@ -482,10 +498,10 @@ export const createAndreaniShipment = async (order, config = getAndreaniConfig()
     origen: {
       postal: {
         codigoPostal: config.originZip,
-        calle: 'Av. Juan B. Justo',
-        numero: '150',
-        localidad: 'San Francisco',
-        provincia: 'Córdoba'
+        calle: config.sender.street,
+        numero: config.sender.number,
+        localidad: config.sender.city,
+        provincia: config.sender.province
       }
     },
     destino: {
@@ -498,16 +514,16 @@ export const createAndreaniShipment = async (order, config = getAndreaniConfig()
       }
     },
     remitente: {
-      nombreCompleto: 'Gicca Perfumes Boutique',
-      eMail: 'contacto@giccaperfumes.com.ar',
+      nombreCompleto: config.sender.name,
+      eMail: config.sender.email,
       documentoTipo: 'CUIT',
-      documentoNumero: '30718293849',
-      telefonos: [{ tipo: 1, numero: '3564622055' }]
+      documentoNumero: config.sender.cuit,
+      telefonos: [{ tipo: 1, numero: config.sender.phone }]
     },
     destinatario: [
       {
         nombreCompleto: `${customer.firstName || 'Cliente'} ${customer.lastName || ''}`.trim(),
-        eMail: customer.email || 'cliente@giccaperfumes.com.ar',
+        eMail: customer.email || config.sender.email,
         documentoTipo: 'DNI',
         documentoNumero: customer.dni || '99999999',
         telefonos: [{ tipo: 1, numero: customer.phone || '1122334455' }]
@@ -524,6 +540,11 @@ export const createAndreaniShipment = async (order, config = getAndreaniConfig()
   }
 
   if (token) {
+    const missing = [['CUIT', config.sender.cuit], ['calle de despacho', config.sender.street], ['localidad de despacho', config.sender.city]]
+      .filter(([, value]) => !value).map(([label]) => label)
+    if (missing.length) {
+      throw new Error(`Completá los datos de despacho de la tienda (${missing.join(', ')}) en Admin > Ajustes & Pagos.`)
+    }
     try {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 8000)

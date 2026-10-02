@@ -2,7 +2,27 @@
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 
-const info = ref({ name: 'Perfumerías Online', trialDays: 14, plans: [], supportEmail: '' })
+const info = ref({ name: 'Perfumerías Online', trialDays: 14, plans: [], supportEmail: '', demoStores: [] })
+const openingPanel = ref('')
+
+// Entorno demo: abre el panel de una tienda de ejemplo sin contraseña
+const openDemoPanel = async (store) => {
+  openingPanel.value = store.tenantId
+  try {
+    const res = await fetch('/api/platform/demo-access', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tenantId: store.tenantId })
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'No se pudo abrir el panel')
+    window.open(data.adminUrl, '_blank', 'noopener')
+  } catch (err) {
+    alert(err.message)
+  } finally {
+    openingPanel.value = ''
+  }
+}
 
 onMounted(async () => {
   try {
@@ -71,8 +91,8 @@ const faqs = [
             Probar gratis {{ info.trialDays }} días
             <span class="material-symbols-outlined text-base">arrow_forward</span>
           </RouterLink>
-          <a href="#funciones" class="inline-flex justify-center items-center px-6 py-3.5 rounded-full border border-white/15 hover:border-white/40 font-label text-xs uppercase tracking-widest">
-            Ver funciones
+          <a :href="info.demoStores?.length ? '#demo' : '#funciones'" class="inline-flex justify-center items-center px-6 py-3.5 rounded-full border border-white/15 hover:border-white/40 font-label text-xs uppercase tracking-widest">
+            {{ info.demoStores?.length ? 'Ver tiendas de ejemplo' : 'Ver funciones' }}
           </a>
         </div>
         <p class="text-xs text-white/40">Sin tarjeta para empezar. Cancelás cuando quieras.</p>
@@ -94,6 +114,33 @@ const faqs = [
             <div v-for="row in [['Khamrah EDP 100 ml', 'Pagado'], ['Bleu de Chanel 50 ml', 'Preparando'], ['Decant Yara 10 ml', 'Enviado']]" :key="row[0]" class="flex items-center justify-between bg-white/[0.03] border border-white/5 rounded-lg px-3 py-2 text-xs">
               <span class="text-white/80">{{ row[0] }}</span>
               <span class="text-amber-300">{{ row[1] }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tiendas de ejemplo (entorno demo) -->
+    <section v-if="info.demoStores?.length" id="demo" class="border-t border-white/10">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-20">
+        <h2 class="font-serif text-3xl sm:text-4xl text-center mb-3">Mirá tiendas funcionando</h2>
+        <p class="text-center text-white/60 mb-12 max-w-2xl mx-auto">Recorré la vidriera como un cliente y entrá al panel como si fueras el dueño: cargá perfumes, mirá las ventas y cambiá el diseño. Todo se reinicia solo.</p>
+        <div class="grid md:grid-cols-3 gap-5">
+          <div v-for="store in info.demoStores" :key="store.tenantId" class="bg-[#1B1917] border border-white/10 rounded-2xl overflow-hidden flex flex-col">
+            <div class="h-24 flex items-center justify-center" :style="{ backgroundColor: store.primaryColor }">
+              <span class="material-symbols-outlined text-4xl text-amber-200">{{ store.storeIcon }}</span>
+            </div>
+            <div class="p-5 space-y-1 flex-1">
+              <h3 class="font-serif text-xl">{{ store.name }}</h3>
+              <p class="text-xs text-white/60">{{ store.tagline }}</p>
+            </div>
+            <div class="p-5 pt-0 grid grid-cols-2 gap-2">
+              <a :href="store.storeUrl" target="_blank" rel="noopener" class="text-center px-3 py-2.5 rounded-full border border-white/20 hover:border-white/50 font-label text-[11px] uppercase tracking-widest">
+                Ver tienda
+              </a>
+              <button type="button" @click="openDemoPanel(store)" :disabled="openingPanel === store.tenantId" class="px-3 py-2.5 rounded-full bg-amber-500 hover:bg-amber-400 text-[#11100F] font-label text-[11px] uppercase tracking-widest font-bold disabled:opacity-50">
+                {{ openingPanel === store.tenantId ? 'Abriendo...' : 'Ver el panel' }}
+              </button>
             </div>
           </div>
         </div>

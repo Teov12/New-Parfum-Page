@@ -37,7 +37,8 @@ const emptyState = () => ({
   subdomain: '',
   status: 'active',
   isPlatformHost: false,
-  platform: { name: 'Perfumerías Online', domain: '' },
+  isDemo: false,
+  platform: { name: 'Perfumerías Online', domain: '', demoMode: false },
   branding: {
     tagline: '',
     logoUrl: '',
@@ -73,6 +74,7 @@ const applyPayload = (state, data) => {
   state.subdomain = data.subdomain || ''
   state.status = data.status || 'active'
   state.isPlatformHost = Boolean(data.isPlatformHost)
+  state.isDemo = Boolean(data.isDemo)
   state.platform = data.platform || state.platform
   state.branding = { ...state.branding, ...(data.branding || {}) }
   state.commercial = { ...state.commercial, ...(data.commercial || {}) }

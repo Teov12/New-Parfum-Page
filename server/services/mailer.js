@@ -52,6 +52,10 @@ export const getStoreContactEmail = (tenant) => {
  */
 export async function sendEmail({ to, subject, html, replyTo, fromName }) {
   if (!to) return { success: false, error: 'Sin destinatario' }
+  if (/\.demo$/i.test(String(to).trim())) {
+    console.log(`[Mailer:Demo] Para: ${to} | Asunto: ${subject}`)
+    return { success: true, simulated: true }
+  }
   const fromAddress = getFromAddress()
   const from = `${String(fromName || 'Perfumería').replace(/[<>"]/g, '')} <${fromAddress}>`
 

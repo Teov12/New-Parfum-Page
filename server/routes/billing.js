@@ -11,6 +11,7 @@ import {
   syncAuthorizedPayment,
   cancelSubscription
 } from '../services/billing.js'
+import { blockInDemoStore } from '../middleware/demo.js'
 
 const router = express.Router()
 
@@ -39,7 +40,7 @@ router.get('/', requireAuth, async (req, res) => {
 })
 
 // POST /api/billing/subscribe - Iniciar (o cambiar) la suscripción mensual con Mercado Pago
-router.post('/subscribe', requireOwner, async (req, res) => {
+router.post('/subscribe', requireOwner, blockInDemoStore, async (req, res) => {
   try {
     const { plan } = req.body
     if (!PLAN_IDS.includes(plan)) {
@@ -87,7 +88,7 @@ router.post('/sync', requireOwner, async (req, res) => {
 })
 
 // POST /api/billing/cancel - Cancelar la suscripción (la tienda sigue online hasta el fin del período de gracia)
-router.post('/cancel', requireOwner, async (req, res) => {
+router.post('/cancel', requireOwner, blockInDemoStore, async (req, res) => {
   try {
     const tenant = await loadTenant(req)
     await cancelSubscription(tenant)

@@ -17,8 +17,14 @@ export const PLATFORM = {
   // Días de gracia después de vencer la prueba o un pago antes de pausar la tienda
   graceDays: num(process.env.BILLING_GRACE_DAYS, 5),
   // IP o host al que las tiendas deben apuntar su dominio propio (se muestra en el panel)
-  dnsTarget: process.env.PLATFORM_DNS_TARGET || ''
+  dnsTarget: process.env.PLATFORM_DNS_TARGET || '',
+  // Entorno de demostración: tiendas de ejemplo, acceso al panel sin contraseña y reinicio periódico.
+  // Usar SIEMPRE con una base de datos propia (nunca la de producción).
+  demoMode: process.env.DEMO_MODE === 'true'
 }
+
+// Tienda de ejemplo del entorno demo (las crea server/services/demoSeed.js)
+export const isDemoStore = (tenant) => PLATFORM.demoMode && Boolean(tenant?.isDemo)
 
 /**
  * Planes de suscripción. Precios mensuales en ARS.
@@ -74,20 +80,55 @@ export const getTenantLimits = (tenant) => {
 /**
  * URL pública de la tienda (para emails, Mercado Pago, sitemap y SEO).
  */
+const requestProtocol = (req) => String(req.headers['x-forwarded-proto'] || req.protocol || 'https').split(',')[0]
+const requestOrigin = (req) => `${requestProtocol(req)}://${req.get('host')}`
+
+/**
+ * Protocolo y puerto de las direcciones <sub>.<PLATFORM_DOMAIN>. Si la petición llegó por el dominio
+ * de la plataforma se respetan los suyos (ej. http y :5173 al probar con PLATFORM_DOMAIN=localhost).
+ */
+const platformAddressParts = (req) => {
+  const [hostname, port] = String(req?.get?.('host') || '').split(':')
+  if (req && PLATFORM.domain && (hostname === PLATFORM.domain || hostname.endsWith(`.${PLATFORM.domain}`))) {
+    return { protocol: requestProtocol(req), port: port ? `:${port}` : '' }
+  }
+  return {
+    protocol: PLATFORM.domain === 'localhost' ? 'http' : 'https',
+    port: process.env.PLATFORM_PORT ? `:${process.env.PLATFORM_PORT}` : ''
+  }
+}
+
 export const getStoreUrl = (tenant, req = null) => {
   // Si la petición llegó por el dominio de la propia tienda, esa es la dirección que ve el cliente
   if (req && req.tenantFromHost && !req.isPlatformHost && req.tenantId === tenant?.tenantId) {
-    const protocol = String(req.headers['x-forwarded-proto'] || req.protocol || 'https').split(',')[0]
-    return `${protocol}://${req.get('host')}`
+    return requestOrigin(req)
   }
   if (tenant?.tenantId === getDefaultTenantId() && process.env.SITE_URL) return process.env.SITE_URL.replace(/\/$/, '')
   if (tenant?.domain) return `https://${tenant.domain}`
-  if (PLATFORM.domain && tenant?.subdomain) return `https://${tenant.subdomain}.${PLATFORM.domain}`
-  if (req) {
-    const protocol = String(req.headers['x-forwarded-proto'] || req.protocol || 'https').split(',')[0]
-    return `${protocol}://${req.get('host')}`
+  if (PLATFORM.domain && tenant?.subdomain) {
+    const { protocol, port } = platformAddressParts(req)
+    return `${protocol}://${tenant.subdomain}.${PLATFORM.domain}${port}`
   }
+  if (req) return requestOrigin(req)
   return process.env.SITE_URL ? process.env.SITE_URL.replace(/\/$/, '') : ''
+}
+
+// La tienda tiene una dirección propia (dominio, subdominio de la plataforma o es la principal)
+const isReachableByHost = (tenant) => Boolean(
+  tenant?.domain ||
+  (PLATFORM.domain && tenant?.subdomain) ||
+  (tenant?.tenantId === getDefaultTenantId() && !PLATFORM.demoMode)
+)
+
+/**
+ * Link para entrar a una tienda. Si la tienda no tiene dirección propia (ej. entorno demo sin
+ * subdominios), se entra por la dirección actual con ?tenant=<id> (modo vista previa del frontend).
+ */
+export const getStoreEntryUrl = (tenant, req = null, path = '/') => {
+  const viaOwnHost = req && req.tenantFromHost && !req.isPlatformHost && req.tenantId === tenant?.tenantId
+  if (viaOwnHost || isReachableByHost(tenant)) return `${getStoreUrl(tenant, req)}${path}`
+  const base = req ? requestOrigin(req) : (process.env.SITE_URL || '').replace(/\/$/, '')
+  return `${base}${path}${path.includes('?') ? '&' : '?'}tenant=${encodeURIComponent(tenant.tenantId)}`
 }
 
 // Planes en formato público (para la landing y el panel)
